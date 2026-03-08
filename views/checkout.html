@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout - HyperPneus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-light">
+
+<div class="container my-5">
+    <h2 class="mb-4">Finalizar Compra</h2>
+    <div class="row">
+        <div class="col-md-8">
+            <!-- 1. Endereço -->
+            <div class="card mb-3 shadow-sm">
+                <div class="card-header fw-bold bg-white">1. Endereço de Entrega</div>
+                <div class="card-body">
+                    <div class="form-check p-3 border rounded bg-light">
+                        <input class="form-check-input" type="radio" name="endereco" checked>
+                        <label class="form-check-label w-100">
+                            <strong>Minha Casa</strong> <span class="badge bg-success float-end">Principal</span><br>
+                            Rua das Flores, 123 - São Paulo/SP - CEP 01010-000
+                        </label>
+                    </div>
+                    <button class="btn btn-link btn-sm mt-2 text-decoration-none">+ Adicionar Novo Endereço</button>
+                </div>
+            </div>
+
+            <!-- 2. SERVIÇO EXTRA (DIFERENCIAL) -->
+            <div class="card mb-3 border-primary shadow-sm">
+                <div class="card-header bg-primary text-white fw-bold">2. Instalação e Montagem (Opcional)</div>
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="montagem" checked>
+                        <label class="form-check-label fw-bold" for="montagem">
+                            Quero receber e montar na oficina parceira (+ R$ 120,00)
+                        </label>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                             <select class="form-select">
+                                <option>Oficina AutoCenter Z (a 2km) - Disp: 04/03 às 14h</option>
+                                <option>Mecânica Rápida (a 5km) - Disp: 05/03 às 09h</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Pagamento -->
+            <div class="card mb-3 shadow-sm">
+                <div class="card-header fw-bold bg-white">3. Pagamento</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label>Cartão de Crédito Principal</label>
+                        <select class="form-select">
+                            <option>MasterCard final 8899</option>
+                            <option>Visa final 1234</option>
+                            <option>Adicionar novo cartão...</option>
+                        </select>
+                    </div>
+                    <!-- Múltiplos Cartões -->
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="doisCartoes">
+                        <label class="form-check-label" for="doisCartoes">Pagar com dois cartões</label>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-success btn-lg w-100 shadow py-3" onclick="finalizarCompra()">
+                CONFIRMAR COMPRA E PAGAR
+            </button>
+        </div>
+
+        <!-- Resumo Lateral -->
+        <div class="col-md-4">
+            <div class="card shadow-sm position-sticky" style="top: 20px;">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Resumo do Pedido</h5>
+                    <div class="d-flex justify-content-between mb-2"><span>Subtotal (4 itens)</span><span>R$ 1.839,60</span></div>
+                    <div class="d-flex justify-content-between mb-2"><span>Frete</span><span class="text-success">Grátis</span></div>
+                    <div class="d-flex justify-content-between mb-2 text-primary"><span>Montagem</span><span>R$ 120,00</span></div>
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold fs-4"><span>Total</span><span>R$ 1.959,60</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function finalizarCompra() {
+        alert("Compra realizada com sucesso!\nStatus: EM PROCESSAMENTO\nRedirecionando para seus pedidos...");
+        window.location.href = "minha-conta.html";
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>HyperPneus - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-light">
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="index.html"><i class="fas fa-car"></i> HyperPneus</a>
+    <div class="d-flex align-items-center gap-2">
+      <a href="admin.html" class="btn btn-sm btn-outline-secondary">Area Admin</a>
+      <a href="carrinho.html" class="btn btn-outline-light position-relative">
+          <i class="fas fa-shopping-cart"></i> Carrinho
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+      </a>
+      <a href="login.html" class="btn btn-warning"><i class="fas fa-user"></i> Minha Conta</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero / Busca -->
+<div class="bg-primary text-white py-5 text-center shadow">
+    <div class="container">
+        <h1 class="display-4 fw-bold">Encontre o pneu ideal</h1>
+        <p class="lead">Busque por medida ou compatibilidade veicular</p>
+        <div class="card p-4 mx-auto text-dark shadow-lg" style="max-width: 700px;">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <label class="form-label text-start w-100 fw-bold">Largura</label>
+                    <select class="form-select"><option>175</option><option>195</option><option>205</option></select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-start w-100 fw-bold">Perfil</label>
+                    <select class="form-select"><option>55</option><option>60</option><option>65</option></select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-start w-100 fw-bold">Aro</label>
+                    <select class="form-select"><option>14</option><option>15</option><option>16</option></select>
+                </div>
+                <div class="col-12 mt-3">
+                    <button class="btn btn-success w-100 py-2 fw-bold" onclick="alert('Buscando pneus...')">BUSCAR OFERTAS</button>
+                </div>
+            </div>
+            <div class="mt-2 text-end">
+                <a href="#" class="small text-decoration-none">Ou busque pelo seu carro <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vitrine -->
+<div class="container my-5">
+    <h3 class="mb-4 border-start border-4 border-primary ps-3">Destaques da Semana</h3>
+    <div class="row g-4">
+        <!-- Produto 1 -->
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center d-flex flex-column">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_Kkh-yQ6JbV3ZqgXU_0VvX4VqXyXyXyXyXw&s" class="img-fluid mb-3 mx-auto" style="height: 150px;" alt="Pneu">
+                    <h5 class="card-title">Pirelli Cinturato P1</h5>
+                    <p class="text-muted small">175/65 R14 82T</p>
+                    <div class="mt-auto">
+                        <h4 class="text-primary fw-bold">R$ 459,90</h4>
+                        <a href="detalhe.html" class="btn btn-outline-primary w-100">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Produto 2 -->
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center d-flex flex-column">
+                    <div class="badge bg-danger position-absolute top-0 end-0 m-2">Oferta</div>
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_Kkh-yQ6JbV3ZqgXU_0VvX4VqXyXyXyXyXw&s" class="img-fluid mb-3 mx-auto" style="height: 150px;" alt="Pneu">
+                    <h5 class="card-title">Michelin Primacy 4</h5>
+                    <p class="text-muted small">205/55 R16 91V</p>
+                    <div class="mt-auto">
+                        <small class="text-decoration-line-through text-muted">R$ 800,00</small>
+                        <h4 class="text-primary fw-bold">R$ 689,00</h4>
+                        <a href="detalhe.html" class="btn btn-outline-primary w-100">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Produto 3 -->
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center d-flex flex-column">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_Kkh-yQ6JbV3ZqgXU_0VvX4VqXyXyXyXyXw&s" class="img-fluid mb-3 mx-auto" style="height: 150px;" alt="Pneu">
+                    <h5 class="card-title">Goodyear Efficient</h5>
+                    <p class="text-muted small">195/55 R15 85H</p>
+                    <div class="mt-auto">
+                        <h4 class="text-primary fw-bold">R$ 520,50</h4>
+                        <a href="detalhe.html" class="btn btn-outline-primary w-100">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Produto 4 -->
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center d-flex flex-column">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_Kkh-yQ6JbV3ZqgXU_0VvX4VqXyXyXyXyXw&s" class="img-fluid mb-3 mx-auto" style="height: 150px;" alt="Pneu">
+                    <h5 class="card-title">Bridgestone Turanza</h5>
+                    <p class="text-muted small">225/45 R17 94W</p>
+                    <div class="mt-auto">
+                        <h4 class="text-primary fw-bold">R$ 950,00</h4>
+                        <a href="detalhe.html" class="btn btn-outline-primary w-100">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botão Flutuante da IA (REQUISITO DA AULA) -->
+<div style="position: fixed; bottom: 30px; right: 30px; z-index: 1000;">
+    <button class="btn btn-primary rounded-circle p-3 shadow-lg d-flex align-items-center justify-content-center" 
+            style="width: 70px; height: 70px;"
+            onclick="alert('Olá! Sou a IA da HyperPneus.\n\nPosso recomendar pneus baseados no seu estilo de direção.\nEx: Você dirige na chuva? Pega estrada de terra?')">
+        <i class="fas fa-robot fa-2x"></i>
+    </button>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-white text-center py-3 mt-5">
+    <p class="mb-0">© 2026 HyperPneus - Projeto Acadêmico LES</p>
+</footer>
+
+</body>
+</html>

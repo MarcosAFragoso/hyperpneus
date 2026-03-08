@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Entrar - HyperPneus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark mb-5">
+  <div class="container">
+    <a class="navbar-brand" href="index.html">HyperPneus</a>
+  </div>
+</nav>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <!-- Login -->
+        <div class="col-md-5">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h3 class="mb-4 fw-bold">Já sou cliente</h3>
+                    <div class="mb-3">
+                        <label class="form-label">E-mail</label>
+                        <input type="email" class="form-control" placeholder="seu@email.com">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Senha</label>
+                        <input type="password" class="form-control" placeholder="********">
+                    </div>
+                    <!-- Simula Login -->
+                    <a href="minha-conta.html" class="btn btn-primary w-100 py-2">ENTRAR</a>
+                    <div class="text-center mt-3">
+                        <a href="#" class="text-muted small">Esqueci minha senha</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Divisor Visual -->
+        <div class="col-md-1 text-center d-none d-md-flex align-items-center justify-content-center">
+            <div class="vr h-50"></div>
+        </div>
+
+        <!-- Cadastro -->
+        <div class="col-md-5">
+            <div class="card border-0 bg-transparent">
+                <div class="card-body p-4">
+                    <h3 class="fw-bold">Criar nova conta</h3>
+                    <p class="text-muted">Cadastre-se para acompanhar pedidos e facilitar suas compras.</p>
+                    
+                    <form>
+                        <div class="row">
+                            <div class="col-6 mb-2"><input type="text" class="form-control" placeholder="Nome"></div>
+                            <div class="col-6 mb-2"><input type="text" class="form-control" placeholder="Sobrenome"></div>
+                        </div>
+                        <div class="mb-2"><input type="text" class="form-control" placeholder="CPF (Obrigatório)"></div>
+                        <div class="mb-2"><input type="email" class="form-control" placeholder="E-mail"></div>
+                        <div class="mb-2"><input type="password" class="form-control" placeholder="Senha Forte"></div>
+                        <div class="mb-3"><input type="password" class="form-control" placeholder="Confirmar Senha"></div>
+                        
+                        <!-- Requisito Extra: Garagem -->
+                        <div class="alert alert-info py-2 small">
+                            <i class="fas fa-car"></i> Você poderá cadastrar seu veículo na próxima etapa.
+                        </div>
+
+                        <a href="minha-conta.html" class="btn btn-outline-dark w-100">CRIAR CONTA</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
