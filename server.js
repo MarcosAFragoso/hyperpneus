@@ -22,5 +22,14 @@ app.use('/api/clientes', clienteRoutes);
 const pneuRoutes = require('./routes/pneuRoutes');
 app.use('/api/pneus', pneuRoutes);
 
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
+
+const veiculoRoutes = require('./routes/veiculoRoutes');
+app.use('/api/clientes/:clienteId/veiculos', veiculoRoutes);
+
+const cartaoRoutes = require('./routes/cartaoRoutes');
+app.use('/api/clientes/:clienteId/cartoes', cartaoRoutes);
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
