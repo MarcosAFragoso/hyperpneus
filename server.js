@@ -31,5 +31,8 @@ app.use('/api/clientes/:clienteId/veiculos', veiculoRoutes);
 const cartaoRoutes = require('./routes/cartaoRoutes');
 app.use('/api/clientes/:clienteId/cartoes', cartaoRoutes);
 
+const enderecoRoutes = require('./routes/enderecoRoutes');
+app.use('/api/clientes/:clienteId/enderecos', enderecoRoutes);
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));

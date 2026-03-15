@@ -16,62 +16,78 @@
 
 <div class="container">
     <div class="row justify-content-center">
-        <!-- Login -->
         <div class="col-md-5">
+            <div id="alerta" class="alert d-none mb-3"></div>
             <div class="card shadow">
                 <div class="card-body p-5">
-                    <h3 class="mb-4 fw-bold">Já sou cliente</h3>
+                    <h3 class="mb-1 fw-bold">Bem-vindo!</h3>
+                    <p class="text-muted mb-4">Faça login para continuar</p>
+
                     <div class="mb-3">
                         <label class="form-label">E-mail</label>
-                        <input type="email" class="form-control" placeholder="seu@email.com">
+                        <input type="email" id="loginEmail" class="form-control" placeholder="seu@email.com">
                     </div>
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label class="form-label">Senha</label>
-                        <input type="password" class="form-control" placeholder="********">
+                        <input type="password" id="loginSenha" class="form-control" placeholder="********">
                     </div>
-                    <!-- Simula Login -->
-                    <a href="minha-conta.html" class="btn btn-primary w-100 py-2">ENTRAR</a>
+
+                    <button onclick="fazerLogin()" class="btn btn-primary w-100 py-2 fw-bold">ENTRAR</button>
+
                     <div class="text-center mt-3">
-                        <a href="#" class="text-muted small">Esqueci minha senha</a>
+                        <a href="#" class="text-muted small d-block mb-2">Esqueci minha senha</a>
+                        <span class="text-muted small">Não tem conta? </span>
+                        <a href="cadastro.html" class="small fw-bold">Criar conta grátis</a>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Divisor Visual -->
-        <div class="col-md-1 text-center d-none d-md-flex align-items-center justify-content-center">
-            <div class="vr h-50"></div>
-        </div>
-
-        <!-- Cadastro -->
-        <div class="col-md-5">
-            <div class="card border-0 bg-transparent">
-                <div class="card-body p-4">
-                    <h3 class="fw-bold">Criar nova conta</h3>
-                    <p class="text-muted">Cadastre-se para acompanhar pedidos e facilitar suas compras.</p>
-                    
-                    <form>
-                        <div class="row">
-                            <div class="col-6 mb-2"><input type="text" class="form-control" placeholder="Nome"></div>
-                            <div class="col-6 mb-2"><input type="text" class="form-control" placeholder="Sobrenome"></div>
-                        </div>
-                        <div class="mb-2"><input type="text" class="form-control" placeholder="CPF (Obrigatório)"></div>
-                        <div class="mb-2"><input type="email" class="form-control" placeholder="E-mail"></div>
-                        <div class="mb-2"><input type="password" class="form-control" placeholder="Senha Forte"></div>
-                        <div class="mb-3"><input type="password" class="form-control" placeholder="Confirmar Senha"></div>
-                        
-                        <!-- Requisito Extra: Garagem -->
-                        <div class="alert alert-info py-2 small">
-                            <i class="fas fa-car"></i> Você poderá cadastrar seu veículo na próxima etapa.
-                        </div>
-
-                        <a href="minha-conta.html" class="btn btn-outline-dark w-100">CRIAR CONTA</a>
-                    </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+const API = '';
+
+function mostrarAlerta(msg, tipo = 'danger') {
+    const el = document.getElementById('alerta');
+    el.className = `alert alert-${tipo}`;
+    el.textContent = msg;
+    el.classList.remove('d-none');
+    setTimeout(() => el.classList.add('d-none'), 4000);
+}
+
+async function fazerLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const senha = document.getElementById('loginSenha').value;
+
+    if (!email || !senha) return mostrarAlerta('Preencha e-mail e senha.');
+
+    try {
+        const res = await fetch(`${API}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, senha })
+        });
+        const data = await res.json();
+        if (!res.ok) return mostrarAlerta(data.erro);
+
+        localStorage.setItem('cliente', JSON.stringify(data.cliente));
+        mostrarAlerta('Login realizado! Redirecionando...', 'success');
+        setTimeout(() => window.location.href = 'minha-conta.html', 1000);
+    } catch (err) {
+        mostrarAlerta('Erro ao conectar com o servidor.');
+    }
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') fazerLogin();
+});
+
+// Se já estiver logado, redireciona direto
+window.onload = () => {
+    if (localStorage.getItem('cliente')) window.location.href = 'minha-conta.html';
+};
+</script>
 
 </body>
 </html>

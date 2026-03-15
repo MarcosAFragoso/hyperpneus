@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Criar Conta - HyperPneus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark mb-5">
+  <div class="container">
+    <a class="navbar-brand" href="index.html">HyperPneus</a>
+  </div>
+</nav>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div id="alerta" class="alert d-none mb-3"></div>
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h3 class="mb-1 fw-bold">Criar nova conta</h3>
+                    <p class="text-muted mb-4">Cadastre-se para acompanhar pedidos e facilitar suas compras.</p>
+
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Nome <span class="text-danger">*</span></label>
+                            <input type="text" id="cadNome" class="form-control" placeholder="João">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Sobrenome <span class="text-danger">*</span></label>
+                            <input type="text" id="cadSobrenome" class="form-control" placeholder="Silva">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">CPF <span class="text-danger">*</span></label>
+                        <input type="text" id="cadCpf" class="form-control" placeholder="000.000.000-00" maxlength="14" oninput="formatarCPF(this)">
+                        <div class="form-text text-muted">Somente números, 11 dígitos.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">E-mail <span class="text-danger">*</span></label>
+                        <input type="email" id="cadEmail" class="form-control" placeholder="seu@email.com">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Senha <span class="text-danger">*</span></label>
+                        <input type="password" id="cadSenha" class="form-control" placeholder="Mínimo 8 caracteres">
+                        <div id="forca" class="form-text"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Confirmar Senha <span class="text-danger">*</span></label>
+                        <input type="password" id="cadConfirmar" class="form-control" placeholder="Repita a senha">
+                    </div>
+
+                    <div class="alert alert-info py-2 small mb-4">
+                        <i class="fas fa-car me-1"></i> Você poderá cadastrar seu veículo após o login.
+                    </div>
+
+                    <button onclick="criarConta()" class="btn btn-dark w-100 py-2 fw-bold">CRIAR CONTA</button>
+
+                    <div class="text-center mt-3">
+                        <span class="text-muted small">Já tem conta? </span>
+                        <a href="login.html" class="small fw-bold">Fazer login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = '';
+
+function mostrarAlerta(msg, tipo = 'danger') {
+    const el = document.getElementById('alerta');
+    el.className = `alert alert-${tipo}`;
+    el.textContent = msg;
+    el.classList.remove('d-none');
+    window.scrollTo(0, 0);
+    if (tipo !== 'success') setTimeout(() => el.classList.add('d-none'), 5000);
+}
+
+function formatarCPF(input) {
+    let v = input.value.replace(/\D/g, '').slice(0, 11);
+    if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, '$1.$2.$3-$4');
+    else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+    else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, '$1.$2');
+    input.value = v;
+
+    // Indicador visual
+    const digits = input.value.replace(/\D/g, '');
+    input.classList.toggle('is-invalid', digits.length > 0 && digits.length < 11);
+    input.classList.toggle('is-valid', digits.length === 11);
+}
+
+function validarCPF(cpf) {
+    const c = cpf.replace(/\D/g, '');
+    if (c.length !== 11 || /^(\d)\1+$/.test(c)) return false;
+    let sum = 0;
+    for (let i = 0; i < 9; i++) sum += parseInt(c[i]) * (10 - i);
+    let r = (sum * 10) % 11;
+    if (r === 10 || r === 11) r = 0;
+    if (r !== parseInt(c[9])) return false;
+    sum = 0;
+    for (let i = 0; i < 10; i++) sum += parseInt(c[i]) * (11 - i);
+    r = (sum * 10) % 11;
+    if (r === 10 || r === 11) r = 0;
+    return r === parseInt(c[10]);
+}
+
+document.getElementById('cadSenha').addEventListener('input', function() {
+    const s = this.value;
+    const el = document.getElementById('forca');
+    if (!s) { el.textContent = ''; return; }
+    let forca = 0;
+    if (s.length >= 8) forca++;
+    if (/[A-Z]/.test(s)) forca++;
+    if (/[0-9]/.test(s)) forca++;
+    if (/[^A-Za-z0-9]/.test(s)) forca++;
+    const niveis = ['', 'text-danger', 'text-warning', 'text-info', 'text-success'];
+    const labels = ['', 'Fraca', 'Regular', 'Boa', 'Forte'];
+    el.className = `form-text ${niveis[forca]}`;
+    el.textContent = `Força da senha: ${labels[forca]}`;
+});
+
+async function criarConta() {
+    const nome = document.getElementById('cadNome').value.trim();
+    const sobrenome = document.getElementById('cadSobrenome').value.trim();
+    const cpf = document.getElementById('cadCpf').value;
+    const email = document.getElementById('cadEmail').value.trim();
+    const senha = document.getElementById('cadSenha').value;
+    const confirmar = document.getElementById('cadConfirmar').value;
+
+    if (!nome || !sobrenome || !cpf || !email || !senha || !confirmar)
+        return mostrarAlerta('Preencha todos os campos obrigatórios.');
+
+    if (!validarCPF(cpf))
+        return mostrarAlerta('CPF inválido. Verifique os dígitos informados.');
+
+    if (senha.length < 8)
+        return mostrarAlerta('A senha deve ter no mínimo 8 caracteres.');
+
+    if (senha !== confirmar)
+        return mostrarAlerta('As senhas não coincidem.');
+
+    try {
+        const res = await fetch(`${API}/api/clientes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome, sobrenome, cpf, email, senha })
+        });
+        const data = await res.json();
+
+        if (!res.ok) return mostrarAlerta(data.erro);
+
+        // Limpa o formulário
+        document.getElementById('cadNome').value = '';
+        document.getElementById('cadSobrenome').value = '';
+        document.getElementById('cadCpf').value = '';
+        document.getElementById('cadEmail').value = '';
+        document.getElementById('cadSenha').value = '';
+        document.getElementById('cadConfirmar').value = '';
+
+        mostrarAlerta('Conta criada com sucesso! Redirecionando para o login...', 'success');
+        setTimeout(() => window.location.href = 'login.html', 2000);
+    } catch (err) {
+        mostrarAlerta('Erro ao criar conta. Tente novamente.');
+    }
+}
+</script>
+
+</body>
+</html>
