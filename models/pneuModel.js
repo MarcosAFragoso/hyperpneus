@@ -6,15 +6,16 @@ module.exports = {
       `INSERT INTO pneus 
         (marca, modelo, largura, perfil, aro, indice_carga, indice_velocidade, 
          tipo_desenho, dot, preco_custo, preco_venda, estoque, sku, ean,
-         inmetro_consumo, inmetro_aderencia, inmetro_ruido)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+         inmetro_consumo, inmetro_aderencia, inmetro_ruido, imagem_url)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
        RETURNING *`,
       [
         dados.marca, dados.modelo, dados.largura, dados.perfil, dados.aro,
         dados.indice_carga, dados.indice_velocidade, dados.tipo_desenho,
         dados.dot, dados.preco_custo, dados.preco_venda,
         dados.estoque || 0, dados.sku, dados.ean,
-        dados.inmetro_consumo, dados.inmetro_aderencia, dados.inmetro_ruido
+        dados.inmetro_consumo, dados.inmetro_aderencia, dados.inmetro_ruido,
+        dados.imagem_url || null
       ]
     );
     return rows[0];
@@ -47,14 +48,15 @@ module.exports = {
         marca=$1, modelo=$2, largura=$3, perfil=$4, aro=$5,
         indice_carga=$6, indice_velocidade=$7, tipo_desenho=$8,
         preco_custo=$9, preco_venda=$10, estoque=$11,
-        inmetro_consumo=$12, inmetro_aderencia=$13, inmetro_ruido=$14
-       WHERE id=$15 RETURNING *`,
+        inmetro_consumo=$12, inmetro_aderencia=$13, inmetro_ruido=$14,
+        imagem_url=$15
+       WHERE id=$16 RETURNING *`,
       [
         dados.marca, dados.modelo, dados.largura, dados.perfil, dados.aro,
         dados.indice_carga, dados.indice_velocidade, dados.tipo_desenho,
         dados.preco_custo, dados.preco_venda, dados.estoque,
         dados.inmetro_consumo, dados.inmetro_aderencia, dados.inmetro_ruido,
-        id
+        dados.imagem_url || null, id
       ]
     );
     return rows[0];

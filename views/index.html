@@ -2,135 +2,286 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>HyperPneus - Home</title>
+    <title>HyperPneus — Encontre o pneu ideal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+        .card-pneu { transition: transform .2s, box-shadow .2s; cursor: pointer; }
+        .card-pneu:hover { transform: translateY(-6px); box-shadow: 0 12px 24px rgba(0,0,0,.15); }
+        .badge-oferta { position: absolute; top: 12px; left: 12px; }
+        .img-pneu { height: 200px; object-fit: contain; background: #f8f9fa; padding: 16px; }
+        .inmetro-badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .inmetro-A { background: #1a7a1a; color: #fff; }
+        .inmetro-B { background: #4da51a; color: #fff; }
+        .inmetro-C { background: #f5c518; color: #000; }
+        .inmetro-D { background: #f58018; color: #fff; }
+        .inmetro-E { background: #e03a1e; color: #fff; }
+        .preco-original { text-decoration: line-through; color: #999; font-size: 13px; }
+        .navbar-hyperpneus { background: #1a1a2e !important; }
+        .btn-buscar { background: #e8b84b; border: none; color: #1a1a2e; font-weight: bold; }
+        .btn-buscar:hover { background: #d4a535; color: #1a1a2e; }
+        .section-title { border-left: 4px solid #e8b84b; padding-left: 12px; }
+        .chatbot-btn { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: #0f3460; border: none; color: #fff; font-size: 22px; box-shadow: 0 4px 12px rgba(0,0,0,.3); z-index: 999; }
+        .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    </style>
 </head>
 <body class="bg-light">
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-  <div class="container">
-    <a class="navbar-brand" href="index.html"><i class="fas fa-car"></i> HyperPneus</a>
-    <div class="d-flex align-items-center gap-2">
-      <a href="admin.html" class="btn btn-sm btn-outline-secondary">Area Admin</a>
-      <a href="carrinho.html" class="btn btn-outline-light position-relative">
-          <i class="fas fa-shopping-cart"></i> Carrinho
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
-      </a>
-      <a href="login.html" class="btn btn-warning"><i class="fas fa-user"></i> Minha Conta</a>
+<nav class="navbar navbar-dark navbar-hyperpneus py-3">
+    <div class="container">
+        <a class="navbar-brand fw-bold fs-4" href="index.html">
+            <i class="fas fa-car-side me-2"></i>HyperPneus
+        </a>
+        <div class="d-flex align-items-center gap-2">
+            <span id="navUsuario" class="text-white small me-2"></span>
+            <a href="admin.html" class="btn btn-outline-light btn-sm">
+                <i class="fas fa-cogs"></i> Admin
+            </a>
+            <a href="carrinho.html" class="btn btn-outline-light btn-sm position-relative">
+                <i class="fas fa-shopping-cart"></i> Carrinho
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark" id="badgeCarrinho" style="display:none">0</span>
+            </a>
+            <div id="navLogin">
+                <a href="login.html" class="btn btn-warning btn-sm fw-bold">
+                    <i class="fas fa-user me-1"></i> Minha Conta
+                </a>
+            </div>
+            <div id="navLogado" style="display:none">
+                <div class="dropdown">
+                    <button class="btn btn-warning btn-sm fw-bold dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-user me-1"></i> <span id="navNome"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="minha-conta.html"><i class="fas fa-box me-2"></i>Minha Conta</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#" onclick="sair()"><i class="fas fa-sign-out-alt me-2"></i>Sair</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </nav>
 
 <!-- Hero / Busca -->
-<div class="bg-primary text-white py-5 text-center shadow">
+<section class="hero py-5">
     <div class="container">
-        <h1 class="display-4 fw-bold">Encontre o pneu ideal</h1>
-        <p class="lead">Busque por medida ou compatibilidade veicular</p>
-        <div class="card p-4 mx-auto text-dark shadow-lg" style="max-width: 700px;">
-            <div class="row g-2">
-                <div class="col-md-4">
-                    <label class="form-label text-start w-100 fw-bold">Largura</label>
-                    <select class="form-select"><option>175</option><option>195</option><option>205</option></select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label text-start w-100 fw-bold">Perfil</label>
-                    <select class="form-select"><option>55</option><option>60</option><option>65</option></select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label text-start w-100 fw-bold">Aro</label>
-                    <select class="form-select"><option>14</option><option>15</option><option>16</option></select>
-                </div>
-                <div class="col-12 mt-3">
-                    <button class="btn btn-success w-100 py-2 fw-bold" onclick="alert('Buscando pneus...')">BUSCAR OFERTAS</button>
-                </div>
-            </div>
-            <div class="mt-2 text-end">
-                <a href="#" class="small text-decoration-none">Ou busque pelo seu carro <i class="fas fa-arrow-right"></i></a>
-            </div>
+        <div class="text-center text-white mb-4">
+            <h1 class="fw-bold display-5">Encontre o pneu ideal</h1>
+            <p class="text-white-50">Busque por medida ou compatibilidade veicular</p>
         </div>
-    </div>
-</div>
-
-<!-- Vitrine -->
-<div class="container my-5">
-    <h3 class="mb-4 border-start border-4 border-primary ps-3">Destaques da Semana</h3>
-    <div class="row g-4">
-        <!-- Produto 1 -->
-        <div class="col-md-3">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body text-center d-flex flex-column">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_Kkh-yQ6JbV3ZqgXU_0VvX4VqXyXyXyXyXw&s" class="img-fluid mb-3 mx-auto" style="height: 150px;" alt="Pneu">
-                    <h5 class="card-title">Pirelli Cinturato P1</h5>
-                    <p class="text-muted small">175/65 R14 82T</p>
-                    <div class="mt-auto">
-                        <h4 class="text-primary fw-bold">R$ 459,90</h4>
-                        <a href="detalhe.html" class="btn btn-outline-primary w-100">Ver Detalhes</a>
+        <div class="card shadow-lg border-0 mx-auto" style="max-width: 700px;">
+            <div class="card-body p-4">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Largura</label>
+                        <select id="filtroLargura" class="form-select">
+                            <option value="">Todas</option>
+                            <option>155</option><option>165</option><option>175</option>
+                            <option>185</option><option>195</option><option>205</option>
+                            <option>215</option><option>225</option><option>235</option>
+                            <option>245</option><option>255</option><option>265</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Perfil</label>
+                        <select id="filtroPerfil" class="form-select">
+                            <option value="">Todos</option>
+                            <option>35</option><option>40</option><option>45</option>
+                            <option>50</option><option>55</option><option>60</option>
+                            <option>65</option><option>70</option><option>75</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Aro</label>
+                        <select id="filtroAro" class="form-select">
+                            <option value="">Todos</option>
+                            <option>13</option><option>14</option><option>15</option>
+                            <option>16</option><option>17</option><option>18</option>
+                            <option>19</option><option>20</option><option>21</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-buscar w-100 py-2" onclick="buscarPneus()">
+                            <i class="fas fa-search me-1"></i> Buscar
+                        </button>
                     </div>
                 </div>
-            </div>
-        </div>
-        <!-- Produto 2 -->
-        <div class="col-md-3">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body text-center d-flex flex-column">
-                    <div class="badge bg-danger position-absolute top-0 end-0 m-2">Oferta</div>
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_Kkh-yQ6JbV3ZqgXU_0VvX4VqXyXyXyXyXw&s" class="img-fluid mb-3 mx-auto" style="height: 150px;" alt="Pneu">
-                    <h5 class="card-title">Michelin Primacy 4</h5>
-                    <p class="text-muted small">205/55 R16 91V</p>
-                    <div class="mt-auto">
-                        <small class="text-decoration-line-through text-muted">R$ 800,00</small>
-                        <h4 class="text-primary fw-bold">R$ 689,00</h4>
-                        <a href="detalhe.html" class="btn btn-outline-primary w-100">Ver Detalhes</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Produto 3 -->
-        <div class="col-md-3">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body text-center d-flex flex-column">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_Kkh-yQ6JbV3ZqgXU_0VvX4VqXyXyXyXyXw&s" class="img-fluid mb-3 mx-auto" style="height: 150px;" alt="Pneu">
-                    <h5 class="card-title">Goodyear Efficient</h5>
-                    <p class="text-muted small">195/55 R15 85H</p>
-                    <div class="mt-auto">
-                        <h4 class="text-primary fw-bold">R$ 520,50</h4>
-                        <a href="detalhe.html" class="btn btn-outline-primary w-100">Ver Detalhes</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Produto 4 -->
-        <div class="col-md-3">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body text-center d-flex flex-column">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_Kkh-yQ6JbV3ZqgXU_0VvX4VqXyXyXyXyXw&s" class="img-fluid mb-3 mx-auto" style="height: 150px;" alt="Pneu">
-                    <h5 class="card-title">Bridgestone Turanza</h5>
-                    <p class="text-muted small">225/45 R17 94W</p>
-                    <div class="mt-auto">
-                        <h4 class="text-primary fw-bold">R$ 950,00</h4>
-                        <a href="detalhe.html" class="btn btn-outline-primary w-100">Ver Detalhes</a>
-                    </div>
+                <div class="text-center mt-3">
+                    <a href="#" class="small text-muted">
+                        <i class="fas fa-car me-1"></i> Ou busque pelo seu carro →
+                    </a>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<!-- Botão Flutuante da IA (REQUISITO DA AULA) -->
-<div style="position: fixed; bottom: 30px; right: 30px; z-index: 1000;">
-    <button class="btn btn-primary rounded-circle p-3 shadow-lg d-flex align-items-center justify-content-center" 
-            style="width: 70px; height: 70px;"
-            onclick="alert('Olá! Sou a IA da HyperPneus.\n\nPosso recomendar pneus baseados no seu estilo de direção.\nEx: Você dirige na chuva? Pega estrada de terra?')">
-        <i class="fas fa-robot fa-2x"></i>
-    </button>
-</div>
+<!-- Resultados da busca (oculto por padrão) -->
+<section class="container my-5" id="secResultados" style="display:none">
+    <h4 class="section-title mb-4">Resultados da busca</h4>
+    <div class="row g-4" id="gridResultados"></div>
+</section>
+
+<!-- Destaques da semana -->
+<section class="container my-5">
+    <h4 class="section-title mb-4">Destaques da Semana</h4>
+    <div class="row g-4" id="gridDestaques">
+        <!-- Skeletons enquanto carrega -->
+        <div class="col-md-3"><div class="skeleton" style="height:320px"></div></div>
+        <div class="col-md-3"><div class="skeleton" style="height:320px"></div></div>
+        <div class="col-md-3"><div class="skeleton" style="height:320px"></div></div>
+        <div class="col-md-3"><div class="skeleton" style="height:320px"></div></div>
+    </div>
+</section>
+
+<!-- Por que escolher a HyperPneus -->
+<section class="bg-white py-5 border-top">
+    <div class="container">
+        <div class="row text-center g-4">
+            <div class="col-md-3">
+                <i class="fas fa-truck fa-2x text-warning mb-2"></i>
+                <h6 class="fw-bold">Frete Grátis</h6>
+                <p class="text-muted small">Em compras acima de R$ 500</p>
+            </div>
+            <div class="col-md-3">
+                <i class="fas fa-tools fa-2x text-warning mb-2"></i>
+                <h6 class="fw-bold">Instalação Parceira</h6>
+                <p class="text-muted small">Oficinas próximas a você</p>
+            </div>
+            <div class="col-md-3">
+                <i class="fas fa-shield-alt fa-2x text-warning mb-2"></i>
+                <h6 class="fw-bold">Garantia de Fábrica</h6>
+                <p class="text-muted small">Produtos 100% originais</p>
+            </div>
+            <div class="col-md-3">
+                <i class="fas fa-exchange-alt fa-2x text-warning mb-2"></i>
+                <h6 class="fw-bold">Troca Fácil</h6>
+                <p class="text-muted small">30 dias para trocar</p>
+            </div>
+        </div>
+    </div>
+</section>
 
 <!-- Footer -->
-<footer class="bg-dark text-white text-center py-3 mt-5">
-    <p class="mb-0">© 2026 HyperPneus - Projeto Acadêmico LES</p>
+<footer class="bg-dark text-white py-4 mt-5">
+    <div class="container text-center">
+        <p class="mb-0 text-white-50 small">© 2026 HyperPneus — Todos os direitos reservados</p>
+    </div>
 </footer>
+
+<!-- Chatbot -->
+<button class="chatbot-btn" title="Assistente IA">
+    <i class="fas fa-robot"></i>
+</button>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '';
+
+// Inmetro badge
+function inmetroBadge(letra) {
+    if (!letra) return '';
+    return `<span class="inmetro-badge inmetro-${letra}">${letra}</span>`;
+}
+
+// Card de pneu
+function cardPneu(p) {
+    const temOferta = p.preco_venda < p.preco_custo * 1.3;
+    const imgSrc = p.imagem_url || `https://placehold.co/300x300/1a1a2e/ffffff?text=${encodeURIComponent(p.marca)}`;
+    return `
+        <div class="col-md-3">
+            <div class="card card-pneu h-100 border-0 shadow-sm" onclick="window.location='detalhe.html?id=${p.id}'">
+                <div class="position-relative">
+                    ${temOferta ? '<span class="badge bg-danger badge-oferta">Oferta</span>' : ''}
+                    <img src="${imgSrc}" class="card-img-top img-pneu"
+                         alt="${p.marca} ${p.modelo}"
+                         onerror="this.src='https://placehold.co/300x300/1a1a2e/ffffff?text=${encodeURIComponent(p.marca)}'">
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <p class="text-muted small mb-1">${p.marca}</p>
+                    <h6 class="fw-bold mb-1">${p.modelo}</h6>
+                    <p class="text-muted small mb-2">${p.largura}/${p.perfil} R${p.aro} ${p.indice_carga}${p.indice_velocidade}</p>
+                    <div class="mb-2">
+                        ${p.inmetro_consumo ? `<span class="me-1">🔋${inmetroBadge(p.inmetro_consumo)}</span>` : ''}
+                        ${p.inmetro_aderencia ? `<span class="me-1">💧${inmetroBadge(p.inmetro_aderencia)}</span>` : ''}
+                        ${p.inmetro_ruido ? `<span class="text-muted small">🔊 ${p.inmetro_ruido}dB</span>` : ''}
+                    </div>
+                    <div class="mt-auto">
+                        ${temOferta ? `<p class="preco-original">R$ ${(p.preco_custo * 1.5).toFixed(2).replace('.',',')}</p>` : ''}
+                        <p class="text-success fw-bold fs-5 mb-1">R$ ${parseFloat(p.preco_venda).toFixed(2).replace('.',',')}</p>
+                        <p class="text-muted small mb-2">Em até 10x de R$ ${(p.preco_venda/10).toFixed(2).replace('.',',')} sem juros</p>
+                        <button class="btn btn-outline-dark btn-sm w-100" onclick="event.stopPropagation(); window.location='detalhe.html?id=${p.id}'">
+                            Ver Detalhes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+}
+
+async function carregarDestaques() {
+    try {
+        const res = await fetch(`${API}/api/pneus?ativo=true`);
+        const pneus = await res.json();
+        const grid = document.getElementById('gridDestaques');
+        if (!pneus.length) {
+            grid.innerHTML = '<p class="text-muted">Nenhum produto disponível.</p>';
+            return;
+        }
+        grid.innerHTML = pneus.slice(0, 4).map(cardPneu).join('');
+    } catch (err) {
+        document.getElementById('gridDestaques').innerHTML = '<p class="text-muted">Erro ao carregar produtos.</p>';
+    }
+}
+
+async function buscarPneus() {
+    const largura = document.getElementById('filtroLargura').value;
+    const perfil = document.getElementById('filtroPerfil').value;
+    const aro = document.getElementById('filtroAro').value;
+
+    const params = new URLSearchParams();
+    if (largura) params.append('largura', largura);
+    if (perfil) params.append('perfil', perfil);
+    if (aro) params.append('aro', aro);
+
+    try {
+        const res = await fetch(`${API}/api/pneus?${params}`);
+        const pneus = await res.json();
+        const sec = document.getElementById('secResultados');
+        const grid = document.getElementById('gridResultados');
+        sec.style.display = 'block';
+
+        if (!pneus.length) {
+            grid.innerHTML = '<div class="col-12"><p class="text-muted">Nenhum pneu encontrado para essa medida.</p></div>';
+        } else {
+            grid.innerHTML = pneus.map(cardPneu).join('');
+        }
+
+        sec.scrollIntoView({ behavior: 'smooth' });
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function sair() {
+    localStorage.removeItem('cliente');
+    window.location.reload();
+}
+
+window.onload = () => {
+    // Verifica login
+    const cliente = JSON.parse(localStorage.getItem('cliente'));
+    if (cliente) {
+        document.getElementById('navLogin').style.display = 'none';
+        document.getElementById('navLogado').style.display = 'block';
+        document.getElementById('navNome').textContent = cliente.nome;
+    }
+    carregarDestaques();
+};
+</script>
 
 </body>
 </html>

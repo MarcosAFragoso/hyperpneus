@@ -56,4 +56,5 @@ module.exports = {
       res.status(500).json({ erro: err.message });
     }
   }
+  
 };
