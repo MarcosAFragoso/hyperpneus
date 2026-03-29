@@ -221,7 +221,7 @@
 <script>
 // ── Estado global ──────────────────────────────────────────────
 let cliente = null;
-let itensCarrinho = [];
+let itensCarrinho =[];
 let subtotal = 0;
 let freteSelecionado = { tipo: 'PAC', valor: 15.00, dias: 7 };
 let cupomAplicado = null;
@@ -260,22 +260,41 @@ async function init() {
         return;
     }
 
-    // Migra carrinho anônimo se houver
+    // Migra carrinho anônimo se houver (AGORA COM PROTEÇÃO)
     const carrinhoLocal = JSON.parse(localStorage.getItem('carrinho') || '[]');
     if (carrinhoLocal.length) {
-        await fetch('/api/pedidos/migrar-carrinho', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ itens: carrinhoLocal })
-        });
-        localStorage.removeItem('carrinho');
+        try {
+            const resMigracao = await fetch('/api/pedidos/migrar-carrinho', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itens: carrinhoLocal })
+            });
+            
+            // Só apaga o carrinho do navegador se o servidor confirmou que salvou
+            if (resMigracao.ok) {
+                localStorage.removeItem('carrinho');
+            }
+        } catch (erro) {
+            console.error("Aviso: Falha na migração do carrinho para o banco", erro);
+        }
     }
 
     // Busca carrinho do banco
-    const resCarrinho = await fetch('/api/carrinho');
-    const dadosCarrinho = await resCarrinho.json();
-    itensCarrinho = dadosCarrinho.itens || [];
+    try {
+        const resCarrinho = await fetch('/api/carrinho');
+        const dadosCarrinho = await resCarrinho.json();
+        itensCarrinho = dadosCarrinho.itens ||[];
+    } catch (erro) {
+        console.error("Aviso: Falha ao buscar carrinho do banco", erro);
+        itensCarrinho =[];
+    }
 
+    // Fallback de Segurança: Se a API não retornou nada, tenta usar o localStorage
+    if (!itensCarrinho.length && carrinhoLocal.length) {
+        itensCarrinho = carrinhoLocal;
+    }
+
+    // Se continuar vazio, interrompe
     if (!itensCarrinho.length) {
         mostrarAlerta('Seu carrinho está vazio! <a href="index.html">Voltar à loja</a>');
         document.getElementById('btnFinalizar').disabled = true;
@@ -304,36 +323,40 @@ async function init() {
 
 // ── Endereços ──────────────────────────────────────────────────
 async function carregarEnderecos() {
-    const res = await fetch(`/api/clientes/${cliente.id}/enderecos`);
-    const enderecos = await res.json();
-    const lista = document.getElementById('listaEnderecos');
+    try {
+        const res = await fetch(`/api/clientes/${cliente.id}/enderecos`);
+        const enderecos = await res.json();
+        const lista = document.getElementById('listaEnderecos');
 
-    if (!enderecos.length) {
-        lista.innerHTML = '<div class="col-12"><p class="text-muted">Nenhum endereço cadastrado. Adicione um abaixo.</p></div>';
-        return;
-    }
+        if (!enderecos.length) {
+            lista.innerHTML = '<div class="col-12"><p class="text-muted">Nenhum endereço cadastrado. Adicione um abaixo.</p></div>';
+            return;
+        }
 
-    lista.innerHTML = enderecos.map(e => `
-        <div class="col-md-6">
-            <div class="card-endereco card p-3 ${enderecoSelecionado?.id === e.id ? 'selecionado' : ''}"
-                 onclick="selecionarEndereco(this, ${JSON.stringify(e).replace(/"/g, '&quot;')})">
-                <div class="d-flex justify-content-between">
-                    <strong>${e.nome_destinatario || 'Endereço'}</strong>
-                    ${enderecoSelecionado?.id === e.id ? '<i class="fas fa-check-circle text-success"></i>' : ''}
+        lista.innerHTML = enderecos.map(e => `
+            <div class="col-md-6">
+                <div class="card-endereco card p-3 ${enderecoSelecionado?.id === e.id ? 'selecionado' : ''}"
+                     onclick="selecionarEndereco(this, ${JSON.stringify(e).replace(/"/g, '&quot;')})">
+                    <div class="d-flex justify-content-between">
+                        <strong>${e.nome_destinatario || 'Endereço'}</strong>
+                        ${enderecoSelecionado?.id === e.id ? '<i class="fas fa-check-circle text-success"></i>' : ''}
+                    </div>
+                    <p class="mb-0 small text-muted mt-1">
+                        ${e.logradouro}, ${e.numero}${e.complemento ? ', ' + e.complemento : ''}<br>
+                        ${e.bairro} — ${e.cidade}/${e.estado}<br>
+                        CEP: ${e.cep}
+                    </p>
                 </div>
-                <p class="mb-0 small text-muted mt-1">
-                    ${e.logradouro}, ${e.numero}${e.complemento ? ', ' + e.complemento : ''}<br>
-                    ${e.bairro} — ${e.cidade}/${e.estado}<br>
-                    CEP: ${e.cep}
-                </p>
             </div>
-        </div>
-    `).join('');
+        `).join('');
 
-    // Seleciona o primeiro automaticamente
-    if (enderecos.length && !enderecoSelecionado) {
-        enderecoSelecionado = enderecos[0];
-        lista.querySelector('.card-endereco')?.classList.add('selecionado');
+        // Seleciona o primeiro automaticamente
+        if (enderecos.length && !enderecoSelecionado) {
+            enderecoSelecionado = enderecos[0];
+            lista.querySelector('.card-endereco')?.classList.add('selecionado');
+        }
+    } catch(erro) {
+        console.error("Erro ao carregar endereços", erro);
     }
 }
 
@@ -394,38 +417,42 @@ async function salvarEndereco() {
 
 // ── Cartões ────────────────────────────────────────────────────
 async function carregarCartoes() {
-    const res = await fetch(`/api/clientes/${cliente.id}/cartoes`);
-    const cartoes = await res.json();
+    try {
+        const res = await fetch(`/api/clientes/${cliente.id}/cartoes`);
+        const cartoes = await res.json();
 
-    ['1', '2'].forEach(n => {
-        const lista = document.getElementById(`listaCartoes${n}`);
-        if (!cartoes.length) {
-            lista.innerHTML = '<div class="col-12"><p class="text-muted small">Nenhum cartão cadastrado. Adicione em <a href="minha-conta.html">Minha Conta</a>.</p></div>';
-            return;
-        }
-        lista.innerHTML = cartoes.map(c => `
-            <div class="col-12">
-                <div class="card-cartao card p-2 ${(n==='1' ? cartao1Selecionado : cartao2Selecionado)?.id === c.id ? 'selecionado' : ''}"
-                     onclick="selecionarCartao(${n}, this, ${JSON.stringify(c).replace(/"/g, '&quot;')})">
-                    <div class="d-flex align-items-center gap-3">
-                        <i class="fas fa-credit-card fa-lg text-primary"></i>
-                        <div>
-                            <strong>${c.bandeira}</strong> **** ${c.numero_final}
-                            <br><small class="text-muted">${c.nome_impresso}</small>
+        ['1', '2'].forEach(n => {
+            const lista = document.getElementById(`listaCartoes${n}`);
+            if (!cartoes.length) {
+                lista.innerHTML = '<div class="col-12"><p class="text-muted small">Nenhum cartão cadastrado. Adicione em <a href="minha-conta.html">Minha Conta</a>.</p></div>';
+                return;
+            }
+            lista.innerHTML = cartoes.map(c => `
+                <div class="col-12">
+                    <div class="card-cartao card p-2 ${(n==='1' ? cartao1Selecionado : cartao2Selecionado)?.id === c.id ? 'selecionado' : ''}"
+                         onclick="selecionarCartao(${n}, this, ${JSON.stringify(c).replace(/"/g, '&quot;')})">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="fas fa-credit-card fa-lg text-primary"></i>
+                            <div>
+                                <strong>${c.bandeira}</strong> **** ${c.numero_final}
+                                <br><small class="text-muted">${c.nome_impresso}</small>
+                            </div>
+                            ${(n==='1' ? cartao1Selecionado : cartao2Selecionado)?.id === c.id
+                                ? '<i class="fas fa-check-circle text-success ms-auto"></i>' : ''}
                         </div>
-                        ${(n==='1' ? cartao1Selecionado : cartao2Selecionado)?.id === c.id
-                            ? '<i class="fas fa-check-circle text-success ms-auto"></i>' : ''}
                     </div>
                 </div>
-            </div>
-        `).join('');
-    });
+            `).join('');
+        });
 
-    // Seleciona principal automaticamente
-    const principal = cartoes.find(c => c.principal) || cartoes[0];
-    if (principal && !cartao1Selecionado) {
-        cartao1Selecionado = principal;
-        await carregarCartoes();
+        // Seleciona principal automaticamente
+        const principal = cartoes.find(c => c.principal) || cartoes[0];
+        if (principal && !cartao1Selecionado) {
+            cartao1Selecionado = principal;
+            await carregarCartoes(); // re-renderiza para mostrar como selecionado
+        }
+    } catch(erro) {
+        console.error("Erro ao carregar cartões", erro);
     }
 }
 
@@ -540,23 +567,26 @@ async function finalizarPedido() {
     if (!cartao1Selecionado) return mostrarAlerta('Selecione um cartão de pagamento.');
 
     const total = calcularTotal();
-    let cartoes = [];
+    let cartoes =[];
 
     if (usandoDoisCartoes) {
         if (!cartao2Selecionado) return mostrarAlerta('Selecione o segundo cartão.');
         if (cartao1Selecionado.id === cartao2Selecionado.id)
             return mostrarAlerta('Selecione cartões diferentes para cada campo.');
+        
         const v1 = parseFloat(document.getElementById('valorCartao1').value);
         const v2 = parseFloat(document.getElementById('valorCartao2').value);
+        
         if (!v1 || v1 < 10) return mostrarAlerta('Valor mínimo por cartão é R$ 10,00.');
         if (Math.abs(v1 + v2 - total) > 0.01)
             return mostrarAlerta('A soma dos cartões não corresponde ao total.');
-        cartoes = [
+        
+        cartoes =[
             { cartao_id: cartao1Selecionado.id, valor: v1 },
             { cartao_id: cartao2Selecionado.id, valor: v2 }
         ];
     } else {
-        cartoes = [{ cartao_id: cartao1Selecionado.id, valor: total }];
+        cartoes =[{ cartao_id: cartao1Selecionado.id, valor: total }];
     }
 
     const btn = document.getElementById('btnFinalizar');
@@ -577,10 +607,11 @@ async function finalizarPedido() {
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.erro);
+        if (!res.ok) throw new Error(data.erro || "Erro interno do servidor.");
 
-        // Limpa cupom salvo
+        // Limpa cupom salvo e o carrinho local após comprar
         localStorage.removeItem('cupomCarrinho');
+        localStorage.removeItem('carrinho');
 
         // Redireciona para confirmação
         window.location.href = `minha-conta.html?pedido=${data.pedido_id}&sucesso=1`;
