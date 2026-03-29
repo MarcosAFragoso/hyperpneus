@@ -2,7 +2,7 @@ const pool = require('../config/database');
 
 module.exports = {
 
-  async finalizar(clienteId, { enderecoId, cartoes, cupomCodigo }) {
+  async finalizar(clienteId, { enderecoId, cartoes, cupomCodigo, freteValor }) {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
@@ -27,7 +27,7 @@ module.exports = {
       const subtotal = itens.reduce((s, i) => s + i.preco_unitario * i.quantidade, 0);
 
       // 4. Calcula frete (simulado por CEP — R$15 fixo por ora)
-      const frete = 15.00;
+      const frete = parseFloat(freteValor) || 15.00;
 
       // 5. Aplica cupom se informado
       let cupomId = null;
