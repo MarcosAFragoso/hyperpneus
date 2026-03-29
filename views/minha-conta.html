@@ -28,11 +28,16 @@
             <!-- Sidebar -->
             <div class="col-md-3">
                 <div class="list-group shadow-sm">
-                    <a href="#" onclick="mostrarAba('pedidos')" class="list-group-item list-group-item-action active" id="aba-pedidos"><i class="fas fa-box me-2"></i> Meus Pedidos</a>
-                    <a href="#" onclick="mostrarAba('garagem')" class="list-group-item list-group-item-action" id="aba-garagem"><i class="fas fa-car me-2"></i> Minha Garagem</a>
-                    <a href="#" onclick="mostrarAba('cartoes')" class="list-group-item list-group-item-action" id="aba-cartoes"><i class="fas fa-credit-card me-2"></i> Meus Cartões</a>
-                    <a href="#" onclick="mostrarAba('enderecos')" class="list-group-item list-group-item-action" id="aba-enderecos"><i class="fas fa-map-marker-alt me-2"></i> Meus Endereços</a>
-                    <a href="#" onclick="mostrarAba('dados')" class="list-group-item list-group-item-action" id="aba-dados"><i class="fas fa-user-cog me-2"></i> Dados Pessoais</a>
+                    <a href="#" onclick="mostrarAba('pedidos')" class="list-group-item list-group-item-action active"
+                        id="aba-pedidos"><i class="fas fa-box me-2"></i> Meus Pedidos</a>
+                    <a href="#" onclick="mostrarAba('garagem')" class="list-group-item list-group-item-action"
+                        id="aba-garagem"><i class="fas fa-car me-2"></i> Minha Garagem</a>
+                    <a href="#" onclick="mostrarAba('cartoes')" class="list-group-item list-group-item-action"
+                        id="aba-cartoes"><i class="fas fa-credit-card me-2"></i> Meus Cartões</a>
+                    <a href="#" onclick="mostrarAba('enderecos')" class="list-group-item list-group-item-action"
+                        id="aba-enderecos"><i class="fas fa-map-marker-alt me-2"></i> Meus Endereços</a>
+                    <a href="#" onclick="mostrarAba('dados')" class="list-group-item list-group-item-action"
+                        id="aba-dados"><i class="fas fa-user-cog me-2"></i> Dados Pessoais</a>
                 </div>
             </div>
 
@@ -57,7 +62,8 @@
                     <div class="card shadow-sm mb-3">
                         <div class="card-header bg-white d-flex justify-content-between align-items-center">
                             <strong><i class="fas fa-car me-2"></i>Meus Veículos</strong>
-                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalVeiculo">
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#modalVeiculo">
                                 <i class="fas fa-plus"></i> Adicionar
                             </button>
                         </div>
@@ -87,7 +93,8 @@
                     <div class="card shadow-sm mb-3">
                         <div class="card-header bg-white d-flex justify-content-between align-items-center">
                             <strong><i class="fas fa-map-marker-alt me-2"></i>Meus Endereços</strong>
-                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEndereco" onclick="limparModalEndereco()">
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#modalEndereco" onclick="limparModalEndereco()">
                                 <i class="fas fa-plus"></i> Adicionar
                             </button>
                         </div>
@@ -132,7 +139,8 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="mb-1">Encerrar Conta</h6>
-                                    <p class="text-muted small mb-0">Sua conta será inativada. Para reativá-la, entre em contato com o suporte.</p>
+                                    <p class="text-muted small mb-0">Sua conta será inativada. Para reativá-la, entre em
+                                        contato com o suporte.</p>
                                 </div>
                                 <button class="btn btn-outline-danger btn-sm" onclick="encerrarConta()">
                                     <i class="fas fa-user-slash me-1"></i> Encerrar Conta
@@ -155,10 +163,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-2"><input type="text" id="vMarca" class="form-control" placeholder="Marca (ex: Fiat)"></div>
-                    <div class="mb-2"><input type="text" id="vModelo" class="form-control" placeholder="Modelo (ex: Argo)"></div>
-                    <div class="mb-2"><input type="number" id="vAno" class="form-control" placeholder="Ano (ex: 2022)"></div>
-                    <div class="mb-2"><input type="text" id="vVersao" class="form-control" placeholder="Versão (ex: Drive 1.0)"></div>
+                    <div class="mb-2"><input type="text" id="vMarca" class="form-control"
+                            placeholder="Marca (ex: Fiat)"></div>
+                    <div class="mb-2"><input type="text" id="vModelo" class="form-control"
+                            placeholder="Modelo (ex: Argo)"></div>
+                    <div class="mb-2"><input type="number" id="vAno" class="form-control" placeholder="Ano (ex: 2022)">
+                    </div>
+                    <div class="mb-2"><input type="text" id="vVersao" class="form-control"
+                            placeholder="Versão (ex: Drive 1.0)"></div>
                     <div class="form-check mt-2">
                         <input type="checkbox" id="vPrincipal" class="form-check-input">
                         <label class="form-check-label">Definir como veículo principal</label>
@@ -191,9 +203,12 @@
                             <option>Hipercard</option>
                         </select>
                     </div>
-                    <div class="mb-2"><input type="text" id="cNome" class="form-control" placeholder="Nome impresso no cartão"></div>
-                    <div class="mb-2"><input type="text" id="cNumero" class="form-control" placeholder="Número do cartão" maxlength="19"></div>
-                    <div class="mb-2"><input type="text" id="cCvv" class="form-control" placeholder="CVV" maxlength="4"></div>
+                    <div class="mb-2"><input type="text" id="cNome" class="form-control"
+                            placeholder="Nome impresso no cartão"></div>
+                    <div class="mb-2"><input type="text" id="cNumero" class="form-control"
+                            placeholder="Número do cartão" maxlength="19"></div>
+                    <div class="mb-2"><input type="text" id="cCvv" class="form-control" placeholder="CVV" maxlength="4">
+                    </div>
                     <div class="form-check mt-2">
                         <input type="checkbox" id="cPrincipal" class="form-check-input">
                         <label class="form-check-label">Definir como cartão principal</label>
@@ -224,7 +239,8 @@
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">CEP <span class="text-danger">*</span></label>
-                            <input type="text" id="eCep" class="form-control" placeholder="00000-000" maxlength="9" oninput="formatarCEP(this)">
+                            <input type="text" id="eCep" class="form-control" placeholder="00000-000" maxlength="9"
+                                oninput="formatarCEP(this)">
                         </div>
                         <div class="col-md-3 mb-3 d-flex align-items-end">
                             <button class="btn btn-outline-primary w-100" onclick="buscarCEP()">
@@ -259,15 +275,33 @@
                             <label class="form-label">Estado <span class="text-danger">*</span></label>
                             <select id="eEstado" class="form-select">
                                 <option value="">UF</option>
-                                <option>AC</option><option>AL</option><option>AP</option>
-                                <option>AM</option><option>BA</option><option>CE</option>
-                                <option>DF</option><option>ES</option><option>GO</option>
-                                <option>MA</option><option>MT</option><option>MS</option>
-                                <option>MG</option><option>PA</option><option>PB</option>
-                                <option>PR</option><option>PE</option><option>PI</option>
-                                <option>RJ</option><option>RN</option><option>RS</option>
-                                <option>RO</option><option>RR</option><option>SC</option>
-                                <option>SP</option><option>SE</option><option>TO</option>
+                                <option>AC</option>
+                                <option>AL</option>
+                                <option>AP</option>
+                                <option>AM</option>
+                                <option>BA</option>
+                                <option>CE</option>
+                                <option>DF</option>
+                                <option>ES</option>
+                                <option>GO</option>
+                                <option>MA</option>
+                                <option>MT</option>
+                                <option>MS</option>
+                                <option>MG</option>
+                                <option>PA</option>
+                                <option>PB</option>
+                                <option>PR</option>
+                                <option>PE</option>
+                                <option>PI</option>
+                                <option>RJ</option>
+                                <option>RN</option>
+                                <option>RS</option>
+                                <option>RO</option>
+                                <option>RR</option>
+                                <option>SC</option>
+                                <option>SP</option>
+                                <option>SE</option>
+                                <option>TO</option>
                             </select>
                         </div>
                     </div>
@@ -301,10 +335,46 @@
             document.getElementById(`sec-${aba}`).classList.remove('d-none');
             document.getElementById(`aba-${aba}`).classList.add('active');
 
+            if (aba === 'pedidos') carregarPedidos();
             if (aba === 'garagem') carregarVeiculos();
             if (aba === 'cartoes') carregarCartoes();
             if (aba === 'enderecos') carregarEnderecos();
             if (aba === 'dados') carregarDados();
+
+        }
+
+        async function carregarPedidos() {
+            const res = await fetch(`${API}/api/pedidos`);
+            const pedidos = await res.json();
+
+            const lista = document.getElementById('listaPedidos');
+
+            if (!pedidos.length) {
+                lista.innerHTML = `
+            <p class="text-muted text-center py-3">
+                <i class="fas fa-box-open fa-2x d-block mb-2"></i>
+                Você ainda não possui pedidos.
+            </p>
+        `;
+                return;
+            }
+
+            lista.innerHTML = pedidos.map(p => `
+        <div class="border-bottom py-3">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <strong>Pedido #${p.id}</strong><br>
+                    <span class="text-muted">Status: ${p.status}</span>
+                </div>
+                <div class="text-end">
+                    <strong>R$ ${p.total.toFixed(2)}</strong><br>
+                    <button class="btn btn-outline-primary btn-sm mt-1" onclick="verDetalhes(${p.id})">
+                        Ver detalhes
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
         }
 
         async function carregarVeiculos() {
@@ -587,10 +657,14 @@
         window.onload = () => {
             const cliente = JSON.parse(localStorage.getItem('cliente'));
             if (!cliente) return window.location.href = 'login.html';
+
             clienteId = cliente.id;
             document.getElementById('nomeNav').textContent = `Olá, ${cliente.nome}!`;
+
+            carregarPedidos();
         };
     </script>
 
 </body>
+
 </html>

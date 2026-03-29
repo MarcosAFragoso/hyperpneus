@@ -9,75 +9,352 @@
 <body class="bg-light">
 
 <nav class="navbar navbar-dark bg-dark">
-  <div class="container">
+  <div class="container d-flex justify-content-between align-items-center">
     <a class="navbar-brand" href="index.html">HyperPneus</a>
+    <div id="navUsuario"></div>
   </div>
 </nav>
 
 <div class="container my-5">
-    <!-- TIMER DE BLOQUEIO (REQUISITO CRÍTICO) -->
-    <div class="alert alert-warning text-center fw-bold shadow-sm d-flex justify-content-center align-items-center gap-2">
-        <i class="fas fa-clock fa-lg"></i> 
-        <span>ESTOQUE RESERVADO POR:</span> 
-        <span class="text-danger fs-5" id="timer">04:59</span>
+
+    <!-- TIMER -->
+    <div id="timerBox" class="alert alert-warning text-center fw-bold shadow-sm d-flex justify-content-center align-items-center gap-2 d-none">
+        <i class="fas fa-clock fa-lg"></i>
+        <span>ESTOQUE RESERVADO POR:</span>
+        <span class="text-danger fs-5" id="timer">30:00</span>
     </div>
+
+    <div id="alerta" class="alert d-none mb-3"></div>
 
     <h3 class="mb-3">Seu Carrinho</h3>
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Produto</th>
-                        <th>Qtd</th>
-                        <th>Preço Unit.</th>
-                        <th>Total</th>
-                        <th>Ação</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_Kkh-yQ6JbV3ZqgXU_0VvX4VqXyXyXyXyXw&s" style="width: 60px;" class="me-3 border rounded">
-                                <div>
-                                    <strong>Pneu Pirelli Cinturato P1</strong><br>
-                                    <small class="text-muted">Aro 14</small>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <input type="number" value="4" class="form-control" style="width: 70px;">
-                        </td>
-                        <td>R$ 459,90</td>
-                        <td class="fw-bold">R$ 1.839,60</td>
-                        <td><button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+
+    <!-- CARRINHO VAZIO -->
+    <div id="carrinhoVazio" class="text-center py-5 d-none">
+        <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+        <h5 class="text-muted">Seu carrinho está vazio</h5>
+        <a href="index.html" class="btn btn-primary mt-3">Ver Pneus</a>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card p-3 shadow-sm">
-                <h5 class="card-title">Cupom de Troca / Desconto</h5>
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Digite seu código">
-                    <button class="btn btn-outline-secondary">Aplicar</button>
-                </div>
-                <small class="text-muted mt-2 d-block">Possui saldo de troca? Digite o código aqui.</small>
+    <!-- TABELA DO CARRINHO -->
+    <div id="carrinhoConteudo" class="d-none">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Produto</th>
+                            <th>Qtd</th>
+                            <th>Preço Unit.</th>
+                            <th>Total</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaItens"></tbody>
+                </table>
             </div>
         </div>
-        <div class="col-md-6 text-end">
-            <h4 class="mb-3">Total: <span class="text-primary">R$ 1.839,60</span></h4>
-            <div class="d-flex gap-2 justify-content-end">
-                <a href="index.html" class="btn btn-outline-secondary btn-lg">Continuar Comprando</a>
-                <a href="checkout.html" class="btn btn-success btn-lg px-5 shadow">FECHAR PEDIDO <i class="fas fa-check"></i></a>
+
+        <div class="row mt-4">
+            <!-- CUPOM -->
+            <div class="col-md-6">
+                <div class="card p-3 shadow-sm">
+                    <h5 class="card-title">Cupom de Desconto</h5>
+                    <div class="input-group">
+                        <input type="text" id="inputCupom" class="form-control" placeholder="Digite seu código">
+                        <button onclick="validarCupom()" class="btn btn-outline-secondary">Aplicar</button>
+                    </div>
+                    <div id="cupomFeedback" class="mt-2 small"></div>
+                </div>
+            </div>
+
+            <!-- RESUMO -->
+            <div class="col-md-6 text-end">
+                <div class="card p-3 shadow-sm">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <strong id="subtotal">R$ 0,00</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 text-success" id="linhaDesconto" style="display:none!important">
+                        <span>Desconto cupom:</span>
+                        <strong id="valorDesconto">- R$ 0,00</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="fs-5 fw-bold">Total:</span>
+                        <span class="fs-5 fw-bold text-primary" id="totalFinal">R$ 0,00</span>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="index.html" class="btn btn-outline-secondary">Continuar Comprando</a>
+                        <button onclick="irParaCheckout()" class="btn btn-success btn-lg px-4 shadow">
+                            FECHAR PEDIDO <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let itensCarrinho = [];
+let cupomAplicado = null;
+let timerInterval = null;
+
+// ── Utilitários ────────────────────────────────────────────────
+function mostrarAlerta(msg, tipo = 'danger') {
+    const el = document.getElementById('alerta');
+    el.className = `alert alert-${tipo}`;
+    el.textContent = msg;
+    el.classList.remove('d-none');
+    setTimeout(() => el.classList.add('d-none'), 4000);
+}
+
+function formatarMoeda(valor) {
+    return parseFloat(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function clienteLogado() {
+    return JSON.parse(localStorage.getItem('cliente') || 'null');
+}
+
+// ── Navbar ─────────────────────────────────────────────────────
+function renderNavbar() {
+    const cliente = clienteLogado();
+    const nav = document.getElementById('navUsuario');
+    if (cliente) {
+        nav.innerHTML = `
+            <span class="text-white small me-3">Olá, ${cliente.nome}!</span>
+            <a href="minha-conta.html" class="btn btn-outline-light btn-sm me-2">Minha Conta</a>
+            <button onclick="sair()" class="btn btn-outline-light btn-sm">Sair</button>`;
+    } else {
+        nav.innerHTML = `<a href="login.html" class="btn btn-outline-light btn-sm">Entrar</a>`;
+    }
+}
+
+function sair() {
+    fetch('/api/auth/logout', { method: 'POST' });
+    localStorage.removeItem('cliente');
+    window.location.href = 'login.html';
+}
+
+// ── Carregar itens ─────────────────────────────────────────────
+async function carregarCarrinho() {
+    const cliente = clienteLogado();
+
+    if (cliente) {
+        // Logado: busca do banco
+        try {
+            const res = await fetch('/api/carrinho');
+            const data = await res.json();
+            itensCarrinho = data.itens || [];
+        } catch (e) {
+            itensCarrinho = [];
+        }
+    } else {
+        // Anônimo: busca do localStorage
+        itensCarrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
+    }
+
+    renderCarrinho();
+}
+
+// ── Renderizar tabela ──────────────────────────────────────────
+function renderCarrinho() {
+    if (!itensCarrinho.length) {
+        document.getElementById('carrinhoVazio').classList.remove('d-none');
+        document.getElementById('carrinhoConteudo').classList.add('d-none');
+        document.getElementById('timerBox').classList.add('d-none');
+        return;
+    }
+
+    document.getElementById('carrinhoVazio').classList.add('d-none');
+    document.getElementById('carrinhoConteudo').classList.remove('d-none');
+    document.getElementById('timerBox').classList.remove('d-none');
+
+    const tbody = document.getElementById('tabelaItens');
+    tbody.innerHTML = itensCarrinho.map((item, idx) => {
+        const nome = item.marca
+            ? `${item.marca} ${item.modelo} ${item.largura}/${item.perfil} R${item.aro}`
+            : `Pneu #${item.pneu_id}`;
+        const totalItem = item.preco_unitario * item.quantidade;
+        return `
+        <tr>
+            <td>
+                <div class="d-flex align-items-center">
+                    <img src="${item.imagem_url || 'https://placehold.co/60x60?text=Pneu'}"
+                         style="width:60px" class="me-3 border rounded">
+                    <div>
+                        <strong>${nome}</strong>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="d-flex align-items-center gap-1">
+                    <button onclick="alterarQtd(${idx}, -1)" class="btn btn-sm btn-outline-secondary">-</button>
+                    <span class="px-2">${item.quantidade}</span>
+                    <button onclick="alterarQtd(${idx}, 1)" class="btn btn-sm btn-outline-secondary">+</button>
+                </div>
+            </td>
+            <td>${formatarMoeda(item.preco_unitario)}</td>
+            <td class="fw-bold">${formatarMoeda(totalItem)}</td>
+            <td>
+                <button onclick="removerItem(${idx})" class="btn btn-sm btn-outline-danger">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>`;
+    }).join('');
+
+    atualizarTotais();
+    iniciarTimer();
+}
+
+// ── Alterar quantidade ─────────────────────────────────────────
+async function alterarQtd(idx, delta) {
+    const item = itensCarrinho[idx];
+    const novaQtd = item.quantidade + delta;
+    if (novaQtd < 1) return removerItem(idx);
+
+    const cliente = clienteLogado();
+    if (cliente && item.id) {
+        // Logado: atualiza no banco
+        try {
+            const res = await fetch(`/api/carrinho/${item.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quantidade: novaQtd })
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                return mostrarAlerta(err.erro);
+            }
+        } catch (e) {
+            return mostrarAlerta('Erro ao atualizar quantidade.');
+        }
+    }
+
+    itensCarrinho[idx].quantidade = novaQtd;
+    if (!cliente) salvarLocalStorage();
+    renderCarrinho();
+}
+
+// ── Remover item ───────────────────────────────────────────────
+async function removerItem(idx) {
+    const item = itensCarrinho[idx];
+    const cliente = clienteLogado();
+
+    if (cliente && item.id) {
+        try {
+            await fetch(`/api/carrinho/${item.id}`, { method: 'DELETE' });
+        } catch (e) {
+            return mostrarAlerta('Erro ao remover item.');
+        }
+    }
+
+    itensCarrinho.splice(idx, 1);
+    if (!cliente) salvarLocalStorage();
+    renderCarrinho();
+    mostrarAlerta('Item removido.', 'success');
+}
+
+// ── localStorage (anônimo) ─────────────────────────────────────
+function salvarLocalStorage() {
+    localStorage.setItem('carrinho', JSON.stringify(itensCarrinho));
+}
+
+// ── Totais ─────────────────────────────────────────────────────
+function atualizarTotais() {
+    const subtotal = itensCarrinho.reduce((s, i) => s + i.preco_unitario * i.quantidade, 0);
+    let desconto = 0;
+    if (cupomAplicado) {
+        desconto = parseFloat(cupomAplicado.valor);
+        document.getElementById('linhaDesconto').style.display = 'flex';
+        document.getElementById('valorDesconto').textContent = `- ${formatarMoeda(desconto)}`;
+    } else {
+        document.getElementById('linhaDesconto').style.display = 'none';
+    }
+    const total = Math.max(0, subtotal - desconto);
+    document.getElementById('subtotal').textContent = formatarMoeda(subtotal);
+    document.getElementById('totalFinal').textContent = formatarMoeda(total);
+}
+
+// ── Cupom ──────────────────────────────────────────────────────
+async function validarCupom() {
+    const codigo = document.getElementById('inputCupom').value.trim();
+    if (!codigo) return mostrarAlerta('Digite um código de cupom.');
+
+    const cliente = clienteLogado();
+    if (!cliente) return mostrarAlerta('Faça login para usar cupons.');
+
+    try {
+        const res = await fetch('/api/carrinho/cupom/validar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ codigo })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.valido) {
+            document.getElementById('cupomFeedback').innerHTML =
+                `<span class="text-danger"><i class="fas fa-times"></i> ${data.erro}</span>`;
+            cupomAplicado = null;
+        } else {
+            cupomAplicado = data.cupom;
+            document.getElementById('cupomFeedback').innerHTML =
+                `<span class="text-success"><i class="fas fa-check"></i> Cupom aplicado! Desconto de ${formatarMoeda(data.cupom.valor)}</span>`;
+            localStorage.setItem('cupomCarrinho', JSON.stringify(cupomAplicado));
+            atualizarTotais();
+        }
+    } catch (e) {
+        mostrarAlerta('Erro ao validar cupom.');
+    }
+}
+
+// ── Timer ──────────────────────────────────────────────────────
+function iniciarTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    // Pega o tempo de expiração do primeiro item (se logado) ou 30min fixo
+    let segundos = 30 * 60;
+
+    const primeiroItem = itensCarrinho[0];
+    if (primeiroItem?.expira_em) {
+        const expira = new Date(primeiroItem.expira_em);
+        segundos = Math.max(0, Math.floor((expira - Date.now()) / 1000));
+    }
+
+    timerInterval = setInterval(() => {
+        segundos--;
+        const m = String(Math.floor(segundos / 60)).padStart(2, '0');
+        const s = String(segundos % 60).padStart(2, '0');
+        document.getElementById('timer').textContent = `${m}:${s}`;
+        if (segundos <= 0) {
+            clearInterval(timerInterval);
+            mostrarAlerta('Seu tempo de reserva expirou! Atualize o carrinho.', 'warning');
+            carregarCarrinho();
+        }
+    }, 1000);
+}
+
+// ── Ir para checkout ───────────────────────────────────────────
+function irParaCheckout() {
+    if (!itensCarrinho.length) return mostrarAlerta('Seu carrinho está vazio.');
+    const cliente = clienteLogado();
+    if (!cliente) {
+        // Salva cupom e redireciona para login
+        window.location.href = 'login.html?next=checkout';
+        return;
+    }
+    window.location.href = 'checkout.html';
+}
+
+// ── Init ───────────────────────────────────────────────────────
+window.onload = () => {
+    renderNavbar();
+    // Recupera cupom salvo se houver
+    const cupomSalvo = localStorage.getItem('cupomCarrinho');
+    if (cupomSalvo) cupomAplicado = JSON.parse(cupomSalvo);
+    carregarCarrinho();
+};
+</script>
 </body>
 </html>

@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
- "scripts": {
-  "start": "node server.js",
-  "dev": "nodemon server.js"
-},
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MarcosAFragoso/hyperpneus.git"
@@ -21,6 +21,8 @@
   "homepage": "https://github.com/MarcosAFragoso/hyperpneus#readme",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "connect-pg-simple": "^10.0.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
