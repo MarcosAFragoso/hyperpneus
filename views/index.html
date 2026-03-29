@@ -213,9 +213,16 @@ function cardPneu(p) {
                         ${temOferta ? `<p class="preco-original">R$ ${(p.preco_custo * 1.5).toFixed(2).replace('.',',')}</p>` : ''}
                         <p class="text-success fw-bold fs-5 mb-1">R$ ${parseFloat(p.preco_venda).toFixed(2).replace('.',',')}</p>
                         <p class="text-muted small mb-2">Em até 10x de R$ ${(p.preco_venda/10).toFixed(2).replace('.',',')} sem juros</p>
-                        <button class="btn btn-outline-dark btn-sm w-100" onclick="event.stopPropagation(); window.location='detalhe.html?id=${p.id}'">
-                            Ver Detalhes
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-secondary btn-sm flex-grow-1"
+                                onclick="event.stopPropagation(); window.location='detalhe.html?id=${p.id}'">
+                                Ver Detalhes
+                            </button>
+                            <button class="btn btn-dark btn-sm flex-grow-1"
+                                onclick="adicionarAoCarrinho(event, ${p.id})">
+                                <i class="fas fa-cart-plus me-1"></i> Adicionar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -234,6 +241,67 @@ async function carregarDestaques() {
         grid.innerHTML = pneus.slice(0, 4).map(cardPneu).join('');
     } catch (err) {
         document.getElementById('gridDestaques').innerHTML = '<p class="text-muted">Erro ao carregar produtos.</p>';
+    }
+}
+
+// Atualiza badge do carrinho na navbar
+function atualizarBadgeCarrinho() {
+    const itens = JSON.parse(localStorage.getItem('carrinho') || '[]');
+    const badge = document.getElementById('badgeCarrinho');
+    const total = itens.reduce((s, i) => s + i.quantidade, 0);
+    if (total > 0) {
+        badge.style.display = 'block';
+        badge.textContent = total;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+// Adiciona ao carrinho
+async function adicionarAoCarrinho(event, pneuId) {
+    event.stopPropagation();
+    const btn = event.target.closest('button');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    try {
+        const res = await fetch('/api/carrinho', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pneu_id: pneuId, quantidade: 1 })
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.erro);
+
+        // Se anônimo, salva no localStorage
+        if (data.anonimo) {
+            const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
+            const existente = carrinho.find(i => i.pneu_id === data.item.pneu_id);
+            if (existente) {
+                existente.quantidade += data.item.quantidade;
+            } else {
+                carrinho.push(data.item);
+            }
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+        }
+
+        btn.innerHTML = '<i class="fas fa-check"></i> Adicionado!';
+        btn.classList.remove('btn-dark');
+        btn.classList.add('btn-success');
+        atualizarBadgeCarrinho();
+
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cart-plus me-1"></i> Adicionar';
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-dark');
+        }, 2000);
+
+    } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-cart-plus me-1"></i> Adicionar';
+        alert(err.message || 'Erro ao adicionar ao carrinho.');
     }
 }
 
@@ -280,6 +348,7 @@ window.onload = () => {
         document.getElementById('navNome').textContent = cliente.nome;
     }
     carregarDestaques();
+    atualizarBadgeCarrinho();
 };
 </script>
 
