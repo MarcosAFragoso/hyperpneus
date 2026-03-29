@@ -9,61 +9,254 @@
 <body class="bg-light">
 
 <nav class="navbar navbar-dark bg-dark">
-  <div class="container">
+  <div class="container d-flex justify-content-between align-items-center">
     <a class="navbar-brand" href="index.html"><i class="fas fa-arrow-left"></i> Voltar</a>
+    <a href="carrinho.html" class="btn btn-outline-light btn-sm position-relative">
+        <i class="fas fa-shopping-cart"></i> Carrinho
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark"
+              id="badgeCarrinho" style="display:none">0</span>
+    </a>
   </div>
 </nav>
 
 <div class="container my-5">
-    <div class="card shadow-sm">
+    <div id="alerta" class="alert d-none mb-3"></div>
+
+    <!-- Skeleton enquanto carrega -->
+    <div id="skeleton" class="card shadow-sm p-4">
+        <div class="row">
+            <div class="col-md-5">
+                <div style="height:300px;background:#eee;border-radius:8px"></div>
+            </div>
+            <div class="col-md-7">
+                <div style="height:30px;background:#eee;border-radius:4px;margin-bottom:12px"></div>
+                <div style="height:20px;background:#eee;border-radius:4px;width:60%;margin-bottom:24px"></div>
+                <div style="height:80px;background:#eee;border-radius:4px;margin-bottom:24px"></div>
+                <div style="height:40px;background:#eee;border-radius:4px"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteúdo real -->
+    <div id="conteudo" class="card shadow-sm d-none">
         <div class="card-body">
             <div class="row">
                 <!-- Imagem -->
-                <div class="col-md-5 text-center d-flex align-items-center justify-content-center bg-white rounded p-3">
-                     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_Kkh-yQ6JbV3ZqgXU_0VvX4VqXyXyXyXyXw&s" class="img-fluid" alt="Pneu" style="max-height: 400px;">
+                <div class="col-md-5 text-center d-flex align-items-center justify-content-center bg-white rounded p-4">
+                    <img id="imgPneu" src="" class="img-fluid" style="max-height:350px" alt="Pneu">
                 </div>
-                
+
                 <!-- Infos -->
                 <div class="col-md-7">
-                    <h2 class="fw-bold">Pneu Pirelli Cinturato P1 - Aro 14</h2>
-                    <p class="text-muted">Código: 102938 | Marca: Pirelli</p>
-                    
-                    <!-- Etiqueta Inmetro (Requisito Visual) -->
+                    <h2 class="fw-bold" id="nomePneu"></h2>
+                    <p class="text-muted" id="codigoPneu"></p>
+
+                    <!-- Inmetro -->
                     <div class="card border-info mb-4">
-                        <div class="card-header bg-info text-white fw-bold"><i class="fas fa-tag"></i> Etiqueta INMETRO</div>
+                        <div class="card-header bg-info text-white fw-bold">
+                            <i class="fas fa-tag"></i> Etiqueta INMETRO
+                        </div>
                         <div class="card-body">
                             <div class="d-flex justify-content-around text-center">
-                                <div><span class="badge bg-success fs-5">C</span><br><small>Consumo</small></div>
-                                <div><span class="badge bg-primary fs-5">B</span><br><small>Aderência (Chuva)</small></div>
-                                <div><span class="badge bg-secondary fs-5">70dB</span><br><small>Ruído</small></div>
+                                <div>
+                                    <span id="inmetroConsumo" class="badge fs-5"></span>
+                                    <br><small>Consumo</small>
+                                </div>
+                                <div>
+                                    <span id="inmetroAderencia" class="badge fs-5"></span>
+                                    <br><small>Aderência (Chuva)</small>
+                                </div>
+                                <div>
+                                    <span id="inmetroRuido" class="badge bg-secondary fs-5"></span>
+                                    <br><small>Ruído</small>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <h1 class="text-primary fw-bold">R$ 459,90</h1>
-                    <p class="text-success"><i class="fas fa-credit-card"></i> Em até 10x de R$ 45,99 sem juros</p>
+                    <h1 class="text-primary fw-bold" id="precoPneu"></h1>
+                    <p class="text-success" id="parcelamento"></p>
 
+                    <!-- Estoque -->
+                    <p class="text-muted small" id="estoquePneu"></p>
+
+                    <!-- Qtd + Botão -->
                     <div class="d-flex gap-2 align-items-center mb-4">
-                        <label>Qtd:</label>
-                        <input type="number" class="form-control" value="4" style="width: 80px;">
-                        <a href="carrinho.html" class="btn btn-success btn-lg w-100 shadow"><i class="fas fa-cart-plus"></i> ADICIONAR AO CARRINHO</a>
+                        <label class="fw-bold">Qtd:</label>
+                        <input type="number" id="quantidade" class="form-control" value="1" min="1" style="width:80px">
+                        <button onclick="adicionarAoCarrinho()" id="btnAdicionar"
+                                class="btn btn-success btn-lg w-100 shadow">
+                            <i class="fas fa-cart-plus"></i> ADICIONAR AO CARRINHO
+                        </button>
                     </div>
-                    
+
                     <hr>
                     <h5>Ficha Técnica</h5>
-                    <table class="table table-striped table-sm">
-                        <tr><td>Largura</td><td>175 mm</td></tr>
-                        <tr><td>Perfil</td><td>65</td></tr>
-                        <tr><td>Aro</td><td>14</td></tr>
-                        <tr><td>Índice de Carga</td><td>82 (475 kg)</td></tr>
-                        <tr><td>Índice de Velocidade</td><td>T (190 km/h)</td></tr>
-                        <tr><td>Tipo de Desenho</td><td>Assimétrico</td></tr>
-                    </table>
+                    <table class="table table-striped table-sm" id="fichaTecnica"></table>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Pneu não encontrado -->
+    <div id="naoEncontrado" class="text-center py-5 d-none">
+        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+        <h5>Pneu não encontrado</h5>
+        <a href="index.html" class="btn btn-primary mt-2">Voltar para a loja</a>
+    </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let pneuAtual = null;
+
+function mostrarAlerta(msg, tipo = 'danger') {
+    const el = document.getElementById('alerta');
+    el.className = `alert alert-${tipo}`;
+    el.textContent = msg;
+    el.classList.remove('d-none');
+    setTimeout(() => el.classList.add('d-none'), 4000);
+}
+
+function corInmetro(letra) {
+    const cores = { A: 'bg-success', B: 'bg-primary', C: 'bg-warning text-dark', D: 'bg-orange', E: 'bg-danger' };
+    return cores[letra] || 'bg-secondary';
+}
+
+function atualizarBadge() {
+    const itens = JSON.parse(localStorage.getItem('carrinho') || '[]');
+    const badge = document.getElementById('badgeCarrinho');
+    const total = itens.reduce((s, i) => s + i.quantidade, 0);
+    badge.style.display = total > 0 ? 'block' : 'none';
+    badge.textContent = total;
+}
+
+async function carregarPneu() {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (!id) {
+        document.getElementById('skeleton').classList.add('d-none');
+        document.getElementById('naoEncontrado').classList.remove('d-none');
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/pneus/${id}`);
+        if (!res.ok) throw new Error();
+        pneuAtual = await res.json();
+
+        // Preenche dados
+        document.getElementById('nomePneu').textContent =
+            `${pneuAtual.marca} ${pneuAtual.modelo} - Aro ${pneuAtual.aro}`;
+        document.getElementById('codigoPneu').textContent =
+            `Código: ${pneuAtual.sku} | Marca: ${pneuAtual.marca}`;
+        document.getElementById('imgPneu').src =
+            pneuAtual.imagem_url || `https://placehold.co/400x400/1a1a2e/ffffff?text=${encodeURIComponent(pneuAtual.marca)}`;
+        document.getElementById('precoPneu').textContent =
+            `R$ ${parseFloat(pneuAtual.preco_venda).toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+        document.getElementById('parcelamento').innerHTML =
+            `<i class="fas fa-credit-card"></i> Em até 10x de R$ ${(pneuAtual.preco_venda/10).toLocaleString('pt-BR', {minimumFractionDigits:2})} sem juros`;
+        document.getElementById('estoquePneu').textContent =
+            pneuAtual.estoque > 0 ? `✓ ${pneuAtual.estoque} unidades em estoque` : '✗ Fora de estoque';
+
+        // Inmetro
+        const consumo = document.getElementById('inmetroConsumo');
+        consumo.textContent = pneuAtual.inmetro_consumo || '-';
+        consumo.className = `badge fs-5 ${corInmetro(pneuAtual.inmetro_consumo)}`;
+
+        const aderencia = document.getElementById('inmetroAderencia');
+        aderencia.textContent = pneuAtual.inmetro_aderencia || '-';
+        aderencia.className = `badge fs-5 ${corInmetro(pneuAtual.inmetro_aderencia)}`;
+
+        document.getElementById('inmetroRuido').textContent =
+            pneuAtual.inmetro_ruido ? `${pneuAtual.inmetro_ruido}dB` : '-';
+
+        // Ficha técnica
+        const ficha = [
+            ['Largura', `${pneuAtual.largura} mm`],
+            ['Perfil', pneuAtual.perfil],
+            ['Aro', pneuAtual.aro],
+            ['Índice de Carga', `${pneuAtual.indice_carga}`],
+            ['Índice de Velocidade', `${pneuAtual.indice_velocidade}`],
+            ['Tipo de Desenho', pneuAtual.tipo_desenho || '-'],
+            ['DOT', pneuAtual.dot || '-'],
+            ['SKU', pneuAtual.sku],
+            ['EAN', pneuAtual.ean || '-'],
+        ];
+        document.getElementById('fichaTecnica').innerHTML =
+            ficha.map(([k,v]) => `<tr><td>${k}</td><td><strong>${v}</strong></td></tr>`).join('');
+
+        // Desabilita se sem estoque
+        if (pneuAtual.estoque === 0) {
+            document.getElementById('btnAdicionar').disabled = true;
+            document.getElementById('btnAdicionar').textContent = 'Fora de Estoque';
+        }
+
+        // Limita quantidade ao estoque
+        document.getElementById('quantidade').max = pneuAtual.estoque;
+
+        document.getElementById('skeleton').classList.add('d-none');
+        document.getElementById('conteudo').classList.remove('d-none');
+
+    } catch (e) {
+        document.getElementById('skeleton').classList.add('d-none');
+        document.getElementById('naoEncontrado').classList.remove('d-none');
+    }
+}
+
+async function adicionarAoCarrinho() {
+    if (!pneuAtual) return;
+    const quantidade = parseInt(document.getElementById('quantidade').value) || 1;
+    if (quantidade < 1) return mostrarAlerta('Quantidade mínima é 1.');
+    if (quantidade > pneuAtual.estoque) return mostrarAlerta('Quantidade maior que o estoque disponível.');
+
+    const btn = document.getElementById('btnAdicionar');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adicionando...';
+
+    try {
+        const res = await fetch('/api/carrinho', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pneu_id: pneuAtual.id, quantidade })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.erro);
+
+        // Se anônimo, salva no localStorage
+        if (data.anonimo) {
+            const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
+            const existente = carrinho.find(i => i.pneu_id === data.item.pneu_id);
+            if (existente) {
+                existente.quantidade += data.item.quantidade;
+            } else {
+                carrinho.push(data.item);
+            }
+            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+            atualizarBadge();
+        }
+
+        btn.innerHTML = '<i class="fas fa-check"></i> Adicionado ao Carrinho!';
+        btn.classList.replace('btn-success', 'btn-secondary');
+        mostrarAlerta('Pneu adicionado ao carrinho!', 'success');
+
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cart-plus"></i> ADICIONAR AO CARRINHO';
+            btn.classList.replace('btn-secondary', 'btn-success');
+        }, 2000);
+
+    } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-cart-plus"></i> ADICIONAR AO CARRINHO';
+        mostrarAlerta(err.message || 'Erro ao adicionar ao carrinho.');
+    }
+}
+
+window.onload = () => {
+    atualizarBadge();
+    carregarPneu();
+};
+</script>
 </body>
 </html>
