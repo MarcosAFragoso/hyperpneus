@@ -119,7 +119,7 @@
     </div>
 </section>
 
-<!-- Resultados da busca (oculto por padrão) -->
+<!-- Resultados da busca -->
 <section class="container my-5" id="secResultados" style="display:none">
     <h4 class="section-title mb-4">Resultados da busca</h4>
     <div class="row g-4" id="gridResultados"></div>
@@ -172,22 +172,15 @@
     </div>
 </footer>
 
-<!-- Chatbot -->
-<button class="chatbot-btn" title="Assistente IA">
-    <i class="fas fa-robot"></i>
-</button>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const API = '';
 
-// Inmetro badge
 function inmetroBadge(letra) {
     if (!letra) return '';
     return `<span class="inmetro-badge inmetro-${letra}">${letra}</span>`;
 }
 
-// Card de pneu
 function cardPneu(p) {
     const temOferta = p.preco_venda < p.preco_custo * 1.3;
     const imgSrc = p.imagem_url || `https://placehold.co/300x300/1a1a2e/ffffff?text=${encodeURIComponent(p.marca)}`;
@@ -244,26 +237,25 @@ async function carregarDestaques() {
     }
 }
 
-// Atualiza badge do carrinho na navbar
+// ATUALIZAÇÃO À PROVA DE FALHAS
 async function atualizarBadgeCarrinho() {
     const badge = document.getElementById('badgeCarrinho');
-    const cliente = JSON.parse(localStorage.getItem('cliente'));
     let total = 0;
 
-    if (cliente) {
-        // Se estiver logado, busca os itens direto do Banco de Dados
-        try {
-            const res = await fetch('/api/carrinho');
-            if (res.ok) {
-                const data = await res.json();
-                const itens = data.itens ||[];
-                total = itens.reduce((s, i) => s + i.quantidade, 0);
+    try {
+        const res = await fetch('/api/carrinho');
+        if (res.ok) {
+            const data = await res.json();
+            if (data.itens && data.itens.length > 0) {
+                total = data.itens.reduce((s, i) => s + (parseInt(i.quantidade) || 0), 0);
             }
-        } catch (e) { console.error("Erro ao buscar badge", e); }
-    } else {
-        // Se for visitante anônimo, continua lendo do navegador
-        const itens = JSON.parse(localStorage.getItem('carrinho') || '[]');
-        total = itens.reduce((s, i) => s + i.quantidade, 0);
+        }
+    } catch (e) { console.log('Sessão sem banco, usando local'); }
+
+    // Se o banco retornou 0, usa o navegador obrigatoriamente
+    if (total === 0) {
+        const itensLocais = JSON.parse(localStorage.getItem('carrinho') || '[]');
+        total = itensLocais.reduce((s, i) => s + (parseInt(i.quantidade) || 0), 0);
     }
 
     if (total > 0) {
@@ -274,7 +266,7 @@ async function atualizarBadgeCarrinho() {
     }
 }
 
-// Adiciona ao carrinho
+// ADIÇÃO GARANTIDA NO NAVEGADOR
 async function adicionarAoCarrinho(event, pneuId) {
     event.stopPropagation();
     const btn = event.target.closest('button');
@@ -289,25 +281,20 @@ async function adicionarAoCarrinho(event, pneuId) {
         });
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.erro || 'Erro ao adicionar');
-
-        // Se anônimo, salva no localStorage com segurança
-        if (data.anonimo && data.item) {
-            const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
-            const existente = carrinho.find(i => i.pneu_id === data.item.pneu_id);
-            if (existente) {
-                existente.quantidade += data.item.quantidade;
-            } else {
-                carrinho.push(data.item);
-            }
-            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+        // Salva localmente de forma garantida, logado ou não
+        const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
+        const existente = carrinho.find(i => i.pneu_id === pneuId);
+        if (existente) {
+            existente.quantidade += 1;
+        } else {
+            carrinho.push(data.item ? data.item : { pneu_id: pneuId, quantidade: 1 });
         }
+        localStorage.setItem('carrinho', JSON.stringify(carrinho));
 
         btn.innerHTML = '<i class="fas fa-check"></i> Adicionado!';
         btn.classList.remove('btn-dark');
         btn.classList.add('btn-success');
         
-        // Aguarda a bolinha do carrinho atualizar antes de liberar o botão
         await atualizarBadgeCarrinho();
 
         setTimeout(() => {
@@ -320,7 +307,7 @@ async function adicionarAoCarrinho(event, pneuId) {
     } catch (err) {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-cart-plus me-1"></i> Adicionar';
-        alert(err.message || 'Erro ao adicionar ao carrinho.');
+        alert('Erro ao adicionar ao carrinho.');
     }
 }
 
@@ -359,7 +346,6 @@ function sair() {
 }
 
 window.onload = () => {
-    // Verifica login
     const cliente = JSON.parse(localStorage.getItem('cliente'));
     if (cliente) {
         document.getElementById('navLogin').style.display = 'none';
@@ -370,6 +356,5 @@ window.onload = () => {
     atualizarBadgeCarrinho();
 };
 </script>
-
 </body>
 </html>

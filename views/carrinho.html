@@ -97,11 +97,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-let itensCarrinho = [];
+let itensCarrinho =[];
 let cupomAplicado = null;
 let timerInterval = null;
 
-// ── Utilitários ────────────────────────────────────────────────
 function mostrarAlerta(msg, tipo = 'danger') {
     const el = document.getElementById('alerta');
     el.className = `alert alert-${tipo}`;
@@ -118,7 +117,6 @@ function clienteLogado() {
     return JSON.parse(localStorage.getItem('cliente') || 'null');
 }
 
-// ── Navbar ─────────────────────────────────────────────────────
 function renderNavbar() {
     const cliente = clienteLogado();
     const nav = document.getElementById('navUsuario');
@@ -138,28 +136,33 @@ function sair() {
     window.location.href = 'login.html';
 }
 
-// ── Carregar itens ─────────────────────────────────────────────
+// MESCLAGEM GARANTIDA: Banco de Dados + Local Storage
 async function carregarCarrinho() {
-    const cliente = clienteLogado();
-
-    if (cliente) {
-        // Logado: busca do banco
-        try {
-            const res = await fetch('/api/carrinho');
+    let carrinhoBanco =[];
+    
+    try {
+        const res = await fetch('/api/carrinho');
+        if (res.ok) {
             const data = await res.json();
-            itensCarrinho = data.itens || [];
-        } catch (e) {
-            itensCarrinho = [];
+            carrinhoBanco = data.itens ||[];
         }
+    } catch (e) {
+        console.warn('Sessão sem banco, lendo local.');
+    }
+
+    const carrinhoLocal = JSON.parse(localStorage.getItem('carrinho') || '[]');
+
+    if (carrinhoBanco.length > 0) {
+        itensCarrinho = carrinhoBanco;
+    } else if (carrinhoLocal.length > 0) {
+        itensCarrinho = carrinhoLocal;
     } else {
-        // Anônimo: busca do localStorage
-        itensCarrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
+        itensCarrinho =[];
     }
 
     renderCarrinho();
 }
 
-// ── Renderizar tabela ──────────────────────────────────────────
 function renderCarrinho() {
     if (!itensCarrinho.length) {
         document.getElementById('carrinhoVazio').classList.remove('d-none');
@@ -210,7 +213,6 @@ function renderCarrinho() {
     iniciarTimer();
 }
 
-// ── Alterar quantidade ─────────────────────────────────────────
 async function alterarQtd(idx, delta) {
     const item = itensCarrinho[idx];
     const novaQtd = item.quantidade + delta;
@@ -218,7 +220,6 @@ async function alterarQtd(idx, delta) {
 
     const cliente = clienteLogado();
     if (cliente && item.id) {
-        // Logado: atualiza no banco
         try {
             const res = await fetch(`/api/carrinho/${item.id}`, {
                 method: 'PATCH',
@@ -235,11 +236,10 @@ async function alterarQtd(idx, delta) {
     }
 
     itensCarrinho[idx].quantidade = novaQtd;
-    if (!cliente) salvarLocalStorage();
+    salvarLocalStorage(); // Agora salva sempre
     renderCarrinho();
 }
 
-// ── Remover item ───────────────────────────────────────────────
 async function removerItem(idx) {
     const item = itensCarrinho[idx];
     const cliente = clienteLogado();
@@ -253,17 +253,15 @@ async function removerItem(idx) {
     }
 
     itensCarrinho.splice(idx, 1);
-    if (!cliente) salvarLocalStorage();
+    salvarLocalStorage(); // Agora salva sempre
     renderCarrinho();
     mostrarAlerta('Item removido.', 'success');
 }
 
-// ── localStorage (anônimo) ─────────────────────────────────────
 function salvarLocalStorage() {
     localStorage.setItem('carrinho', JSON.stringify(itensCarrinho));
 }
 
-// ── Totais ─────────────────────────────────────────────────────
 function atualizarTotais() {
     const subtotal = itensCarrinho.reduce((s, i) => s + i.preco_unitario * i.quantidade, 0);
     let desconto = 0;
@@ -279,7 +277,6 @@ function atualizarTotais() {
     document.getElementById('totalFinal').textContent = formatarMoeda(total);
 }
 
-// ── Cupom ──────────────────────────────────────────────────────
 async function validarCupom() {
     const codigo = document.getElementById('inputCupom').value.trim();
     if (!codigo) return mostrarAlerta('Digite um código de cupom.');
@@ -310,10 +307,8 @@ async function validarCupom() {
     }
 }
 
-// ── Timer ──────────────────────────────────────────────────────
 function iniciarTimer() {
     if (timerInterval) clearInterval(timerInterval);
-    // Pega o tempo de expiração do primeiro item (se logado) ou 30min fixo
     let segundos = 30 * 60;
 
     const primeiroItem = itensCarrinho[0];
@@ -335,22 +330,18 @@ function iniciarTimer() {
     }, 1000);
 }
 
-// ── Ir para checkout ───────────────────────────────────────────
 function irParaCheckout() {
     if (!itensCarrinho.length) return mostrarAlerta('Seu carrinho está vazio.');
     const cliente = clienteLogado();
     if (!cliente) {
-        // Salva cupom e redireciona para login
         window.location.href = 'login.html?next=checkout';
         return;
     }
     window.location.href = 'checkout.html';
 }
 
-// ── Init ───────────────────────────────────────────────────────
 window.onload = () => {
     renderNavbar();
-    // Recupera cupom salvo se houver
     const cupomSalvo = localStorage.getItem('cupomCarrinho');
     if (cupomSalvo) cupomAplicado = JSON.parse(cupomSalvo);
     carregarCarrinho();

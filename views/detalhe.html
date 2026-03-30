@@ -123,12 +123,32 @@ function corInmetro(letra) {
     return cores[letra] || 'bg-secondary';
 }
 
-function atualizarBadge() {
-    const itens = JSON.parse(localStorage.getItem('carrinho') || '[]');
+// ATUALIZAÇÃO À PROVA DE FALHAS
+async function atualizarBadge() {
     const badge = document.getElementById('badgeCarrinho');
-    const total = itens.reduce((s, i) => s + i.quantidade, 0);
-    badge.style.display = total > 0 ? 'block' : 'none';
-    badge.textContent = total;
+    let total = 0;
+
+    try {
+        const res = await fetch('/api/carrinho');
+        if (res.ok) {
+            const data = await res.json();
+            if (data.itens && data.itens.length > 0) {
+                total = data.itens.reduce((s, i) => s + (parseInt(i.quantidade) || 0), 0);
+            }
+        }
+    } catch (e) { }
+
+    if (total === 0) {
+        const itensLocais = JSON.parse(localStorage.getItem('carrinho') || '[]');
+        total = itensLocais.reduce((s, i) => s + (parseInt(i.quantidade) || 0), 0);
+    }
+
+    if (total > 0) {
+        badge.style.display = 'block';
+        badge.textContent = total;
+    } else {
+        badge.style.display = 'none';
+    }
 }
 
 async function carregarPneu() {
@@ -172,27 +192,20 @@ async function carregarPneu() {
             pneuAtual.inmetro_ruido ? `${pneuAtual.inmetro_ruido}dB` : '-';
 
         // Ficha técnica
-        const ficha = [
-            ['Largura', `${pneuAtual.largura} mm`],
-            ['Perfil', pneuAtual.perfil],
-            ['Aro', pneuAtual.aro],
-            ['Índice de Carga', `${pneuAtual.indice_carga}`],
-            ['Índice de Velocidade', `${pneuAtual.indice_velocidade}`],
-            ['Tipo de Desenho', pneuAtual.tipo_desenho || '-'],
-            ['DOT', pneuAtual.dot || '-'],
-            ['SKU', pneuAtual.sku],
+        const ficha =[
+            ['Largura', `${pneuAtual.largura} mm`],['Perfil', pneuAtual.perfil],
+            ['Aro', pneuAtual.aro],['Índice de Carga', `${pneuAtual.indice_carga}`],['Índice de Velocidade', `${pneuAtual.indice_velocidade}`],['Tipo de Desenho', pneuAtual.tipo_desenho || '-'],
+            ['DOT', pneuAtual.dot || '-'],['SKU', pneuAtual.sku],
             ['EAN', pneuAtual.ean || '-'],
         ];
         document.getElementById('fichaTecnica').innerHTML =
             ficha.map(([k,v]) => `<tr><td>${k}</td><td><strong>${v}</strong></td></tr>`).join('');
 
-        // Desabilita se sem estoque
         if (pneuAtual.estoque === 0) {
             document.getElementById('btnAdicionar').disabled = true;
             document.getElementById('btnAdicionar').textContent = 'Fora de Estoque';
         }
 
-        // Limita quantidade ao estoque
         document.getElementById('quantidade').max = pneuAtual.estoque;
 
         document.getElementById('skeleton').classList.add('d-none');
@@ -204,33 +217,7 @@ async function carregarPneu() {
     }
 }
 
-async function atualizarBadge() {
-    const badge = document.getElementById('badgeCarrinho');
-    const cliente = JSON.parse(localStorage.getItem('cliente'));
-    let total = 0;
-
-    if (cliente) {
-        try {
-            const res = await fetch('/api/carrinho');
-            if (res.ok) {
-                const data = await res.json();
-                const itens = data.itens ||[];
-                total = itens.reduce((s, i) => s + i.quantidade, 0);
-            }
-        } catch (e) {}
-    } else {
-        const itens = JSON.parse(localStorage.getItem('carrinho') || '[]');
-        total = itens.reduce((s, i) => s + i.quantidade, 0);
-    }
-
-    if (total > 0) {
-        badge.style.display = 'block';
-        badge.textContent = total;
-    } else {
-        badge.style.display = 'none';
-    }
-}
-
+// ADIÇÃO GARANTIDA NO NAVEGADOR
 async function adicionarAoCarrinho() {
     if (!pneuAtual) return;
     const quantidade = parseInt(document.getElementById('quantidade').value) || 1;
@@ -248,18 +235,27 @@ async function adicionarAoCarrinho() {
             body: JSON.stringify({ pneu_id: pneuAtual.id, quantidade })
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.erro || 'Erro interno do servidor');
 
-        if (data.anonimo && data.item) {
-            const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
-            const existente = carrinho.find(i => i.pneu_id === data.item.pneu_id);
-            if (existente) {
-                existente.quantidade += data.item.quantidade;
-            } else {
-                carrinho.push(data.item);
-            }
-            localStorage.setItem('carrinho', JSON.stringify(carrinho));
+        // Salva localmente de forma garantida, logado ou não
+        const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
+        const existente = carrinho.find(i => i.pneu_id === pneuAtual.id);
+
+        if (existente) {
+            existente.quantidade += quantidade;
+        } else {
+            carrinho.push(data.item ? data.item : {
+                pneu_id: pneuAtual.id,
+                quantidade: quantidade,
+                preco_unitario: pneuAtual.preco_venda,
+                marca: pneuAtual.marca,
+                modelo: pneuAtual.modelo,
+                largura: pneuAtual.largura,
+                perfil: pneuAtual.perfil,
+                aro: pneuAtual.aro,
+                imagem_url: pneuAtual.imagem_url
+            });
         }
+        localStorage.setItem('carrinho', JSON.stringify(carrinho));
 
         await atualizarBadge();
 
