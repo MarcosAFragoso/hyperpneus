@@ -246,62 +246,58 @@ function fmt(valor) {
 
 // ── Carregar dados iniciais ────────────────────────────────────
 async function init() {
-    // Verifica autenticação
+    // 1. Verifica autenticação
     try {
-        const res = await fetch('/api/auth/perfil');
-        if (!res.ok) {
+        const resAuth = await fetch('/api/auth/perfil');
+        if (!resAuth.ok) {
             window.location.href = 'login.html?next=checkout';
             return;
         }
-        cliente = await res.json();
+        cliente = await resAuth.json();
         document.getElementById('navNome').textContent = `Olá, ${cliente.nome}!`;
     } catch (e) {
         window.location.href = 'login.html?next=checkout';
         return;
     }
 
-    // Migra carrinho anônimo se houver (AGORA COM PROTEÇÃO)
-    const carrinhoLocal = JSON.parse(localStorage.getItem('carrinho') || '[]');
-    if (carrinhoLocal.length) {
-        try {
-            const resMigracao = await fetch('/api/pedidos/migrar-carrinho', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ itens: carrinhoLocal })
-            });
-            
-            // Só apaga o carrinho do navegador se o servidor confirmou que salvou
-            if (resMigracao.ok) {
-                localStorage.removeItem('carrinho');
-            }
-        } catch (erro) {
-            console.error("Aviso: Falha na migração do carrinho para o banco", erro);
-        }
-    }
-
-    // Busca carrinho do banco
+    // 2. Tenta buscar o carrinho do banco, mas NÃO APAGA o localStorage ainda
+    let carrinhoBanco =[];
     try {
         const resCarrinho = await fetch('/api/carrinho');
-        const dadosCarrinho = await resCarrinho.json();
-        itensCarrinho = dadosCarrinho.itens ||[];
+        if (resCarrinho.ok) {
+            const dadosCarrinho = await resCarrinho.json();
+            carrinhoBanco = dadosCarrinho.itens ||[];
+        }
     } catch (erro) {
-        console.error("Aviso: Falha ao buscar carrinho do banco", erro);
+        console.warn("Aviso: Falha ao buscar carrinho do banco, usando local.");
+    }
+
+    // 3. Pega o carrinho do navegador (localStorage)
+    const carrinhoLocal = JSON.parse(localStorage.getItem('carrinho') || '[]');
+
+    // 4. Lógica de segurança: Usa o do banco, mas se estiver vazio, força o uso do LocalStorage
+    if (carrinhoBanco.length > 0) {
+        itensCarrinho = carrinhoBanco;
+    } else if (carrinhoLocal.length > 0) {
+        itensCarrinho = carrinhoLocal;
+    } else {
+        // Carrinho realmente vazio em ambos
         itensCarrinho =[];
     }
 
-    // Fallback de Segurança: Se a API não retornou nada, tenta usar o localStorage
-    if (!itensCarrinho.length && carrinhoLocal.length) {
-        itensCarrinho = carrinhoLocal;
-    }
-
-    // Se continuar vazio, interrompe
-    if (!itensCarrinho.length) {
+    // 5. Se continuar vazio, bloqueia o checkout
+    if (!itensCarrinho || !itensCarrinho.length) {
         mostrarAlerta('Seu carrinho está vazio! <a href="index.html">Voltar à loja</a>');
         document.getElementById('btnFinalizar').disabled = true;
         return;
     }
 
-    subtotal = itensCarrinho.reduce((s, i) => s + i.preco_unitario * i.quantidade, 0);
+    // Calcula subtotal garantindo que os valores são números
+    subtotal = itensCarrinho.reduce((s, i) => {
+        const preco = parseFloat(i.preco_unitario) || 0;
+        const qtd = parseInt(i.quantidade) || 1;
+        return s + (preco * qtd);
+    }, 0);
 
     // Recupera cupom salvo no carrinho
     const cupomSalvo = localStorage.getItem('cupomCarrinho');
@@ -313,6 +309,7 @@ async function init() {
             `<span class="text-success"><i class="fas fa-check"></i> Cupom aplicado: ${fmt(cupomAplicado.valor)} de desconto</span>`;
     }
 
+    // Carrega os endereços e cartões paralelamente
     await Promise.all([
         carregarEnderecos(),
         carregarCartoes()
