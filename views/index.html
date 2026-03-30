@@ -245,10 +245,27 @@ async function carregarDestaques() {
 }
 
 // Atualiza badge do carrinho na navbar
-function atualizarBadgeCarrinho() {
-    const itens = JSON.parse(localStorage.getItem('carrinho') || '[]');
+async function atualizarBadgeCarrinho() {
     const badge = document.getElementById('badgeCarrinho');
-    const total = itens.reduce((s, i) => s + i.quantidade, 0);
+    const cliente = JSON.parse(localStorage.getItem('cliente'));
+    let total = 0;
+
+    if (cliente) {
+        // Se estiver logado, busca os itens direto do Banco de Dados
+        try {
+            const res = await fetch('/api/carrinho');
+            if (res.ok) {
+                const data = await res.json();
+                const itens = data.itens ||[];
+                total = itens.reduce((s, i) => s + i.quantidade, 0);
+            }
+        } catch (e) { console.error("Erro ao buscar badge", e); }
+    } else {
+        // Se for visitante anônimo, continua lendo do navegador
+        const itens = JSON.parse(localStorage.getItem('carrinho') || '[]');
+        total = itens.reduce((s, i) => s + i.quantidade, 0);
+    }
+
     if (total > 0) {
         badge.style.display = 'block';
         badge.textContent = total;
@@ -272,10 +289,10 @@ async function adicionarAoCarrinho(event, pneuId) {
         });
         const data = await res.json();
 
-        if (!res.ok) throw new Error(data.erro);
+        if (!res.ok) throw new Error(data.erro || 'Erro ao adicionar');
 
-        // Se anônimo, salva no localStorage
-        if (data.anonimo) {
+        // Se anônimo, salva no localStorage com segurança
+        if (data.anonimo && data.item) {
             const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
             const existente = carrinho.find(i => i.pneu_id === data.item.pneu_id);
             if (existente) {
@@ -289,7 +306,9 @@ async function adicionarAoCarrinho(event, pneuId) {
         btn.innerHTML = '<i class="fas fa-check"></i> Adicionado!';
         btn.classList.remove('btn-dark');
         btn.classList.add('btn-success');
-        atualizarBadgeCarrinho();
+        
+        // Aguarda a bolinha do carrinho atualizar antes de liberar o botão
+        await atualizarBadgeCarrinho();
 
         setTimeout(() => {
             btn.disabled = false;

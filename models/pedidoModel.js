@@ -2,7 +2,7 @@ const pool = require('../config/database');
 
 module.exports = {
 
-  async finalizar(clienteId, { enderecoId, cartoes, cupomCodigo, freteValor }) {
+  async finalizar(clienteId, { endereco_id, cartoes, cupom_codigo, frete }) {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
@@ -12,8 +12,7 @@ module.exports = {
         `SELECT ic.pneu_id, ic.quantidade, ic.preco_unitario, p.estoque
          FROM itens_carrinho ic
          JOIN pneus p ON p.id = ic.pneu_id
-         WHERE ic.cliente_id = $1 AND ic.expira_em > NOW()`,
-        [clienteId]
+         WHERE ic.cliente_id = $1 AND ic.expira_em > NOW()`,[clienteId]
       );
       if (!itens.length) throw new Error('Carrinho vazio ou expirado.');
 
@@ -26,20 +25,20 @@ module.exports = {
       // 3. Calcula subtotal
       const subtotal = itens.reduce((s, i) => s + i.preco_unitario * i.quantidade, 0);
 
-      // 4. Calcula frete (simulado por CEP — R$15 fixo por ora)
-      const frete = parseFloat(freteValor) || 15.00;
+      // 4. Calcula frete (vem do frontend/checkout)
+      const valorFrete = parseFloat(frete) || 15.00;
 
       // 5. Aplica cupom se informado
       let cupomId = null;
       let desconto = 0;
-      if (cupomCodigo) {
+      if (cupom_codigo) {
         const { rows: [cupom] } = await client.query(
           `SELECT * FROM cupons
            WHERE codigo = $1 AND usado = FALSE
              AND (validade IS NULL OR validade > NOW())
              AND (cliente_id IS NULL OR cliente_id = $2)
            FOR UPDATE`,
-          [cupomCodigo, clienteId]
+          [cupom_codigo, clienteId]
         );
         if (!cupom) throw new Error('Cupom inválido ou expirado.');
         cupomId = cupom.id;
@@ -53,7 +52,7 @@ module.exports = {
       }
 
       // 6. Total final
-      const total = Math.max(0, subtotal + frete - desconto);
+      const total = Math.max(0, subtotal + valorFrete - desconto);
 
       // 7. Valida pagamento — soma dos cartões deve cobrir o total
       if (!cartoes || !cartoes.length) throw new Error('Informe ao menos um cartão.');
@@ -69,20 +68,17 @@ module.exports = {
       const { rows: [pedido] } = await client.query(
         `INSERT INTO pedidos (cliente_id, endereco_id, status, frete, total, cupom_id)
          VALUES ($1, $2, 'AGUARDANDO_PAGAMENTO', $3, $4, $5)
-         RETURNING *`,
-        [clienteId, enderecoId, frete, total, cupomId]
+         RETURNING *`,[clienteId, endereco_id, valorFrete, total, cupomId]
       );
 
       // 9. Insere itens do pedido e baixa estoque
       for (const item of itens) {
         await client.query(
           `INSERT INTO itens_pedido (pedido_id, pneu_id, quantidade, preco_unitario)
-           VALUES ($1, $2, $3, $4)`,
-          [pedido.id, item.pneu_id, item.quantidade, item.preco_unitario]
+           VALUES ($1, $2, $3, $4)`,[pedido.id, item.pneu_id, item.quantidade, item.preco_unitario]
         );
         await client.query(
-          `UPDATE pneus SET estoque = estoque - $1 WHERE id = $2`,
-          [item.quantidade, item.pneu_id]
+          `UPDATE pneus SET estoque = estoque - $1 WHERE id = $2`,[item.quantidade, item.pneu_id]
         );
       }
 
@@ -90,8 +86,7 @@ module.exports = {
       for (const c of cartoes) {
         await client.query(
           `INSERT INTO pagamentos_pedido (pedido_id, cartao_id, valor, status)
-           VALUES ($1, $2, $3, 'APROVADO')`,
-          [pedido.id, c.cartao_id, c.valor]
+           VALUES ($1, $2, $3, 'APROVADO')`,[pedido.id, c.cartao_id, c.valor]
         );
       }
 
@@ -113,7 +108,7 @@ module.exports = {
         pedido_id: pedido.id,
         status: 'EM_PROCESSAMENTO',
         subtotal: parseFloat(subtotal.toFixed(2)),
-        frete,
+        frete: valorFrete,
         desconto: parseFloat(desconto.toFixed(2)),
         total: parseFloat(total.toFixed(2)),
         itens: itens.length
@@ -179,8 +174,7 @@ module.exports = {
         await pool.query(
           `INSERT INTO itens_carrinho (cliente_id, pneu_id, quantidade, preco_unitario, expira_em)
            VALUES ($1, $2, $3, $4, $5)
-           ON CONFLICT DO NOTHING`,
-          [clienteId, item.pneu_id, item.quantidade, item.preco_unitario, expiraEm]
+           ON CONFLICT DO NOTHING`,[clienteId, item.pneu_id, item.quantidade, item.preco_unitario, expiraEm]
         );
       } catch (e) { /* ignora itens inválidos */ }
     }

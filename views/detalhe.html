@@ -204,6 +204,33 @@ async function carregarPneu() {
     }
 }
 
+async function atualizarBadge() {
+    const badge = document.getElementById('badgeCarrinho');
+    const cliente = JSON.parse(localStorage.getItem('cliente'));
+    let total = 0;
+
+    if (cliente) {
+        try {
+            const res = await fetch('/api/carrinho');
+            if (res.ok) {
+                const data = await res.json();
+                const itens = data.itens ||[];
+                total = itens.reduce((s, i) => s + i.quantidade, 0);
+            }
+        } catch (e) {}
+    } else {
+        const itens = JSON.parse(localStorage.getItem('carrinho') || '[]');
+        total = itens.reduce((s, i) => s + i.quantidade, 0);
+    }
+
+    if (total > 0) {
+        badge.style.display = 'block';
+        badge.textContent = total;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
 async function adicionarAoCarrinho() {
     if (!pneuAtual) return;
     const quantidade = parseInt(document.getElementById('quantidade').value) || 1;
@@ -221,10 +248,9 @@ async function adicionarAoCarrinho() {
             body: JSON.stringify({ pneu_id: pneuAtual.id, quantidade })
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.erro);
+        if (!res.ok) throw new Error(data.erro || 'Erro interno do servidor');
 
-        // Se anônimo, salva no localStorage
-        if (data.anonimo) {
+        if (data.anonimo && data.item) {
             const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
             const existente = carrinho.find(i => i.pneu_id === data.item.pneu_id);
             if (existente) {
@@ -233,8 +259,9 @@ async function adicionarAoCarrinho() {
                 carrinho.push(data.item);
             }
             localStorage.setItem('carrinho', JSON.stringify(carrinho));
-            atualizarBadge();
         }
+
+        await atualizarBadge();
 
         btn.innerHTML = '<i class="fas fa-check"></i> Adicionado ao Carrinho!';
         btn.classList.replace('btn-success', 'btn-secondary');
