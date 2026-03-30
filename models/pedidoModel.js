@@ -2,7 +2,7 @@ const pool = require('../config/database');
 
 module.exports = {
 
-  async finalizar(clienteId, { endereco_id, cartoes, cupom_codigo, frete }) {
+  async finalizar(clienteId, { endereco_id, cartoes, cupomCodigo, freteValor }) {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
@@ -26,31 +26,31 @@ module.exports = {
       const subtotal = itens.reduce((s, i) => s + i.preco_unitario * i.quantidade, 0);
 
       // 4. Calcula frete (vem do frontend/checkout)
-      const valorFrete = parseFloat(frete) || 15.00;
+      const valorFrete = parseFloat(freteValor) || 15.00;
 
       // 5. Aplica cupom se informado
       let cupomId = null;
-      let desconto = 0;
-      if (cupom_codigo) {
+    let desconto = 0;
+
+    const aplicarCupom = async (codigo) => {
+        if (!codigo) return 0;
         const { rows: [cupom] } = await client.query(
-          `SELECT * FROM cupons
-           WHERE codigo = $1 AND usado = FALSE
-             AND (validade IS NULL OR validade > NOW())
-             AND (cliente_id IS NULL OR cliente_id = $2)
-           FOR UPDATE`,
-          [cupom_codigo, clienteId]
+            `SELECT * FROM cupons
+             WHERE codigo = $1 AND usado = FALSE
+               AND (validade IS NULL OR validade > NOW())
+               AND (cliente_id IS NULL OR cliente_id = $2)
+             FOR UPDATE`,
+            [codigo, clienteId]
         );
-        if (!cupom) throw new Error('Cupom inválido ou expirado.');
-        cupomId = cupom.id;
-        desconto = parseFloat(cupom.valor);
+        if (!cupom) throw new Error(`Cupom "${codigo}" inválido ou expirado.`);
+        await client.query(`UPDATE cupons SET usado = TRUE WHERE id = $1`, [cupom.id]);
+        if (!cupomId) cupomId = cupom.id; // salva o primeiro no pedido
+        return parseFloat(cupom.valor);
+    };
 
-        // Marca cupom como usado
-        await client.query(
-          `UPDATE cupons SET usado = TRUE WHERE id = $1`,
-          [cupomId]
-        );
-      }
-
+    desconto += await aplicarCupom(cupomCodigo);
+    desconto += await aplicarCupom(cupomTrocaCodigo);
+    
       // 6. Total final
       const total = Math.max(0, subtotal + valorFrete - desconto);
 

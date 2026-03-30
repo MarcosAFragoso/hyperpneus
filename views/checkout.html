@@ -8,10 +8,10 @@
     <style>
         .step-header { background: #1a1a2e; color: white; border-radius: 8px; padding: 12px 20px; margin-bottom: 16px; }
         .step-num { background: #e8b84b; color: #1a1a2e; border-radius: 50%; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
-        .card-endereco, .card-cartao { cursor: pointer; border: 2px solid #dee2e6; transition: all .2s; }
-        .card-endereco.selecionado, .card-cartao.selecionado { border-color: #198754; background: #f0fff4; }
-        .frete-option { cursor: pointer; border: 2px solid #dee2e6; border-radius: 8px; padding: 12px; transition: all .2s; }
-        .frete-option.selecionado { border-color: #0d6efd; background: #f0f4ff; }
+        .card-sel { cursor: pointer; border: 2px solid #dee2e6; transition: all .2s; border-radius: 8px; }
+        .card-sel.selecionado { border-color: #198754; background: #f0fff4; }
+        .frete-op { cursor: pointer; border: 2px solid #dee2e6; border-radius: 8px; padding: 12px; transition: all .2s; }
+        .frete-op.selecionado { border-color: #0d6efd; background: #f0f4ff; }
         .resumo-sticky { position: sticky; top: 20px; }
     </style>
 </head>
@@ -26,90 +26,94 @@
 
 <div class="container my-4">
     <div id="alerta" class="alert d-none mb-3"></div>
-
     <div class="row g-4">
+
         <!-- COLUNA ESQUERDA -->
         <div class="col-lg-8">
 
             <!-- STEP 1: ENDEREÇO -->
-            <div class="step-header">
-                <span class="step-num">1</span> Endereço de Entrega
-            </div>
+            <div class="step-header"><span class="step-num">1</span> Endereço de Entrega</div>
             <div id="listaEnderecos" class="row g-3 mb-2"></div>
-            <button class="btn btn-outline-primary btn-sm mb-4" data-bs-toggle="modal" data-bs-target="#modalEndereco">
+            <button class="btn btn-outline-primary btn-sm mb-4"
+                    data-bs-toggle="modal" data-bs-target="#modalEndereco">
                 <i class="fas fa-plus"></i> Adicionar novo endereço
             </button>
 
             <!-- STEP 2: FRETE -->
-            <div class="step-header">
-                <span class="step-num">2</span> Frete e Entrega
-            </div>
-            <div class="row g-3 mb-4" id="opcoesFrete">
+            <div class="step-header"><span class="step-num">2</span> Frete e Entrega</div>
+            <div class="row g-3 mb-4">
                 <div class="col-md-4">
-                    <div class="frete-option selecionado" onclick="selecionarFrete(this, 'PAC', 150.00, 7)">
+                    <div class="frete-op selecionado" onclick="selecionarFrete(this,'PAC',15.00,7)">
                         <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>PAC</strong><br>
-                                <small class="text-muted">Entrega em até 7 dias úteis</small>
-                            </div>
-                            <span class="text-success fw-bold">R$ 150,00</span>
+                            <div><strong>PAC</strong><br><small class="text-muted">Até 7 dias úteis</small></div>
+                            <span class="text-success fw-bold">R$ 15,00</span>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="frete-option" onclick="selecionarFrete(this, 'SEDEX', 250.00, 2)">
+                    <div class="frete-op" onclick="selecionarFrete(this,'SEDEX',35.00,2)">
                         <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>SEDEX</strong><br>
-                                <small class="text-muted">Entrega em até 2 dias úteis</small>
-                            </div>
-                            <span class="text-success fw-bold">R$ 250,00</span>
+                            <div><strong>SEDEX</strong><br><small class="text-muted">Até 2 dias úteis</small></div>
+                            <span class="text-success fw-bold">R$ 35,00</span>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="frete-option" onclick="selecionarFrete(this, 'RETIRADA', 0, 0)">
+                    <div class="frete-op" onclick="selecionarFrete(this,'RETIRADA',0,0)">
                         <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>Retirar na Loja</strong><br>
-                                <small class="text-muted">Disponível em 1 dia útil</small>
-                            </div>
+                            <div><strong>Retirar na Loja</strong><br><small class="text-muted">1 dia útil</small></div>
                             <span class="text-success fw-bold">Grátis</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- STEP 3: CUPOM -->
-            <div class="step-header">
-                <span class="step-num">3</span> Cupom de Desconto
-            </div>
+            <!-- STEP 3: CUPONS -->
+            <div class="step-header"><span class="step-num">3</span> Cupons de Desconto</div>
             <div class="card mb-4 p-3">
-                <div class="input-group">
-                    <input type="text" id="inputCupom" class="form-control" placeholder="Digite o código do cupom">
-                    <button onclick="validarCupom()" class="btn btn-outline-secondary">Aplicar</button>
-                    <button onclick="removerCupom()" class="btn btn-outline-danger d-none" id="btnRemoverCupom">
-                        <i class="fas fa-times"></i> Remover
-                    </button>
+                <div class="row g-3">
+                    <!-- Cupom Promocional -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">
+                            <i class="fas fa-tag text-primary me-1"></i>Cupom Promocional
+                        </label>
+                        <div class="input-group">
+                            <input type="text" id="inputCupomPromo" class="form-control form-control-sm"
+                                   placeholder="Ex: PROMO10">
+                            <button onclick="validarCupom('promocional')"
+                                    class="btn btn-outline-primary btn-sm">Aplicar</button>
+                        </div>
+                        <div id="feedbackPromo" class="mt-1 small"></div>
+                    </div>
+                    <!-- Cupom de Troca -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">
+                            <i class="fas fa-exchange-alt text-warning me-1"></i>Cupom de Troca
+                        </label>
+                        <div class="input-group">
+                            <input type="text" id="inputCupomTroca" class="form-control form-control-sm"
+                                   placeholder="Ex: TROCA-001">
+                            <button onclick="validarCupom('troca')"
+                                    class="btn btn-outline-warning btn-sm">Aplicar</button>
+                        </div>
+                        <div id="feedbackTroca" class="mt-1 small"></div>
+                    </div>
                 </div>
-                <div id="cupomFeedback" class="mt-2 small"></div>
             </div>
 
             <!-- STEP 4: PAGAMENTO -->
-            <div class="step-header">
-                <span class="step-num">4</span> Forma de Pagamento
-            </div>
+            <div class="step-header"><span class="step-num">4</span> Forma de Pagamento</div>
 
-            <!-- Toggle 1 ou 2 cartões -->
+            <!-- 1 ou 2 cartões -->
             <div class="mb-3">
-                <div class="btn-group w-100" role="group">
-                    <input type="radio" class="btn-check" name="qtdCartoes" id="um" checked onchange="alternarCartoes(1)">
-                    <label class="btn btn-outline-primary" for="um">
-                        <i class="fas fa-credit-card me-1"></i> Pagar com 1 cartão
+                <div class="btn-group w-100">
+                    <input type="radio" class="btn-check" name="qtdCartoes" id="r1" checked onchange="alternarCartoes(1)">
+                    <label class="btn btn-outline-primary" for="r1">
+                        <i class="fas fa-credit-card me-1"></i> 1 cartão
                     </label>
-                    <input type="radio" class="btn-check" name="qtdCartoes" id="dois" onchange="alternarCartoes(2)">
-                    <label class="btn btn-outline-primary" for="dois">
-                        <i class="fas fa-credit-card me-1"></i><i class="fas fa-credit-card me-1"></i> Dividir em 2 cartões
+                    <input type="radio" class="btn-check" name="qtdCartoes" id="r2" onchange="alternarCartoes(2)">
+                    <label class="btn btn-outline-primary" for="r2">
+                        <i class="fas fa-credit-card me-1"></i><i class="fas fa-credit-card me-2"></i> 2 cartões
                     </label>
                 </div>
             </div>
@@ -117,32 +121,41 @@
             <!-- CARTÃO 1 -->
             <div class="card mb-3 p-3">
                 <h6 class="fw-bold mb-3"><i class="fas fa-credit-card me-2 text-primary"></i>Cartão 1</h6>
-                <div id="listaCartoes1" class="row g-2 mb-2"></div>
-                <div class="row mt-2" id="valorCartao1Div">
-                    <div class="col-md-6">
-                        <label class="form-label small">Valor neste cartão (R$)</label>
+                <div id="listaCartoes1" class="row g-2 mb-3"></div>
+                <div class="row g-3" id="camposCartao1">
+                    <div class="col-md-6" id="divValorC1">
+                        <label class="form-label small fw-bold">Valor neste cartão (R$)</label>
                         <input type="number" id="valorCartao1" class="form-control"
                                step="0.01" min="10" placeholder="0,00" oninput="calcularCartao2()">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Parcelamento</label>
+                        <select id="parcelasCartao1" class="form-select" onchange="atualizarResumo()">
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <!-- CARTÃO 2 (oculto por padrão) -->
+            <!-- CARTÃO 2 -->
             <div class="card mb-4 p-3 d-none" id="secCartao2">
                 <h6 class="fw-bold mb-3"><i class="fas fa-credit-card me-2 text-warning"></i>Cartão 2</h6>
-                <div id="listaCartoes2" class="row g-2 mb-2"></div>
-                <div class="row mt-2">
+                <div id="listaCartoes2" class="row g-2 mb-3"></div>
+                <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label small">Valor neste cartão (R$)</label>
+                        <label class="form-label small fw-bold">Valor neste cartão (R$)</label>
                         <input type="number" id="valorCartao2" class="form-control"
-                               step="0.01" min="10" placeholder="Calculado automaticamente" readonly>
+                               step="0.01" placeholder="Calculado automaticamente" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Parcelamento</label>
+                        <select id="parcelasCartao2" class="form-select"></select>
                     </div>
                 </div>
             </div>
 
         </div>
 
-        <!-- COLUNA DIREITA: RESUMO -->
+        <!-- RESUMO -->
         <div class="col-lg-4">
             <div class="resumo-sticky">
                 <div class="card shadow-sm">
@@ -155,20 +168,22 @@
                             <span>Subtotal:</span>
                             <strong id="resumoSubtotal">R$ 0,00</strong>
                         </div>
-                        <div class="d-flex justify-content-between mb-2 text-success" id="resumoDescontoDiv" style="display:none!important">
+                        <div class="d-flex justify-content-between mb-2 text-success"
+                             id="resumoDescontoDiv" style="display:none!important">
                             <span>Desconto:</span>
                             <strong id="resumoDesconto">- R$ 0,00</strong>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span>Frete:</span>
-                            <strong id="resumoFrete">R$ 150,00</strong>
+                            <strong id="resumoFrete">R$ 15,00</strong>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between mb-4">
                             <span class="fs-5 fw-bold">Total:</span>
                             <span class="fs-5 fw-bold text-primary" id="resumoTotal">R$ 0,00</span>
                         </div>
-                        <button onclick="finalizarPedido()" class="btn btn-success w-100 btn-lg shadow" id="btnFinalizar">
+                        <button onclick="finalizarPedido()"
+                                class="btn btn-success w-100 btn-lg shadow" id="btnFinalizar">
                             <i class="fas fa-lock me-2"></i>CONFIRMAR PEDIDO
                         </button>
                         <p class="text-center text-muted small mt-2">
@@ -181,7 +196,7 @@
     </div>
 </div>
 
-<!-- Modal Novo Endereço -->
+<!-- Modal Endereço -->
 <div class="modal fade" id="modalEndereco" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -193,7 +208,8 @@
                 <div class="mb-2">
                     <label class="form-label">CEP</label>
                     <div class="input-group">
-                        <input type="text" id="novoCep" class="form-control" placeholder="00000-000" maxlength="9" oninput="formatarCep(this)">
+                        <input type="text" id="novoCep" class="form-control" placeholder="00000-000"
+                               maxlength="9" oninput="formatarCep(this)">
                         <button class="btn btn-outline-secondary" onclick="buscarCep()">Buscar</button>
                     </div>
                 </div>
@@ -207,7 +223,7 @@
                     <div class="col-8 mb-2"><input type="text" id="novoCidade" class="form-control" placeholder="Cidade"></div>
                     <div class="col-4 mb-2"><input type="text" id="novoEstado" class="form-control" placeholder="UF" maxlength="2"></div>
                 </div>
-                <div class="mb-2"><input type="text" id="novoNomeDestinatario" class="form-control" placeholder="Nome do destinatário"></div>
+                <div class="mb-2"><input type="text" id="novoNome" class="form-control" placeholder="Nome do destinatário"></div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -219,16 +235,18 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// ── Estado global ──────────────────────────────────────────────
+// ── Estado ─────────────────────────────────────────────────────
 let cliente = null;
-let itensCarrinho =[];
+let itensCarrinho = [];
 let subtotal = 0;
-let freteSelecionado = { tipo: 'PAC', valor: 150.00, dias: 7 };
-let cupomAplicado = null;
+let freteSelecionado = { tipo: 'PAC', valor: 15.00, dias: 7 };
+let cupomPromo = null;
+let cupomTroca = null;
 let enderecoSelecionado = null;
 let cartao1Selecionado = null;
 let cartao2Selecionado = null;
 let usandoDoisCartoes = false;
+let todosCartoes = [];
 
 // ── Utilitários ────────────────────────────────────────────────
 function mostrarAlerta(msg, tipo = 'danger') {
@@ -241,154 +259,137 @@ function mostrarAlerta(msg, tipo = 'danger') {
 }
 
 function fmt(valor) {
-    return parseFloat(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const n = parseFloat(valor);
+    if (isNaN(n)) return 'R$ 0,00';
+    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-// ── Carregar dados iniciais ────────────────────────────────────
+function calcularTotal() {
+    const descPromo = cupomPromo ? parseFloat(cupomPromo.valor) : 0;
+    const descTroca = cupomTroca ? parseFloat(cupomTroca.valor) : 0;
+    const totalDesc = descPromo + descTroca;
+    return Math.max(0, subtotal + freteSelecionado.valor - totalDesc);
+}
+
+// ── Init ───────────────────────────────────────────────────────
 async function init() {
-    // 1. Verifica autenticação
+    // Verifica autenticação
     try {
-        const resAuth = await fetch('/api/auth/perfil');
-        if (!resAuth.ok) {
-            window.location.href = 'login.html?next=checkout';
-            return;
-        }
-        cliente = await resAuth.json();
+        const res = await fetch('/api/auth/perfil');
+        if (!res.ok) { window.location.href = 'login.html?next=checkout'; return; }
+        cliente = await res.json();
         document.getElementById('navNome').textContent = `Olá, ${cliente.nome}!`;
     } catch (e) {
-        window.location.href = 'login.html?next=checkout';
-        return;
+        window.location.href = 'login.html?next=checkout'; return;
     }
 
-    // 2. Tenta buscar o carrinho do banco, mas NÃO APAGA o localStorage ainda
-    let carrinhoBanco =[];
-    try {
-        const resCarrinho = await fetch('/api/carrinho');
-        if (resCarrinho.ok) {
-            const dadosCarrinho = await resCarrinho.json();
-            carrinhoBanco = dadosCarrinho.itens ||[];
-        }
-    } catch (erro) {
-        console.warn("Aviso: Falha ao buscar carrinho do banco, usando local.");
+    // Migra carrinho anônimo
+    const local = JSON.parse(localStorage.getItem('carrinho') || '[]');
+    if (local.length) {
+        await fetch('/api/pedidos/migrar-carrinho', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ itens: local })
+        });
+        localStorage.removeItem('carrinho');
     }
 
-    // 3. Pega o carrinho do navegador (localStorage)
-    const carrinhoLocal = JSON.parse(localStorage.getItem('carrinho') || '[]');
+    // Carrega carrinho do banco
+    const resC = await fetch('/api/carrinho');
+    const dadosC = await resC.json();
+    itensCarrinho = dadosC.itens || [];
 
-    // 4. Lógica de segurança: Usa o do banco, mas se estiver vazio, força o uso do LocalStorage
-    if (carrinhoBanco.length > 0) {
-        itensCarrinho = carrinhoBanco;
-    } else if (carrinhoLocal.length > 0) {
-        itensCarrinho = carrinhoLocal;
-    } else {
-        // Carrinho realmente vazio em ambos
-        itensCarrinho =[];
-    }
-
-    // 5. Se continuar vazio, bloqueia o checkout
-    if (!itensCarrinho || !itensCarrinho.length) {
-        mostrarAlerta('Seu carrinho está vazio! <a href="index.html">Voltar à loja</a>');
+    if (!itensCarrinho.length) {
+        mostrarAlerta('Carrinho vazio! <a href="index.html">Voltar à loja</a>');
         document.getElementById('btnFinalizar').disabled = true;
         return;
     }
 
-    // Calcula subtotal garantindo que os valores são números
-    subtotal = itensCarrinho.reduce((s, i) => {
-        const preco = parseFloat(i.preco_unitario) || 0;
-        const qtd = parseInt(i.quantidade) || 1;
-        return s + (preco * qtd);
-    }, 0);
+    subtotal = itensCarrinho.reduce((s, i) => s + parseFloat(i.preco_unitario) * parseInt(i.quantidade), 0);
 
-    // Recupera cupom salvo no carrinho
-    const cupomSalvo = localStorage.getItem('cupomCarrinho');
-    if (cupomSalvo) {
-        cupomAplicado = JSON.parse(cupomSalvo);
-        document.getElementById('inputCupom').value = cupomAplicado.codigo;
-        document.getElementById('btnRemoverCupom').classList.remove('d-none');
-        document.getElementById('cupomFeedback').innerHTML =
-            `<span class="text-success"><i class="fas fa-check"></i> Cupom aplicado: ${fmt(cupomAplicado.valor)} de desconto</span>`;
+    // Recupera cupons salvos
+    const cpSalvo = localStorage.getItem('cupomCarrinho');
+    if (cpSalvo) {
+        const cp = JSON.parse(cpSalvo);
+        if (cp.tipo === 'troca') {
+            cupomTroca = cp;
+            document.getElementById('inputCupomTroca').value = cp.codigo;
+            document.getElementById('feedbackTroca').innerHTML =
+                `<span class="text-success"><i class="fas fa-check"></i> ${fmt(cp.valor)} de crédito de troca</span>`;
+        } else {
+            cupomPromo = cp;
+            document.getElementById('inputCupomPromo').value = cp.codigo;
+            document.getElementById('feedbackPromo').innerHTML =
+                `<span class="text-success"><i class="fas fa-check"></i> ${fmt(cp.valor)} de desconto</span>`;
+        }
     }
 
-    // Carrega os endereços e cartões paralelamente
-    await Promise.all([
-        carregarEnderecos(),
-        carregarCartoes()
-    ]);
-
+    await Promise.all([carregarEnderecos(), carregarCartoes()]);
     atualizarResumo();
 }
 
 // ── Endereços ──────────────────────────────────────────────────
 async function carregarEnderecos() {
-    try {
-        const res = await fetch(`/api/clientes/${cliente.id}/enderecos`);
-        const enderecos = await res.json();
-        const lista = document.getElementById('listaEnderecos');
+    const res = await fetch(`/api/clientes/${cliente.id}/enderecos`);
+    const enderecos = await res.json();
+    const lista = document.getElementById('listaEnderecos');
 
-        if (!enderecos.length) {
-            lista.innerHTML = '<div class="col-12"><p class="text-muted">Nenhum endereço cadastrado. Adicione um abaixo.</p></div>';
-            return;
-        }
-
-        lista.innerHTML = enderecos.map(e => `
-            <div class="col-md-6">
-                <div class="card-endereco card p-3 ${enderecoSelecionado?.id === e.id ? 'selecionado' : ''}"
-                     onclick="selecionarEndereco(this, ${JSON.stringify(e).replace(/"/g, '&quot;')})">
-                    <div class="d-flex justify-content-between">
-                        <strong>${e.nome_destinatario || 'Endereço'}</strong>
-                        ${enderecoSelecionado?.id === e.id ? '<i class="fas fa-check-circle text-success"></i>' : ''}
-                    </div>
-                    <p class="mb-0 small text-muted mt-1">
-                        ${e.logradouro}, ${e.numero}${e.complemento ? ', ' + e.complemento : ''}<br>
-                        ${e.bairro} — ${e.cidade}/${e.estado}<br>
-                        CEP: ${e.cep}
-                    </p>
-                </div>
-            </div>
-        `).join('');
-
-        // Seleciona o primeiro automaticamente
-        if (enderecos.length && !enderecoSelecionado) {
-            enderecoSelecionado = enderecos[0];
-            lista.querySelector('.card-endereco')?.classList.add('selecionado');
-        }
-    } catch(erro) {
-        console.error("Erro ao carregar endereços", erro);
+    if (!enderecos.length) {
+        lista.innerHTML = '<div class="col-12"><p class="text-muted">Nenhum endereço. Adicione um abaixo.</p></div>';
+        return;
     }
+
+    // Seleciona o primeiro automaticamente
+    if (!enderecoSelecionado) enderecoSelecionado = enderecos[0];
+
+    lista.innerHTML = enderecos.map(e => `
+        <div class="col-md-6">
+            <div class="card-sel card p-3 ${enderecoSelecionado?.id === e.id ? 'selecionado' : ''}"
+                 onclick="selecionarEndereco(${e.id})">
+                <div class="d-flex justify-content-between">
+                    <strong>${e.nome_destinatario || 'Endereço'}</strong>
+                    ${enderecoSelecionado?.id === e.id
+                        ? '<i class="fas fa-check-circle text-success"></i>' : ''}
+                </div>
+                <p class="mb-0 small text-muted mt-1">
+                    ${e.logradouro}, ${e.numero}${e.complemento ? ', '+e.complemento : ''}<br>
+                    ${e.bairro} — ${e.cidade}/${e.estado}<br>CEP: ${e.cep}
+                </p>
+            </div>
+        </div>
+    `).join('');
+
+    // Armazena lista para usar no selecionarEndereco
+    window._enderecos = enderecos;
 }
 
-function selecionarEndereco(el, endereco) {
-    document.querySelectorAll('.card-endereco').forEach(c => c.classList.remove('selecionado'));
-    el.classList.add('selecionado');
-    enderecoSelecionado = endereco;
+function selecionarEndereco(id) {
+    enderecoSelecionado = window._enderecos.find(e => e.id === id);
     carregarEnderecos();
 }
 
-// ── Novo endereço ──────────────────────────────────────────────
 function formatarCep(input) {
-    let v = input.value.replace(/\D/g, '').slice(0, 8);
+    let v = input.value.replace(/\D/g,'').slice(0,8);
     if (v.length > 5) v = v.replace(/(\d{5})(\d{1,3})/, '$1-$2');
     input.value = v;
 }
 
 async function buscarCep() {
-    const cep = document.getElementById('novoCep').value.replace(/\D/g, '');
+    const cep = document.getElementById('novoCep').value.replace(/\D/g,'');
     if (cep.length !== 8) return alert('CEP inválido.');
-    try {
-        const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-        const data = await res.json();
-        if (data.erro) return alert('CEP não encontrado.');
-        document.getElementById('novoLogradouro').value = data.logradouro;
-        document.getElementById('novoBairro').value = data.bairro;
-        document.getElementById('novoCidade').value = data.localidade;
-        document.getElementById('novoEstado').value = data.uf;
-        document.getElementById('novoNumero').focus();
-    } catch (e) { alert('Erro ao buscar CEP.'); }
+    const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const d = await res.json();
+    if (d.erro) return alert('CEP não encontrado.');
+    document.getElementById('novoLogradouro').value = d.logradouro;
+    document.getElementById('novoBairro').value = d.bairro;
+    document.getElementById('novoCidade').value = d.localidade;
+    document.getElementById('novoEstado').value = d.uf;
+    document.getElementById('novoNumero').focus();
 }
 
 async function salvarEndereco() {
     const dados = {
-        nome_destinatario: document.getElementById('novoNomeDestinatario').value,
+        nome_destinatario: document.getElementById('novoNome').value,
         logradouro: document.getElementById('novoLogradouro').value,
         numero: document.getElementById('novoNumero').value,
         complemento: document.getElementById('novoComplemento').value,
@@ -400,7 +401,6 @@ async function salvarEndereco() {
     };
     if (!dados.logradouro || !dados.numero || !dados.cidade)
         return alert('Preencha os campos obrigatórios.');
-
     const res = await fetch(`/api/clientes/${cliente.id}/enderecos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -414,58 +414,70 @@ async function salvarEndereco() {
 
 // ── Cartões ────────────────────────────────────────────────────
 async function carregarCartoes() {
-    try {
-        const res = await fetch(`/api/clientes/${cliente.id}/cartoes`);
-        const cartoes = await res.json();
+    const res = await fetch(`/api/clientes/${cliente.id}/cartoes`);
+    todosCartoes = await res.json();
 
-        ['1', '2'].forEach(n => {
-            const lista = document.getElementById(`listaCartoes${n}`);
-            if (!cartoes.length) {
-                lista.innerHTML = '<div class="col-12"><p class="text-muted small">Nenhum cartão cadastrado. Adicione em <a href="minha-conta.html">Minha Conta</a>.</p></div>';
-                return;
-            }
-            lista.innerHTML = cartoes.map(c => `
-                <div class="col-12">
-                    <div class="card-cartao card p-2 ${(n==='1' ? cartao1Selecionado : cartao2Selecionado)?.id === c.id ? 'selecionado' : ''}"
-                         onclick="selecionarCartao(${n}, this, ${JSON.stringify(c).replace(/"/g, '&quot;')})">
-                        <div class="d-flex align-items-center gap-3">
-                            <i class="fas fa-credit-card fa-lg text-primary"></i>
-                            <div>
-                                <strong>${c.bandeira}</strong> **** ${c.numero_final}
-                                <br><small class="text-muted">${c.nome_impresso}</small>
-                            </div>
-                            ${(n==='1' ? cartao1Selecionado : cartao2Selecionado)?.id === c.id
-                                ? '<i class="fas fa-check-circle text-success ms-auto"></i>' : ''}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        });
-
-        // Seleciona principal automaticamente
-        const principal = cartoes.find(c => c.principal) || cartoes[0];
-        if (principal && !cartao1Selecionado) {
-            cartao1Selecionado = principal;
-            await carregarCartoes(); // re-renderiza para mostrar como selecionado
-        }
-    } catch(erro) {
-        console.error("Erro ao carregar cartões", erro);
+    // Seleciona principal automaticamente
+    if (!cartao1Selecionado) {
+        cartao1Selecionado = todosCartoes.find(c => c.principal) || todosCartoes[0] || null;
     }
+
+    renderCartoes();
+    gerarParcelas();
 }
 
-function selecionarCartao(num, el, cartao) {
-    const prefix = `listaCartoes${num}`;
-    document.querySelectorAll(`#${prefix} .card-cartao`).forEach(c => c.classList.remove('selecionado'));
-    el.classList.add('selecionado');
-    if (num === 1) cartao1Selecionado = cartao;
-    else cartao2Selecionado = cartao;
-    calcularCartao2();
+function renderCartoes() {
+    ['1','2'].forEach(n => {
+        const lista = document.getElementById(`listaCartoes${n}`);
+        const selecionado = n === '1' ? cartao1Selecionado : cartao2Selecionado;
+
+        if (!todosCartoes.length) {
+            lista.innerHTML = '<div class="col-12"><p class="text-muted small">Nenhum cartão. Adicione em <a href="minha-conta.html">Minha Conta</a>.</p></div>';
+            return;
+        }
+
+        lista.innerHTML = todosCartoes.map(c => `
+            <div class="col-12">
+                <div class="card-sel card p-2 ${selecionado?.id === c.id ? 'selecionado' : ''}"
+                     onclick="selecionarCartao(${n}, ${c.id})">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="fas fa-credit-card fa-lg text-primary"></i>
+                        <div>
+                            <strong>${c.bandeira}</strong> **** ${c.numero_final}<br>
+                            <small class="text-muted">${c.nome_impresso}</small>
+                        </div>
+                        ${selecionado?.id === c.id
+                            ? '<i class="fas fa-check-circle text-success ms-auto"></i>' : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    });
+}
+
+function selecionarCartao(num, id) {
+    if (num == 1) cartao1Selecionado = todosCartoes.find(c => c.id === id);
+    else cartao2Selecionado = todosCartoes.find(c => c.id === id);
+    renderCartoes();
+}
+
+function gerarParcelas() {
+    const total = calcularTotal();
+    const opcoes = [];
+    for (let i = 1; i <= 10; i++) {
+        const val = total / i;
+        if (val < 10) break;
+        const juros = i <= 3 ? 'sem juros' : `c/ juros`;
+        opcoes.push(`<option value="${i}">${i}x de ${fmt(val)} ${juros}</option>`);
+    }
+    document.getElementById('parcelasCartao1').innerHTML = opcoes.join('');
+    document.getElementById('parcelasCartao2').innerHTML = opcoes.join('');
 }
 
 function alternarCartoes(qtd) {
     usandoDoisCartoes = qtd === 2;
     document.getElementById('secCartao2').classList.toggle('d-none', !usandoDoisCartoes);
-    document.getElementById('valorCartao1Div').classList.toggle('d-none', !usandoDoisCartoes);
+    document.getElementById('divValorC1').classList.toggle('d-none', !usandoDoisCartoes);
     if (!usandoDoisCartoes) {
         document.getElementById('valorCartao1').value = '';
         document.getElementById('valorCartao2').value = '';
@@ -479,21 +491,32 @@ function calcularCartao2() {
     const v1 = parseFloat(document.getElementById('valorCartao1').value) || 0;
     const v2 = Math.max(0, total - v1);
     document.getElementById('valorCartao2').value = v2.toFixed(2);
+    // Atualiza parcelas do cartão 2
+    const opcoes = [];
+    for (let i = 1; i <= 10; i++) {
+        const val = v2 / i;
+        if (val < 10) break;
+        opcoes.push(`<option value="${i}">${i}x de ${fmt(val)}</option>`);
+    }
+    document.getElementById('parcelasCartao2').innerHTML = opcoes.join('');
 }
 
 // ── Frete ──────────────────────────────────────────────────────
 function selecionarFrete(el, tipo, valor, dias) {
-    document.querySelectorAll('.frete-option').forEach(f => f.classList.remove('selecionado'));
+    document.querySelectorAll('.frete-op').forEach(f => f.classList.remove('selecionado'));
     el.classList.add('selecionado');
     freteSelecionado = { tipo, valor, dias };
     atualizarResumo();
     calcularCartao2();
+    gerarParcelas();
 }
 
-// ── Cupom ──────────────────────────────────────────────────────
-async function validarCupom() {
-    const codigo = document.getElementById('inputCupom').value.trim().toUpperCase();
-    if (!codigo) return mostrarAlerta('Digite um código de cupom.');
+// ── Cupons ─────────────────────────────────────────────────────
+async function validarCupom(tipo) {
+    const inputId = tipo === 'troca' ? 'inputCupomTroca' : 'inputCupomPromo';
+    const feedbackId = tipo === 'troca' ? 'feedbackTroca' : 'feedbackPromo';
+    const codigo = document.getElementById(inputId).value.trim().toUpperCase();
+    if (!codigo) return;
 
     try {
         const res = await fetch('/api/carrinho/cupom/validar', {
@@ -502,89 +525,100 @@ async function validarCupom() {
             body: JSON.stringify({ codigo })
         });
         const data = await res.json();
+
         if (!res.ok || !data.valido) {
-            document.getElementById('cupomFeedback').innerHTML =
+            document.getElementById(feedbackId).innerHTML =
                 `<span class="text-danger"><i class="fas fa-times"></i> ${data.erro}</span>`;
-            cupomAplicado = null;
-        } else {
-            cupomAplicado = data.cupom;
-            localStorage.setItem('cupomCarrinho', JSON.stringify(cupomAplicado));
-            document.getElementById('btnRemoverCupom').classList.remove('d-none');
-            document.getElementById('cupomFeedback').innerHTML =
-                `<span class="text-success"><i class="fas fa-check"></i> Cupom aplicado! Desconto de ${fmt(data.cupom.valor)}</span>`;
-            atualizarResumo();
-            calcularCartao2();
+            return;
         }
+
+        // Verifica se o tipo bate
+        if (data.cupom.tipo !== tipo) {
+            document.getElementById(feedbackId).innerHTML =
+                `<span class="text-danger"><i class="fas fa-times"></i> Este cupom é do tipo "${data.cupom.tipo}", não "${tipo}".</span>`;
+            return;
+        }
+
+        if (tipo === 'troca') {
+            cupomTroca = data.cupom;
+            document.getElementById(feedbackId).innerHTML =
+                `<span class="text-success"><i class="fas fa-check"></i> ${fmt(data.cupom.valor)} de crédito de troca aplicado!</span>`;
+        } else {
+            cupomPromo = data.cupom;
+            document.getElementById(feedbackId).innerHTML =
+                `<span class="text-success"><i class="fas fa-check"></i> Desconto de ${fmt(data.cupom.valor)} aplicado!</span>`;
+        }
+
+        localStorage.setItem('cupomCarrinho', JSON.stringify(data.cupom));
+        atualizarResumo();
+        calcularCartao2();
+        gerarParcelas();
+
     } catch (e) { mostrarAlerta('Erro ao validar cupom.'); }
 }
 
-function removerCupom() {
-    cupomAplicado = null;
-    localStorage.removeItem('cupomCarrinho');
-    document.getElementById('inputCupom').value = '';
-    document.getElementById('cupomFeedback').innerHTML = '';
-    document.getElementById('btnRemoverCupom').classList.add('d-none');
-    atualizarResumo();
-    calcularCartao2();
-}
-
 // ── Resumo ─────────────────────────────────────────────────────
-function calcularTotal() {
-    const desconto = cupomAplicado ? parseFloat(cupomAplicado.valor) : 0;
-    return Math.max(0, subtotal + freteSelecionado.valor - desconto);
-}
-
 function atualizarResumo() {
-    const desconto = cupomAplicado ? parseFloat(cupomAplicado.valor) : 0;
+    const descPromo = cupomPromo ? parseFloat(cupomPromo.valor) : 0;
+    const descTroca = cupomTroca ? parseFloat(cupomTroca.valor) : 0;
+    const totalDesc = descPromo + descTroca;
     const total = calcularTotal();
 
     document.getElementById('resumoItens').innerHTML = itensCarrinho.map(i => `
         <div class="d-flex justify-content-between mb-1 small">
             <span>${i.marca} ${i.modelo} ${i.largura}/${i.perfil} R${i.aro} x${i.quantidade}</span>
-            <strong>${fmt(i.preco_unitario * i.quantidade)}</strong>
+            <strong>${fmt(parseFloat(i.preco_unitario) * parseInt(i.quantidade))}</strong>
         </div>
     `).join('');
 
     document.getElementById('resumoSubtotal').textContent = fmt(subtotal);
-    document.getElementById('resumoFrete').textContent = freteSelecionado.valor === 0 ? 'Grátis' : fmt(freteSelecionado.valor);
+    document.getElementById('resumoFrete').textContent =
+        freteSelecionado.valor === 0 ? 'Grátis' : fmt(freteSelecionado.valor);
     document.getElementById('resumoTotal').textContent = fmt(total);
 
-    if (desconto > 0) {
+    if (totalDesc > 0) {
         document.getElementById('resumoDescontoDiv').style.display = 'flex';
-        document.getElementById('resumoDesconto').textContent = `- ${fmt(desconto)}`;
+        document.getElementById('resumoDesconto').textContent = `- ${fmt(totalDesc)}`;
     } else {
         document.getElementById('resumoDescontoDiv').style.display = 'none';
     }
 }
 
-// ── Finalizar Pedido ───────────────────────────────────────────
+// ── Finalizar ──────────────────────────────────────────────────
 async function finalizarPedido() {
-    // Validações
     if (!enderecoSelecionado) return mostrarAlerta('Selecione um endereço de entrega.');
     if (!cartao1Selecionado) return mostrarAlerta('Selecione um cartão de pagamento.');
 
     const total = calcularTotal();
-    let cartoes =[];
+    let cartoes = [];
 
     if (usandoDoisCartoes) {
         if (!cartao2Selecionado) return mostrarAlerta('Selecione o segundo cartão.');
         if (cartao1Selecionado.id === cartao2Selecionado.id)
-            return mostrarAlerta('Selecione cartões diferentes para cada campo.');
-        
+            return mostrarAlerta('Selecione cartões diferentes.');
         const v1 = parseFloat(document.getElementById('valorCartao1').value);
         const v2 = parseFloat(document.getElementById('valorCartao2').value);
-        
         if (!v1 || v1 < 10) return mostrarAlerta('Valor mínimo por cartão é R$ 10,00.');
         if (Math.abs(v1 + v2 - total) > 0.01)
             return mostrarAlerta('A soma dos cartões não corresponde ao total.');
-        
-        cartoes =[
-            { cartao_id: cartao1Selecionado.id, valor: v1 },
-            { cartao_id: cartao2Selecionado.id, valor: v2 }
+        cartoes = [
+            { cartao_id: cartao1Selecionado.id, valor: v1,
+              parcelas: parseInt(document.getElementById('parcelasCartao1').value) },
+            { cartao_id: cartao2Selecionado.id, valor: v2,
+              parcelas: parseInt(document.getElementById('parcelasCartao2').value) }
         ];
     } else {
-        cartoes =[{ cartao_id: cartao1Selecionado.id, valor: total }];
+        cartoes = [{
+            cartao_id: cartao1Selecionado.id,
+            valor: total,
+            parcelas: parseInt(document.getElementById('parcelasCartao1').value)
+        }];
     }
+
+    // Monta lista de cupons usados
+    const cupons = [];
+    if (cupomPromo) cupons.push(cupomPromo.codigo);
+    if (cupomTroca) cupons.push(cupomTroca.codigo);
 
     const btn = document.getElementById('btnFinalizar');
     btn.disabled = true;
@@ -597,30 +631,27 @@ async function finalizarPedido() {
             body: JSON.stringify({
                 endereco_id: enderecoSelecionado.id,
                 cartoes,
-                cupom_codigo: cupomAplicado?.codigo || null,
+                cupom_codigo: cupons[0] || null,
+                cupom_troca_codigo: cupons[1] || null,
                 frete: freteSelecionado.valor,
                 tipo_frete: freteSelecionado.tipo
             })
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.erro || "Erro interno do servidor.");
+        if (!res.ok) throw new Error(data.erro);
 
-        // Limpa cupom salvo e o carrinho local após comprar
         localStorage.removeItem('cupomCarrinho');
         localStorage.removeItem('carrinho');
-
-        // Redireciona para confirmação
         window.location.href = `minha-conta.html?pedido=${data.pedido_id}&sucesso=1`;
 
     } catch (err) {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-lock me-2"></i>CONFIRMAR PEDIDO';
-        mostrarAlerta(`<i class="fas fa-exclamation-triangle me-2"></i>${err.message}`);
+        mostrarAlerta(err.message);
     }
 }
 
-// ── Init ───────────────────────────────────────────────────────
 window.onload = init;
 </script>
 </body>
