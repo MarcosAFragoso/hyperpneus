@@ -2,7 +2,7 @@ const pool = require('../config/database');
 
 module.exports = {
 
-  async finalizar(clienteId, { endereco_id, cartoes, cupomCodigo, freteValor }) {
+  async finalizar(clienteId, { enderecoId, cartoes, cupomCodigo, cupomTrocaCodigo, freteValor }) {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
