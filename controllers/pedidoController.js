@@ -3,27 +3,28 @@ const Pedido = require('../models/pedidoModel');
 module.exports = {
 
   async finalizar(req, res) {
-  try {
-    const clienteId = req.session.cliente?.id;
-    if (!clienteId) return res.status(401).json({ erro: 'Faça login para finalizar a compra.' });
+    try {
+      const clienteId = req.session.cliente?.id;
+      if (!clienteId) return res.status(401).json({ erro: 'Faça login para finalizar a compra.' });
 
-    const { endereco_id, cartoes, cupom_codigo, frete, tipo_frente } = req.body;
-    if (!endereco_id) return res.status(400).json({ erro: 'Selecione um endereço de entrega.' });
-    if (!cartoes?.length) return res.status(400).json({ erro: 'Informe ao menos um cartão.' });
+      // ← CORRIGIDO: cupom_troca_codigo adicionado na desestruturação
+      const { endereco_id, cartoes, cupom_codigo, cupom_troca_codigo, frete, tipo_frete } = req.body;
+      if (!endereco_id) return res.status(400).json({ erro: 'Selecione um endereço de entrega.' });
+      if (!cartoes?.length) return res.status(400).json({ erro: 'Informe ao menos um cartão.' });
 
-    const resultado = await Pedido.finalizar(clienteId, {
-    enderecoId: endereco_id,
-    cartoes,
-    cupomCodigo: cupom_codigo,
-    cupomTrocaCodigo: cupom_troca_codigo,
-    freteValor: frete ?? 15.00
-    });
+      const resultado = await Pedido.finalizar(clienteId, {
+        enderecoId: endereco_id,
+        cartoes,
+        cupomCodigo: cupom_codigo || null,
+        cupomTrocaCodigo: cupom_troca_codigo || null,
+        freteValor: frete ?? 15.00
+      });
 
-    res.status(201).json(resultado);
-  } catch (err) {
-    res.status(400).json({ erro: err.message });
-  }
-},
+      res.status(201).json(resultado);
+    } catch (err) {
+      res.status(400).json({ erro: err.message });
+    }
+  },
 
   async listar(req, res) {
     try {

@@ -12,85 +12,90 @@ module.exports = {
         `SELECT ic.pneu_id, ic.quantidade, ic.preco_unitario, p.estoque
          FROM itens_carrinho ic
          JOIN pneus p ON p.id = ic.pneu_id
-         WHERE ic.cliente_id = $1 AND ic.expira_em > NOW()`,[clienteId]
+         WHERE ic.cliente_id = $1 AND ic.expira_em > NOW()`,
+        [clienteId]
       );
       if (!itens.length) throw new Error('Carrinho vazio ou expirado.');
 
-      // 2. Verifica estoque de cada item
+      // 2. Verifica estoque
       for (const item of itens) {
         if (item.estoque < item.quantidade)
           throw new Error(`Estoque insuficiente para o pneu ${item.pneu_id}.`);
       }
 
-      // 3. Calcula subtotal
-      const subtotal = itens.reduce((s, i) => s + i.preco_unitario * i.quantidade, 0);
+      // 3. Subtotal
+      const subtotal = itens.reduce((s, i) => s + parseFloat(i.preco_unitario) * parseInt(i.quantidade), 0);
 
-      // 4. Calcula frete (vem do frontend/checkout)
+      // 4. Frete
       const valorFrete = parseFloat(freteValor) || 15.00;
 
-      // 5. Aplica cupom se informado
+      // 5. Aplica cupons (promocional e/ou troca)
       let cupomId = null;
-    let desconto = 0;
+      let desconto = 0;
 
-    const aplicarCupom = async (codigo) => {
+      const aplicarCupom = async (codigo) => {
         if (!codigo) return 0;
         const { rows: [cupom] } = await client.query(
-            `SELECT * FROM cupons
-             WHERE codigo = $1 AND usado = FALSE
-               AND (validade IS NULL OR validade > NOW())
-               AND (cliente_id IS NULL OR cliente_id = $2)
-             FOR UPDATE`,
-            [codigo, clienteId]
+          `SELECT * FROM cupons
+           WHERE codigo = $1 AND usado = FALSE
+             AND (validade IS NULL OR validade > NOW())
+             AND (cliente_id IS NULL OR cliente_id = $2)
+           FOR UPDATE`,
+          [codigo, clienteId]
         );
         if (!cupom) throw new Error(`Cupom "${codigo}" inválido ou expirado.`);
         await client.query(`UPDATE cupons SET usado = TRUE WHERE id = $1`, [cupom.id]);
-        if (!cupomId) cupomId = cupom.id; // salva o primeiro no pedido
+        if (!cupomId) cupomId = cupom.id;
         return parseFloat(cupom.valor);
-    };
+      };
 
-    desconto += await aplicarCupom(cupomCodigo);
-    desconto += await aplicarCupom(cupomTrocaCodigo);
-    
-      // 6. Total final
+      desconto += await aplicarCupom(cupomCodigo);
+      desconto += await aplicarCupom(cupomTrocaCodigo);
+
+      // 6. Total
       const total = Math.max(0, subtotal + valorFrete - desconto);
 
-      // 7. Valida pagamento — soma dos cartões deve cobrir o total
+      // 7. Valida cartões
       if (!cartoes || !cartoes.length) throw new Error('Informe ao menos um cartão.');
       if (cartoes.length > 2) throw new Error('Máximo de 2 cartões por pedido.');
       const somaCartoes = cartoes.reduce((s, c) => s + parseFloat(c.valor), 0);
       if (Math.abs(somaCartoes - total) > 0.01)
         throw new Error(`Soma dos cartões (R$${somaCartoes.toFixed(2)}) não cobre o total (R$${total.toFixed(2)}).`);
       for (const c of cartoes) {
-        if (c.valor < 10) throw new Error('Valor mínimo por cartão é R$10,00.');
+        if (parseFloat(c.valor) < 10) throw new Error('Valor mínimo por cartão é R$10,00.');
       }
 
-      // 8. Cria o pedido
+      // 8. Cria o pedido — ← CORRIGIDO: enderecoId em vez de endereco_id
       const { rows: [pedido] } = await client.query(
         `INSERT INTO pedidos (cliente_id, endereco_id, status, frete, total, cupom_id)
          VALUES ($1, $2, 'AGUARDANDO_PAGAMENTO', $3, $4, $5)
-         RETURNING *`,[clienteId, endereco_id, valorFrete, total, cupomId]
+         RETURNING *`,
+        [clienteId, enderecoId, valorFrete, total, cupomId]
       );
 
-      // 9. Insere itens do pedido e baixa estoque
+      // 9. Itens + baixa estoque
       for (const item of itens) {
         await client.query(
           `INSERT INTO itens_pedido (pedido_id, pneu_id, quantidade, preco_unitario)
-           VALUES ($1, $2, $3, $4)`,[pedido.id, item.pneu_id, item.quantidade, item.preco_unitario]
+           VALUES ($1, $2, $3, $4)`,
+          [pedido.id, item.pneu_id, item.quantidade, item.preco_unitario]
         );
         await client.query(
-          `UPDATE pneus SET estoque = estoque - $1 WHERE id = $2`,[item.quantidade, item.pneu_id]
+          `UPDATE pneus SET estoque = estoque - $1 WHERE id = $2`,
+          [item.quantidade, item.pneu_id]
         );
       }
 
-      // 10. Registra pagamentos
+      // 10. Pagamentos
       for (const c of cartoes) {
         await client.query(
           `INSERT INTO pagamentos_pedido (pedido_id, cartao_id, valor, status)
-           VALUES ($1, $2, $3, 'APROVADO')`,[pedido.id, c.cartao_id, c.valor]
+           VALUES ($1, $2, $3, 'APROVADO')`,
+          [pedido.id, c.cartao_id, parseFloat(c.valor)]
         );
       }
 
-      // 11. Atualiza status para processando
+      // 11. Atualiza status
       await client.query(
         `UPDATE pedidos SET status = 'EM_PROCESSAMENTO' WHERE id = $1`,
         [pedido.id]
@@ -174,7 +179,10 @@ module.exports = {
         await pool.query(
           `INSERT INTO itens_carrinho (cliente_id, pneu_id, quantidade, preco_unitario, expira_em)
            VALUES ($1, $2, $3, $4, $5)
-           ON CONFLICT DO NOTHING`,[clienteId, item.pneu_id, item.quantidade, item.preco_unitario, expiraEm]
+           ON CONFLICT (cliente_id, pneu_id) DO UPDATE
+           SET quantidade = itens_carrinho.quantidade + EXCLUDED.quantidade,
+               expira_em = EXCLUDED.expira_em`,
+          [clienteId, item.pneu_id, item.quantidade, item.preco_unitario, expiraEm]
         );
       } catch (e) { /* ignora itens inválidos */ }
     }

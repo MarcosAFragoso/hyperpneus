@@ -334,12 +334,12 @@ function irParaCheckout() {
     if (!itensCarrinho.length) return mostrarAlerta('Seu carrinho está vazio.');
     const cliente = clienteLogado();
     if (!cliente) {
-        window.location.href = 'login.html?next=checkout';
+        // ← CORRIGIDO: volta para carrinho após login, não para minha conta
+        window.location.href = 'login.html?next=carrinho';
         return;
     }
     window.location.href = 'checkout.html';
 }
-
 window.onload = () => {
     renderNavbar();
     const cupomSalvo = localStorage.getItem('cupomCarrinho');

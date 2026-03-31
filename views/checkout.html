@@ -532,11 +532,22 @@
             usandoDoisCartoes = qtd === 2;
             document.getElementById('secCartao2').classList.toggle('d-none', !usandoDoisCartoes);
             document.getElementById('divValorC1').classList.toggle('d-none', !usandoDoisCartoes);
+
+            // Ao voltar para 1 cartão, reseta valores e recalcula parcelas
+            document.getElementById('valorCartao1').value = '';
+            document.getElementById('valorCartao1').dataset.valor = '';
+            document.getElementById('valorCartao2').value = '';
+
             if (!usandoDoisCartoes) {
-                document.getElementById('valorCartao1').value = '';
-                document.getElementById('valorCartao2').value = '';
+                // 1 cartão: parcelas baseadas no total inteiro
+                gerarParcelas();
+            } else {
+                // 2 cartões: parcelas zeradas até digitar valor
+                document.getElementById('parcelasCartao1').innerHTML =
+                    '<option>Digite o valor acima</option>';
+                document.getElementById('parcelasCartao2').innerHTML =
+                    '<option>Calculado automaticamente</option>';
             }
-            calcularCartao2();
         }
 
         function onValorCartao1(input) {
