@@ -70,7 +70,22 @@
         </div>
     </div>
 
-    <div class="modal fade" id="nfModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-body bg-light" id="nfBody" style="font-family: monospace; white-space: pre; font-size: 12px;"></div></div></div></div>
+    <!-- Modal Nota Fiscal CORRIGIDO -->
+    <div class="modal fade" id="nfModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold">Nota Fiscal Eletrônica - NF-e</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0" id="nfBody" style="background: #fff;"></div>
+                <div class="modal-footer bg-light">
+                    <button class="btn btn-secondary btn-sm" onclick="window.print()"><i class="fas fa-print me-1"></i>Imprimir</button>
+                    <button class="btn btn-dark btn-sm" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -90,9 +105,9 @@
             const res = await fetch(`/api/pedidos/${id}`);
             pedidoData = await res.json();
             
-            document.getElementById('endRef').innerHTML = `<strong>${pedidoData.logradouro}, ${pedidoData.numero}</strong><br>${pedidoData.bairro}<br>${pedidoData.cidade}/${pedidoData.estado}`;
+            document.getElementById('endRef').innerHTML = `<strong>${pedidoData.logradouro}, ${pedidoData.numero}</strong><br>${pedidoData.bairro}<br>${pedidoData.cidade}/${pedidoData.estado} - CEP: ${pedidoData.cep}`;
             document.getElementById('totalRef').textContent = fmt(pedidoData.total);
-            document.getElementById('pagRef').innerHTML = (pedidoData.pagamentos || []).map(p => `<div>${p.bandeira} **** ${p.numero_final}</div>`).join('');
+            document.getElementById('pagRef').innerHTML = (pedidoData.pagamentos || []).map(p => `<div><i class="fab fa-cc-${p.bandeira.toLowerCase()} me-2"></i>${p.bandeira} **** ${p.numero_final}</div>`).join('');
             document.getElementById('btnGerenciar').href = `troca.html?pedido=${pedidoData.id}`;
             document.getElementById('cardsInfo').style.setProperty('display', 'flex', 'important');
             document.getElementById('acoes').style.setProperty('display', 'flex', 'important');
@@ -104,7 +119,6 @@
         function renderHistoricoFixo() {
             const base = new Date(pedidoData.criado_em);
             const format = (d) => d.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
-            
             addTimeline('Pedido recebido e confirmado.', format(base));
             base.setMinutes(base.getMinutes() + 15);
             addTimeline('Pagamento aprovado.', format(base));
@@ -116,7 +130,6 @@
             addTimeline('🚚 O motorista saiu para entrega.', format(base));
             base.setMinutes(base.getMinutes() + 45);
             addTimeline('✅ Pedido entregue com sucesso.', format(base));
-            
             document.getElementById('progressLine').style.width = '100%';
             document.querySelectorAll('.step-item').forEach(s => s.classList.add('active'));
             document.getElementById('statusTitle').textContent = 'Pedido Entregue';
@@ -125,7 +138,6 @@
         async function simular() {
             const d = 15000;
             const format = () => new Date().toLocaleString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-            
             const run = async (idx, msg) => {
                 document.querySelectorAll('.step-item').forEach((s, i) => {
                     s.classList.remove('active', 'current');
@@ -136,7 +148,6 @@
                 addTimeline(msg, new Date().toLocaleString('pt-BR'));
                 await new Promise(r => setTimeout(r, d));
             };
-
             await run(0, 'Pedido efetuado.');
             await run(1, 'Pagamento confirmado.');
             await run(2, 'Separado no estoque.');
@@ -153,9 +164,45 @@
         }
 
         function verNF() {
-            document.getElementById('nfBody').textContent = `HYPERPNEUS | NF-e #${pedidoData.id}\nTOTAL: ${fmt(pedidoData.total)}\nStatus: Homologada`;
+            if (!pedidoData) return;
+            let nf = `
+NOTA FISCAL ELETRÔNICA - NF-e
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HYPERPNEUS LTDA
+CNPJ: 00.000.000/0001-00
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Número do Pedido : #${pedidoData.id}
+Data de Emissão  : ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DESTINATÁRIO
+Logradouro: ${pedidoData.logradouro}, ${pedidoData.numero}
+Bairro    : ${pedidoData.bairro}
+Cidade/UF : ${pedidoData.cidade}/${pedidoData.estado}
+CEP       : ${pedidoData.cep}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ITENS DO PEDIDO
+${(pedidoData.itens || []).map(i => 
+    `${i.marca} ${i.modelo} (x${i.quantidade}) = ${fmt(i.preco_unitario * i.quantidade)}`
+).join('\n')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RESUMO DE VALORES
+Subtotal         : ${fmt(pedidoData.total - (pedidoData.frete || 0))}
+Frete            : ${fmt(pedidoData.frete || 0)}
+TOTAL            : ${fmt(pedidoData.total)}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FORMA DE PAGAMENTO
+${(pedidoData.pagamentos || []).map(p => 
+    `${p.bandeira} **** ${p.numero_final}: ${fmt(p.valor)}`
+).join('\n')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHAVE DE ACESSO (NF-e)
+${Math.random().toString(36).substr(2,10).toUpperCase()} ${Math.random().toString(36).substr(2,10).toUpperCase()} ${Math.random().toString(36).substr(2,10).toUpperCase()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+            document.getElementById('nfBody').innerHTML = `<pre style="font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.4; margin: 0; padding: 20px; white-space: pre-wrap;">${nf}</pre>`;
             new bootstrap.Modal(document.getElementById('nfModal')).show();
         }
+
         window.onload = carregar;
     </script>
 </body>
