@@ -11,10 +11,11 @@
         .list-group-item.active { background-color: var(--kabum-blue); border-color: var(--kabum-blue); font-weight: bold; }
         .order-card { background: white; border-radius: 4px; border: 1px solid #eee; margin-bottom: 15px; }
         .btn-kabum { background: var(--kabum-orange); color: #fff; font-weight: bold; font-size: 12px; padding: 8px 15px; border: none; }
+        .badge-principal { background-color: #e7f3ff; color: var(--kabum-blue); font-size: 10px; padding: 3px 8px; border-radius: 10px; border: 1px solid var(--kabum-blue); }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark mb-4">
+    <nav class="navbar navbar-dark bg-dark">
         <div class="container"><a class="navbar-brand fw-bold" href="index.html">HYPERPNEUS</a>
         <div class="text-white small"><span id="nomeNav"></span> <button onclick="sair()" class="btn btn-outline-light btn-sm">Sair</button></div></div>
     </nav>
@@ -32,22 +33,28 @@
             </div>
             <div class="col-md-9">
                 <div id="sec-pedidos"><div id="listaPedidos"></div></div>
-                <!-- Divs das outras abas (garagem, cartões, etc) permanecem aqui para serem alternadas -->
-                <div id="sec-garagem" class="d-none"><h4>Garagem</h4>...conteúdo...</div>
-                <div id="sec-cartoes" class="d-none"><h4>Cartões</h4>...conteúdo...</div>
-                <div id="sec-enderecos" class="d-none"><h4>Endereços</h4>...conteúdo...</div>
-                <div id="sec-dados" class="d-none"><h4>Dados Pessoais</h4>...conteúdo...</div>
+                <div id="sec-garagem" class="d-none"><div class="card shadow-sm border-0"><div class="card-header bg-white"><strong>Minha Garagem</strong></div><div class="card-body" id="listaVeiculos">Carregando...</div></div></div>
+                <div id="sec-cartoes" class="d-none"><div class="card shadow-sm border-0"><div class="card-header bg-white"><strong>Meus Cartões</strong></div><div class="card-body" id="listaCartoes">Carregando...</div></div></div>
+                <div id="sec-enderecos" class="d-none"><div class="card shadow-sm border-0"><div class="card-header bg-white"><strong>Meus Endereços</strong></div><div class="card-body" id="listaEnderecos">Carregando...</div></div></div>
+                <div id="sec-dados" class="d-none"><div class="card shadow-sm border-0 p-4"><div id="formDados">Carregando dados...</div></div></div>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let clienteId = null;
+
         function mostrarAba(aba) {
             document.querySelectorAll('.list-group-item').forEach(a => a.classList.remove('active'));
             document.querySelectorAll('[id^="sec-"]').forEach(s => s.classList.add('d-none'));
             document.getElementById(`aba-${aba}`).classList.add('active');
             document.getElementById(`sec-${aba}`).classList.remove('d-none');
             if(aba === 'pedidos') carregarPedidos();
+            if(aba === 'garagem') carregarVeiculos();
+            if(aba === 'cartoes') carregarCartoes();
+            if(aba === 'enderecos') carregarEnderecos();
+            if(aba === 'dados') carregarDados();
         }
 
         async function carregarPedidos() {
@@ -58,24 +65,45 @@
                 const pedidos = await res.json();
                 lista.innerHTML = pedidos.map(p => `
                     <div class="order-card p-3 shadow-sm">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <strong>Pedido #${p.id}</strong>
-                            <span class="text-primary fw-bold">${parseFloat(p.total).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span>
-                        </div>
+                        <div class="d-flex justify-content-between"><strong>Pedido #${p.id}</strong> <span>${parseFloat(p.total).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span></div>
                         <div class="mt-1">Status: ${p.status.replace(/_/g, ' ')}</div>
-                        <div class="mt-3 d-flex gap-2">
-                            <a href="confirmacao.html?pedido=${p.id}&modo=visualizar" class="btn btn-outline-dark btn-sm">DETALHES</a>
-                            <a href="troca.html?pedido=${p.id}" class="btn btn-kabum">GERENCIAR PEDIDO</a>
-                        </div>
+                        <div class="mt-2"><a href="confirmacao.html?pedido=${p.id}&modo=visualizar" class="btn btn-outline-dark btn-sm">DETALHES</a> <a href="troca.html?pedido=${p.id}" class="btn btn-kabum">GERENCIAR PEDIDO</a></div>
                     </div>
                 `).join('');
-            } catch (err) { lista.innerHTML = 'Erro ao carregar.'; }
+            } catch(e) { lista.innerHTML = 'Erro ao carregar.'; }
+        }
+
+        async function carregarVeiculos() {
+            const res = await fetch(`/api/clientes/${clienteId}/veiculos`, { credentials: 'include' });
+            const vs = await res.json();
+            document.getElementById('listaVeiculos').innerHTML = vs.map(v => `<div class="border-bottom py-2">${v.marca} ${v.modelo} - ${v.ano}</div>`).join('');
+        }
+
+        async function carregarCartoes() {
+            const res = await fetch(`/api/clientes/${clienteId}/cartoes`, { credentials: 'include' });
+            const cs = await res.json();
+            document.getElementById('listaCartoes').innerHTML = cs.map(c => `<div class="border-bottom py-2">${c.bandeira} - ****${c.numero_final}</div>`).join('');
+        }
+
+        async function carregarEnderecos() {
+            const res = await fetch(`/api/clientes/${clienteId}/enderecos`, { credentials: 'include' });
+            const es = await res.json();
+            document.getElementById('listaEnderecos').innerHTML = es.map(e => `<div class="border-bottom py-2">${e.logradouro}, ${e.numero} - ${e.cidade}</div>`).join('');
+        }
+
+        async function carregarDados() {
+            const res = await fetch(`/api/clientes/${clienteId}`, { credentials: 'include' });
+            const c = await res.json();
+            document.getElementById('formDados').innerHTML = `<p>Nome: ${c.nome} ${c.sobrenome}</p><p>E-mail: ${c.email}</p>`;
         }
 
         function sair() { localStorage.removeItem('cliente'); window.location.href = 'login.html'; }
+
         window.onload = () => {
             const c = JSON.parse(localStorage.getItem('cliente') || '{}');
-            document.getElementById('nomeNav').textContent = c.nome ? `Olá, ${c.nome}!` : '';
+            if(!c.id) return window.location.href = 'login.html';
+            clienteId = c.id;
+            document.getElementById('nomeNav').textContent = `Olá, ${c.nome}!`;
             carregarPedidos();
         };
     </script>
