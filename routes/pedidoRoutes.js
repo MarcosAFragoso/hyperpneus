@@ -6,5 +6,6 @@ router.post('/finalizar',       ctrl.finalizar);
 router.post('/migrar-carrinho', ctrl.migrarCarrinho);
 router.get('/',                 ctrl.listar);
 router.get('/:id',              ctrl.buscar);
+router.patch('/:id/status', ctrl.atualizarStatus);
 
 module.exports = router;

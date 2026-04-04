@@ -65,7 +65,7 @@ module.exports = {
         if (parseFloat(c.valor) < 10) throw new Error('Valor mínimo por cartão é R$10,00.');
       }
 
-      // 8. Cria o pedido — ← CORRIGIDO: enderecoId em vez de endereco_id
+      // 8. Cria o pedido — enderecoId
       const { rows: [pedido] } = await client.query(
         `INSERT INTO pedidos (cliente_id, endereco_id, status, frete, total, cupom_id)
          VALUES ($1, $2, 'AGUARDANDO_PAGAMENTO', $3, $4, $5)
@@ -171,6 +171,12 @@ module.exports = {
 
     return { ...pedido, itens, pagamentos };
   },
+
+/* Atualiza o status no banco */
+async atualizarStatus(id, status) {
+  const sql = 'UPDATE pedidos SET status = $1 WHERE id = $2';
+  return await pool.query(sql, [status, id]);
+},
 
   async migrarCarrinhoAnonimo(clienteId, itensLocais) {
     for (const item of itensLocais) {

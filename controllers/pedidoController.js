@@ -7,7 +7,7 @@ module.exports = {
       const clienteId = req.session.cliente?.id;
       if (!clienteId) return res.status(401).json({ erro: 'Faça login para finalizar a compra.' });
 
-      // ← CORRIGIDO: cupom_troca_codigo adicionado na desestruturação
+      //Cupom_troca_codigo adicionado na desestruturação
       const { endereco_id, cartoes, cupom_codigo, cupom_troca_codigo, frete, tipo_frete } = req.body;
       if (!endereco_id) return res.status(400).json({ erro: 'Selecione um endereço de entrega.' });
       if (!cartoes?.length) return res.status(400).json({ erro: 'Informe ao menos um cartão.' });
@@ -59,5 +59,16 @@ module.exports = {
     } catch (err) {
       res.status(500).json({ erro: err.message });
     }
-  }
+  },
+
+  async atualizarStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      await Pedido.atualizarStatus(id, status);
+      res.json({ mensagem: 'Status atualizado com sucesso.' });
+    } catch (err) {
+      res.status(500).json({ erro: err.message });
+    }
+  },
 };
