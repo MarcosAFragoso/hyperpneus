@@ -30,22 +30,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'views')));
 
-// --- 4. CONFIGURAÇÃO DA SESSÃO PERSISTENTE ---
+// --- 4. CONFIGURAÇÃO DA SESSÃO ---
 app.use(session({
   store: new pgSession({
-    pool : pgPool,                
-    tableName : 'session',        
-    createTableIfMissing: false   
+    pool : pgPool,
+    tableName : 'session'
   }),
-  secret: process.env.SESSION_SECRET || 'chave_mestra_para_projeto_faculdade_123', 
-  resave: false,               
-  saveUninitialized: false,     
-  proxy: true,                  
+  secret: process.env.SESSION_SECRET || 'chave_mestra_123',
+  resave: false,
+  saveUninitialized: false,
   cookie: { 
-    maxAge: 7 * 24 * 60 * 60 * 1000, 
-    secure: false,                   
-    httpOnly: true,                
-    sameSite: 'lax'                
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    secure: process.env.NODE_ENV === 'production', // true se estiver no Render
+    httpOnly: true,
+    sameSite: 'lax'
   }
 }));
 

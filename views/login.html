@@ -109,12 +109,15 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Enter') fazerLogin();
 });
 
-window.onload = () => {
-    if (localStorage.getItem('cliente')) {
-        // Já logado — redireciona para ?next ou minha conta
-        const params = new URLSearchParams(window.location.search);
-        const next = params.get('next');
-        window.location.href = next ? next + '.html' : 'minha-conta.html';
+window.onload = async () => {
+    // Tenta verificar se já existe sessão no servidor antes de mostrar o form
+    try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (res.ok) {
+            window.location.href = 'minha-conta.html'; // Já está logado, pula o login
+        }
+    } catch(e) {
+        console.log("Usuário não logado, continue no login.");
     }
 };
 </script>
