@@ -12,184 +12,60 @@
         .order-card { background: white; border-radius: 4px; border: 1px solid #eee; margin-bottom: 15px; }
         .order-header { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; background: #fff; display: flex; justify-content: space-between; align-items: center; }
         .btn-kabum { background: var(--kabum-orange); color: #fff; font-weight: bold; font-size: 12px; padding: 8px 15px; border: none; }
-        .badge-principal { background-color: #e7f3ff; color: var(--kabum-blue); font-size: 10px; padding: 3px 8px; border-radius: 10px; margin-left: 10px; border: 1px solid var(--kabum-blue); }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-dark bg-dark">
         <div class="container"><a class="navbar-brand fw-bold" href="index.html">HYPERPNEUS</a>
-        <div class="text-white small d-flex gap-3 align-items-center"><span id="nomeNav"></span><button onclick="sair()" class="btn btn-outline-light btn-sm">Sair</button></div></div>
+        <div class="text-white small"><span id="nomeNav"></span> <button onclick="sair()" class="btn btn-outline-light btn-sm">Sair</button></div></div>
     </nav>
 
     <div class="container my-5">
-        <h2 class="mb-4 fw-bold">Minha Conta</h2>
-        <div id="alerta" class="alert d-none"></div>
-        <div class="row">
-            <div class="col-md-3">
-                <div class="list-group shadow-sm">
-                    <a href="#" onclick="mostrarAba('pedidos')" class="list-group-item list-group-item-action active" id="aba-pedidos">Meus Pedidos</a>
-                    <a href="#" onclick="mostrarAba('garagem')" class="list-group-item list-group-item-action" id="aba-garagem">Minha Garagem</a>
-                    <a href="#" onclick="mostrarAba('cartoes')" class="list-group-item list-group-item-action" id="aba-cartoes">Meus Cartões</a>
-                    <a href="#" onclick="mostrarAba('enderecos')" class="list-group-item list-group-item-action" id="aba-enderecos">Meus Endereços</a>
-                    <a href="#" onclick="mostrarAba('dados')" class="list-group-item list-group-item-action" id="aba-dados">Dados Pessoais</a>
-                </div>
-            </div>
-
-            <div class="col-md-9">
-                <div id="sec-pedidos"><div id="listaPedidos"></div></div>
-                <div id="sec-garagem" class="d-none">
-                    <div class="card shadow-sm border-0"><div class="card-header bg-white d-flex justify-content-between"><strong>Garagem</strong><button class="btn btn-primary btn-sm" onclick="limparModalVeiculo()">+ Adicionar</button></div>
-                    <div class="card-body" id="listaVeiculos"></div></div>
-                </div>
-                <div id="sec-cartoes" class="d-none">
-                    <div class="card shadow-sm border-0"><div class="card-header bg-white d-flex justify-content-between"><strong>Cartões</strong><button class="btn btn-primary btn-sm" onclick="limparModalCartao()">+ Adicionar</button></div>
-                    <div class="card-body" id="listaCartoes"></div></div>
-                </div>
-                <div id="sec-enderecos" class="d-none">
-                    <div class="card shadow-sm border-0"><div class="card-header bg-white d-flex justify-content-between"><strong>Endereços</strong><button class="btn btn-primary btn-sm" onclick="limparModalEndereco()">+ Adicionar</button></div>
-                    <div class="card-body" id="listaEnderecos"></div></div>
-                </div>
-                <div id="sec-dados" class="d-none">
-                    <div class="card shadow-sm border-0 p-4 mb-3">
-                        <div class="row"><div class="col-md-6 mb-3"><label>Nome</label><input type="text" id="editNome" class="form-control"></div><div class="col-md-6 mb-3"><label>Sobrenome</label><input type="text" id="editSobrenome" class="form-control"></div></div>
-                        <div class="mb-3"><label>E-mail</label><input type="email" id="editEmail" class="form-control"></div>
-                        <button onclick="salvarDados()" class="btn btn-primary">Salvar Alterações</button>
-                    </div>
-                    <div class="card border-danger"><div class="card-body d-flex justify-content-between align-items-center"><span class="text-danger fw-bold">Inativar minha conta</span><button class="btn btn-outline-danger btn-sm" onclick="encerrarConta()">Encerrar Conta</button></div></div>
-                </div>
-            </div>
-        </div>
+        <h2 class="mb-4">Minha Conta</h2>
+        <div id="listaPedidos"></div>
     </div>
 
-    <!-- Modais -->
-    <div class="modal fade" id="modalVeiculo" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body">
-        <h6 id="modalVeiculoTitulo">Veículo</h6><input type="hidden" id="veiculoId">
-        <input type="text" id="vMarca" class="form-control mb-2" placeholder="Marca">
-        <input type="text" id="vModelo" class="form-control mb-2" placeholder="Modelo">
-        <input type="number" id="vAno" class="form-control mb-2" placeholder="Ano">
-        <input type="text" id="vVersao" class="form-control mb-2" placeholder="Versão">
-        <div class="form-check"><input type="checkbox" id="vPrincipal" class="form-check-input"><label class="form-check-label">Principal</label></div>
-        <button class="btn btn-primary w-100 mt-2" onclick="salvarVeiculo()">Salvar</button>
-    </div></div></div></div>
-
-    <div class="modal fade" id="modalCartao" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body">
-        <h6 id="modalCartaoTitulo">Cartão</h6><input type="hidden" id="cartaoId">
-        <select id="cBandeira" class="form-select mb-2"><option>Visa</option><option>MasterCard</option><option>Elo</option></select>
-        <input type="text" id="cNome" class="form-control mb-2" placeholder="Nome no Cartão">
-        <input type="text" id="cNumero" class="form-control mb-2" placeholder="Número do Cartão">
-        <input type="text" id="cCvv" class="form-control mb-2" placeholder="CVV">
-        <div class="form-check"><input type="checkbox" id="cPrincipal" class="form-check-input"><label class="form-check-label">Principal</label></div>
-        <button class="btn btn-primary w-100 mt-2" onclick="salvarCartao()">Salvar</button>
-    </div></div></div></div>
-
-    <div class="modal fade" id="modalEndereco" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-body">
-        <h6 id="modalEndTitulo">Endereço</h6><input type="hidden" id="enderecoId">
-        <div class="row g-2">
-            <div class="col-12"><input type="text" id="eNome" class="form-control mb-1" placeholder="Nome Destinatário"></div>
-            <div class="col-md-4"><input type="text" id="eCep" class="form-control mb-1" placeholder="CEP" onblur="buscarCEP()"></div>
-            <div class="col-md-8"><input type="text" id="eLogradouro" class="form-control mb-1" placeholder="Rua"></div>
-            <div class="col-md-3"><input type="text" id="eNumero" class="form-control mb-1" placeholder="Número"></div>
-            <div class="col-md-9"><input type="text" id="eBairro" class="form-control mb-1" placeholder="Bairro"></div>
-            <div class="col-md-8"><input type="text" id="eCidade" class="form-control mb-1" placeholder="Cidade"></div>
-            <div class="col-md-4"><input type="text" id="eEstado" class="form-control mb-1" placeholder="UF"></div>
-        </div>
-        <button class="btn btn-primary w-100 mt-3" onclick="salvarEndereco()">Salvar</button>
-    </div></div></div></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let clienteId = null;
-        function mostrarAlerta(m, t='danger') { const el=document.getElementById('alerta'); el.className=`alert alert-${t}`; el.textContent=m; el.classList.remove('d-none'); setTimeout(()=>el.classList.add('d-none'), 3000); }
-
-        function mostrarAba(aba) {
-            document.querySelectorAll('.list-group-item').forEach(a => a.classList.remove('active'));
-            document.querySelectorAll('[id^="sec-"]').forEach(s => s.classList.add('d-none'));
-            document.getElementById(`aba-${aba}`).classList.add('active');
-            document.getElementById(`sec-${aba}`).classList.remove('d-none');
-            if(aba==='pedidos') carregarPedidos();
-            if(aba==='garagem') carregarVeiculos();
-            if(aba==='cartoes') carregarCartoes();
-            if(aba==='enderecos') carregarEnderecos();
-            if(aba==='dados') carregarDados();
-        }
-
         async function carregarPedidos() {
-            const res = await fetch(`/api/pedidos`);
-            const pedidos = await res.json();
-            document.getElementById('listaPedidos').innerHTML = pedidos.map(p => `
-                <div class="order-card shadow-sm">
-                    <div class="order-header"><strong>Pedido #${p.id}</strong>
-                    <div><a href="troca.html?pedido=${p.id}" class="btn btn-kabum me-2">GERENCIAR</a><a href="confirmacao.html?pedido=${p.id}" class="btn btn-outline-dark btn-sm">DETALHES</a></div></div>
-                    <div class="p-3"><span class="${p.status==='ENTREGUE'?'text-success':'text-warning'} fw-bold">${p.status}</span></div>
-                </div>`).join('');
-        }
-
-        // --- CEP API ---
-        async function buscarCEP() {
-            const cep = document.getElementById('eCep').value.replace(/\D/g, '');
-            if (cep.length !== 8) return;
+            const lista = document.getElementById('listaPedidos');
+            lista.innerHTML = 'Carregando...';
             try {
-                const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-                const d = await res.json();
-                if (d.erro) { mostrarAlerta('CEP não encontrado'); return; }
-                document.getElementById('eLogradouro').value = d.logradouro;
-                document.getElementById('eBairro').value = d.bairro;
-                document.getElementById('eCidade').value = d.localidade;
-                document.getElementById('eEstado').value = d.uf;
-            } catch (e) { console.error("Erro API CEP"); }
+                // O credentials: 'include' é vital para enviar o cookie da sessão ao Render
+                const res = await fetch('/api/pedidos', { credentials: 'include' });
+                
+                if (res.status === 401) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const pedidos = await res.json();
+                console.log("Pedidos recebidos:", pedidos);
+
+                if (!Array.isArray(pedidos) || pedidos.length === 0) {
+                    lista.innerHTML = '<div class="alert alert-info">Nenhum pedido encontrado.</div>';
+                    return;
+                }
+
+                lista.innerHTML = pedidos.map(p => {
+                    const total = parseFloat(p.total) || 0;
+                    return `
+                        <div class="order-card p-3 shadow-sm">
+                            <div class="d-flex justify-content-between">
+                                <strong>Pedido #${p.id}</strong>
+                                <span>${total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span>
+                            </div>
+                            <div class="mt-2 text-muted">Status: ${p.status.replace(/_/g, ' ')}</div>
+                            <a href="confirmacao.html?pedido=${p.id}&modo=visualizar" class="btn btn-dark btn-sm mt-2">Ver Detalhes</a>
+                        </div>`;
+                }).join('');
+            } catch (err) {
+                lista.innerHTML = '<div class="alert alert-danger">Erro ao carregar pedidos.</div>';
+                console.error(err);
+            }
         }
 
-        // --- GARAGEM ---
-        async function carregarVeiculos() {
-            const res = await fetch(`/api/clientes/${clienteId}/veiculos`);
-            const vs = await res.json();
-            document.getElementById('listaVeiculos').innerHTML = vs.map(v => `<div class="border-bottom py-3 d-flex justify-content-between align-items-center"><div><h6 class="mb-0 fw-bold">${v.marca} ${v.modelo} ${v.principal?'<span class="badge-principal">PRINCIPAL</span>':''}</h6><small>${v.ano} - ${v.versao}</small></div><div class="d-flex gap-2"><button class="btn btn-sm btn-outline-primary" onclick="editarVeiculo(${v.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="removerVeiculo(${v.id})"><i class="fas fa-trash"></i></button></div></div>`).join('') || 'Vazio.';
-        }
-        function limparModalVeiculo() { document.getElementById('veiculoId').value=''; document.getElementById('modalVeiculoTitulo').textContent='Adicionar'; ['vMarca','vModelo','vAno','vVersao'].forEach(id=>document.getElementById(id).value=''); document.getElementById('vPrincipal').checked=false; new bootstrap.Modal(document.getElementById('modalVeiculo')).show(); }
-        async function editarVeiculo(id) { const res=await fetch(`/api/clientes/${clienteId}/veiculos`); const vs=await res.json(); const v=vs.find(x=>x.id===id); document.getElementById('veiculoId').value=v.id; document.getElementById('vMarca').value=v.marca; document.getElementById('vModelo').value=v.modelo; document.getElementById('vAno').value=v.ano; document.getElementById('vVersao').value=v.versao; document.getElementById('vPrincipal').checked=v.principal; new bootstrap.Modal(document.getElementById('modalVeiculo')).show(); }
-        async function salvarVeiculo() { const id=document.getElementById('veiculoId').value; const dados={marca:document.getElementById('vMarca').value, modelo:document.getElementById('vModelo').value, ano:document.getElementById('vAno').value, versao:document.getElementById('vVersao').value, principal:document.getElementById('vPrincipal').checked}; await fetch(id?`/api/clientes/${clienteId}/veiculos/${id}`:`/api/clientes/${clienteId}/veiculos`, {method:id?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(dados)}); bootstrap.Modal.getInstance(document.getElementById('modalVeiculo')).hide(); carregarVeiculos(); }
-
-        // --- CARTÕES ---
-        async function carregarCartoes() {
-            const res = await fetch(`/api/clientes/${clienteId}/cartoes`);
-            const cs = await res.json();
-            document.getElementById('listaCartoes').innerHTML = cs.map(c => `<div class="border-bottom py-3 d-flex justify-content-between align-items-center"><div><h6 class="mb-0 fw-bold">${c.bandeira} ${c.principal?'<span class="badge-principal">PRINCIPAL</span>':''}</h6><small>**** ${c.numero_final}</small></div><div class="d-flex gap-2"><button class="btn btn-sm btn-outline-primary" onclick="editarCartao(${c.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="removerCartao(${c.id})"><i class="fas fa-trash"></i></button></div></div>`).join('') || 'Vazio.';
-        }
-        function limparModalCartao() { document.getElementById('cartaoId').value=''; document.getElementById('cNome').value=''; document.getElementById('cNumero').value=''; document.getElementById('cCvv').value=''; document.getElementById('cPrincipal').checked=false; new bootstrap.Modal(document.getElementById('modalCartao')).show(); }
-        async function editarCartao(id) { const res=await fetch(`/api/clientes/${clienteId}/cartoes`); const cs=await res.json(); const c=cs.find(x=>x.id===id); document.getElementById('cartaoId').value=c.id; document.getElementById('cBandeira').value=c.bandeira; document.getElementById('cNome').value=c.nome_impresso; document.getElementById('cNumero').value='****'+c.numero_final; document.getElementById('cPrincipal').checked=c.principal; new bootstrap.Modal(document.getElementById('modalCartao')).show(); }
-        async function salvarCartao() { 
-            const id=document.getElementById('cartaoId').value; 
-            const num=document.getElementById('cNumero').value;
-            const dados={bandeira:document.getElementById('cBandeira').value, nome_impresso:document.getElementById('cNome').value, numero_final:num.slice(-4), token:'tok_'+Math.random().toString(36).substr(2,9), principal:document.getElementById('cPrincipal').checked}; 
-            await fetch(id?`/api/clientes/${clienteId}/cartoes/${id}`:`/api/clientes/${clienteId}/cartoes`, {method:id?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(dados)}); 
-            bootstrap.Modal.getInstance(document.getElementById('modalCartao')).hide(); carregarCartoes(); 
-        }
-
-        // --- ENDEREÇOS ---
-        async function carregarEnderecos() {
-            const res = await fetch(`/api/clientes/${clienteId}/enderecos`);
-            const es = await res.json();
-            document.getElementById('listaEnderecos').innerHTML = es.map(e => `<div class="border rounded p-3 mb-2 d-flex justify-content-between align-items-center"><div><strong>${e.nome_destinatario}</strong><br><small>${e.logradouro}, ${e.numero} - ${e.bairro}<br>${e.cidade}/${e.estado} - CEP: ${e.cep}</small></div><div class="d-flex gap-2"><button class="btn btn-sm btn-outline-primary" onclick="editarEndereco(${e.id})"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="removerEndereco(${e.id})"><i class="fas fa-trash"></i></button></div></div>`).join('') || 'Vazio.';
-        }
-        function limparModalEndereco() { document.getElementById('enderecoId').value=''; ['eNome','eCep','eLogradouro','eNumero','eBairro','eCidade','eEstado'].forEach(id=>document.getElementById(id).value=''); new bootstrap.Modal(document.getElementById('modalEndereco')).show(); }
-        async function editarEndereco(id) { const res=await fetch(`/api/clientes/${clienteId}/enderecos`); const es=await res.json(); const e=es.find(x=>x.id===id); document.getElementById('enderecoId').value=e.id; document.getElementById('eNome').value=e.nome_destinatario; document.getElementById('eCep').value=e.cep; document.getElementById('eLogradouro').value=e.logradouro; document.getElementById('eNumero').value=e.numero; document.getElementById('eBairro').value=e.bairro; document.getElementById('eCidade').value=e.cidade; document.getElementById('eEstado').value=e.estado; new bootstrap.Modal(document.getElementById('modalEndereco')).show(); }
-        async function salvarEndereco() { const id=document.getElementById('enderecoId').value; const dados={nome_destinatario:document.getElementById('eNome').value, cep:document.getElementById('eCep').value, logradouro:document.getElementById('eLogradouro').value, numero:document.getElementById('eNumero').value, bairro:document.getElementById('eBairro').value, cidade:document.getElementById('eCidade').value, estado:document.getElementById('eEstado').value, tipo:'entrega'}; await fetch(id?`/api/clientes/${clienteId}/enderecos/${id}`:`/api/clientes/${clienteId}/enderecos`, {method:id?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(dados)}); bootstrap.Modal.getInstance(document.getElementById('modalEndereco')).hide(); carregarEnderecos(); }
-
-        // --- DADOS ---
-        async function carregarDados() { const res=await fetch(`/api/clientes/${clienteId}`); const c=await res.json(); document.getElementById('editNome').value=c.nome; document.getElementById('editSobrenome').value=c.sobrenome; document.getElementById('editEmail').value=c.email; }
-        async function salvarDados() { const d={nome:document.getElementById('editNome').value, sobrenome:document.getElementById('editSobrenome').value, email:document.getElementById('editEmail').value}; await fetch(`/api/clientes/${clienteId}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(d)}); mostrarAlerta('Salvo!', 'success'); }
-
-        async function removerVeiculo(id) { if(confirm('Remover?')) { await fetch(`/api/clientes/${clienteId}/veiculos/${id}`, {method:'DELETE'}); carregarVeiculos(); } }
-        async function removerCartao(id) { if(confirm('Remover?')) { await fetch(`/api/clientes/${clienteId}/cartoes/${id}`, {method:'DELETE'}); carregarCartoes(); } }
-        async function removerEndereco(id) { if(confirm('Remover?')) { await fetch(`/api/clientes/${clienteId}/enderecos/${id}`, {method:'DELETE'}); carregarEnderecos(); } }
-        async function encerrarConta() { if(confirm('Inativar conta?')) { await fetch(`/api/clientes/${clienteId}/inativar`, {method:'PATCH'}); sair(); } }
         function sair() { localStorage.removeItem('cliente'); window.location.href='login.html'; }
-
-        window.onload = () => {
-            const cliente = JSON.parse(localStorage.getItem('cliente'));
-            if(!cliente) return window.location.href='login.html';
-            clienteId = cliente.id; document.getElementById('nomeNav').textContent = `Olá, ${cliente.nome}!`; document.getElementById('aba-pedidos').click();
-        };
+        window.onload = carregarPedidos;
     </script>
 </body>
 </html>

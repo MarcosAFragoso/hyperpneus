@@ -18,7 +18,7 @@ const pgPool = new pg.Pool({
 
 // --- 2. CONFIGURAÇÃO DO CORS (PARA O FRONTEND) ---
 app.use(cors({
-  origin: 'http://localhost:3000', 
+  origin: 'https://hyperpneus.onrender.com', 
   credentials: true,               
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
