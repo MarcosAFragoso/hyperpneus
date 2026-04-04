@@ -32,10 +32,10 @@
             </div>
             <div class="col-md-9">
                 <div id="sec-pedidos"><div id="listaPedidos"></div></div>
-                <div id="sec-garagem" class="d-none"><div class="card shadow-sm p-3"><div class="d-flex justify-content-between mb-3"><strong>Garagem</strong></div><div id="listaVeiculos">Carregando...</div></div></div>
-                <div id="sec-cartoes" class="d-none"><div class="card shadow-sm p-3"><div class="d-flex justify-content-between mb-3"><strong>Cartões</strong></div><div id="listaCartoes">Carregando...</div></div></div>
-                <div id="sec-enderecos" class="d-none"><div class="card shadow-sm p-3"><div class="d-flex justify-content-between mb-3"><strong>Endereços</strong></div><div id="listaEnderecos">Carregando...</div></div></div>
-                <div id="sec-dados" class="d-none"><div class="card shadow-sm p-4"><div id="formDados"></div></div></div>
+                <div id="sec-garagem" class="d-none"><div class="card p-3"><div class="d-flex justify-content-between mb-3"><strong>Garagem</strong><button class="btn btn-primary btn-sm" onclick="alert('Funcionalidade Adicionar')">+ Adicionar</button></div><div id="listaVeiculos"></div></div></div>
+                <div id="sec-cartoes" class="d-none"><div class="card p-3"><div class="d-flex justify-content-between mb-3"><strong>Cartões</strong></div><div id="listaCartoes"></div></div></div>
+                <div id="sec-enderecos" class="d-none"><div class="card p-3"><div class="d-flex justify-content-between mb-3"><strong>Endereços</strong></div><div id="listaEnderecos"></div></div></div>
+                <div id="sec-dados" class="d-none"><div class="card p-4"><div id="formDados"></div><button class="btn btn-danger mt-3" onclick="inativarConta()">Inativar Conta</button></div></div>
             </div>
         </div>
     </div>
@@ -60,18 +60,9 @@
             const p = await res.json();
             document.getElementById('listaPedidos').innerHTML = p.map(x => `
                 <div class="order-card p-3 shadow-sm">
-                    <strong>Pedido #${x.id}</strong> - ${parseFloat(x.total).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+                    <div class="d-flex justify-content-between"><strong>Pedido #${x.id}</strong> <span>${parseFloat(x.total).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span></div>
+                    <div class="mt-2 text-muted">Status: ${x.status.replace(/_/g, ' ')}</div>
                     <div class="mt-2"><a href="confirmacao.html?pedido=${x.id}&modo=visualizar" class="btn btn-dark btn-sm">DETALHES</a> <a href="troca.html?pedido=${x.id}" class="btn btn-kabum">GERENCIAR</a></div>
-                </div>`).join('');
-        }
-
-        async function carregarCartoes() {
-            // AQUI ESTAVA O ERRO: Adicionamos o clienteId na URL conforme seu server.js exige
-            const res = await fetch(`/api/clientes/${clienteId}/cartoes`, { credentials: 'include' });
-            const cs = await res.json();
-            document.getElementById('listaCartoes').innerHTML = cs.map(c => `
-                <div class="d-flex justify-content-between border-bottom py-2">
-                    <span>${c.bandeira} ****${c.numero_final}</span>
                 </div>`).join('');
         }
 
@@ -79,28 +70,54 @@
             const res = await fetch(`/api/clientes/${clienteId}/veiculos`, { credentials: 'include' });
             const vs = await res.json();
             document.getElementById('listaVeiculos').innerHTML = vs.map(v => `
-                <div class="border-bottom py-2">${v.marca} ${v.modelo}</div>`).join('');
+                <div class="d-flex justify-content-between border-bottom py-2">
+                    <span>${v.marca} ${v.modelo} (${v.ano})</span>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="alert('Editar ID: ${v.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="excluirItem('veiculos', ${v.id})"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`).join('');
+        }
+
+        async function carregarCartoes() {
+            const res = await fetch(`/api/clientes/${clienteId}/cartoes`, { credentials: 'include' });
+            const cs = await res.json();
+            document.getElementById('listaCartoes').innerHTML = cs.map(c => `
+                <div class="d-flex justify-content-between border-bottom py-2">
+                    <span>${c.bandeira} ****${c.numero_final}</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="excluirItem('cartoes', ${c.id})"><i class="fas fa-trash"></i></button>
+                </div>`).join('');
         }
 
         async function carregarEnderecos() {
             const res = await fetch(`/api/clientes/${clienteId}/enderecos`, { credentials: 'include' });
             const es = await res.json();
             document.getElementById('listaEnderecos').innerHTML = es.map(e => `
-                <div class="border-bottom py-2">${e.logradouro}, ${e.numero}</div>`).join('');
+                <div class="d-flex justify-content-between border-bottom py-2">
+                    <span>${e.logradouro}, ${e.numero}</span>
+                    <button class="btn btn-sm btn-outline-primary" onclick="alert('Editar ID: ${e.id}')"><i class="fas fa-edit"></i></button>
+                </div>`).join('');
         }
 
         async function carregarDados() {
             const res = await fetch(`/api/clientes/${clienteId}`, { credentials: 'include' });
             const c = await res.json();
-            document.getElementById('formDados').innerHTML = `<p><b>Nome:</b> ${c.nome}</p><p><b>Email:</b> ${c.email}</p>`;
+            document.getElementById('formDados').innerHTML = `<p><b>Nome:</b> ${c.nome} ${c.sobrenome}</p><p><b>Email:</b> ${c.email}</p><button class="btn btn-primary" onclick="alert('Editar')">Editar Dados</button>`;
         }
 
+        async function excluirItem(tipo, id) {
+            if(!confirm('Tem certeza?')) return;
+            await fetch(`/api/clientes/${clienteId}/${tipo}/${id}`, { method: 'DELETE', credentials: 'include' });
+            mostrarAba(tipo === 'veiculos' ? 'garagem' : 'cartoes');
+        }
+
+        function inativarConta() { if(confirm('Inativar sua conta permanentemente?')) console.log('Inativando...'); }
         function sair() { localStorage.removeItem('cliente'); window.location.href = 'login.html'; }
-        
+
         window.onload = () => {
             const c = JSON.parse(localStorage.getItem('cliente') || '{}');
             if(!c.id) window.location.href = 'login.html';
-            clienteId = c.id; 
+            clienteId = c.id;
             document.getElementById('nomeNav').textContent = `Olá, ${c.nome}!`;
             carregarPedidos();
         };
