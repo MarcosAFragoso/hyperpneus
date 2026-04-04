@@ -9,6 +9,7 @@
         :root { --kabum-blue: #0060b1; --kabum-orange: #ff6500; }
         body { background-color: #f2f3f5; font-family: 'Segoe UI', sans-serif; }
         .list-group-item.active { background-color: var(--kabum-blue); border-color: var(--kabum-blue); font-weight: bold; }
+        .order-card { background: white; border-radius: 4px; border: 1px solid #eee; margin-bottom: 15px; }
         .btn-kabum { background: var(--kabum-orange); color: #fff; font-weight: bold; font-size: 12px; padding: 8px 15px; border: none; }
     </style>
 </head>
@@ -31,22 +32,16 @@
             </div>
             <div class="col-md-9">
                 <div id="sec-pedidos"><div id="listaPedidos"></div></div>
-                <div id="sec-garagem" class="d-none"><div class="card p-3"><div class="d-flex justify-content-between mb-3"><strong>Garagem</strong><button class="btn btn-primary btn-sm" onclick="abrirModal('Veiculo')">+ Adicionar</button></div><div id="listaVeiculos"></div></div></div>
-                <div id="sec-cartoes" class="d-none"><div class="card p-3"><div class="d-flex justify-content-between mb-3"><strong>Cartões</strong><button class="btn btn-primary btn-sm" onclick="abrirModal('Cartao')">+ Adicionar</button></div><div id="listaCartoes"></div></div></div>
-                <div id="sec-enderecos" class="d-none"><div class="card p-3"><div class="d-flex justify-content-between mb-3"><strong>Endereços</strong><button class="btn btn-primary btn-sm" onclick="abrirModal('Endereco')">+ Adicionar</button></div><div id="listaEnderecos"></div></div></div>
-                <div id="sec-dados" class="d-none"><div class="card p-4"><div id="formDados"></div><button class="btn btn-danger mt-3" onclick="inativarConta()">Inativar Conta</button></div></div>
+                <div id="sec-garagem" class="d-none"><div class="card shadow-sm p-3"><div class="d-flex justify-content-between mb-3"><strong>Garagem</strong><button class="btn btn-primary btn-sm" onclick="abrirModalVeiculo()">+ Adicionar</button></div><div id="listaVeiculos"></div></div></div>
+                <div id="sec-cartoes" class="d-none"><div class="card shadow-sm p-3"><div class="d-flex justify-content-between mb-3"><strong>Cartões</strong><button class="btn btn-primary btn-sm" onclick="abrirModalCartao()">+ Adicionar</button></div><div id="listaCartoes"></div></div></div>
+                <div id="sec-enderecos" class="d-none"><div class="card shadow-sm p-3"><div class="d-flex justify-content-between mb-3"><strong>Endereços</strong><button class="btn btn-primary btn-sm" onclick="abrirModalEndereco()">+ Adicionar</button></div><div id="listaEnderecos"></div></div></div>
+                <div id="sec-dados" class="d-none"><div class="card shadow-sm p-4"><div id="formDados"></div></div></div>
             </div>
         </div>
     </div>
 
-    <!-- Modais Genéricos -->
-    <div class="modal fade" id="modalGeral" tabindex="-1">
-        <div class="modal-dialog"><div class="modal-content"><div class="modal-body">
-            <h5 id="modalTitle">Cadastrar</h5>
-            <div id="formInputs"></div>
-            <button class="btn btn-primary w-100 mt-3" onclick="salvarFormulario()">Salvar</button>
-        </div></div></div>
-    </div>
+    <!-- Modal Dinâmico -->
+    <div class="modal fade" id="modalGeral" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 id="modalTitle"></h5></div><div class="modal-body" id="corpoModal"></div></div></div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -70,35 +65,29 @@
             document.getElementById('listaPedidos').innerHTML = p.map(x => `
                 <div class="order-card p-3 shadow-sm">
                     <strong>Pedido #${x.id}</strong> - ${parseFloat(x.total).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+                    <div class="mt-2 text-muted">Status: ${x.status.replace(/_/g, ' ')}</div>
                     <div class="mt-2"><a href="confirmacao.html?pedido=${x.id}&modo=visualizar" class="btn btn-dark btn-sm">DETALHES</a> <a href="troca.html?pedido=${x.id}" class="btn btn-kabum">GERENCIAR</a></div>
                 </div>`).join('');
         }
 
-        // --- Funções de Exclusão (Real com API) ---
-        async function remover(tipo, id) {
-            if(!confirm('Tem certeza?')) return;
-            await fetch(`/api/clientes/${clienteId}/${tipo}/${id}`, { method: 'DELETE', credentials: 'include' });
-            mostrarAba(tipo === 'veiculos' ? 'garagem' : tipo);
-        }
-
-        // --- Carga de Listas ---
-        async function carregarVeiculos() {
-            const res = await fetch(`/api/clientes/${clienteId}/veiculos`, { credentials: 'include' });
-            const vs = await res.json();
-            document.getElementById('listaVeiculos').innerHTML = vs.map(v => `
-                <div class="d-flex justify-content-between border-bottom py-2">
-                    <span>${v.marca} ${v.modelo}</span>
-                    <button class="btn btn-sm btn-outline-danger" onclick="remover('veiculos', ${v.id})"><i class="fas fa-trash"></i></button>
-                </div>`).join('');
-        }
-
+        // --- Módulos de listagem ---
         async function carregarCartoes() {
             const res = await fetch(`/api/clientes/${clienteId}/cartoes`, { credentials: 'include' });
             const cs = await res.json();
             document.getElementById('listaCartoes').innerHTML = cs.map(c => `
                 <div class="d-flex justify-content-between border-bottom py-2">
-                    <span>${c.bandeira} ****${c.numero_final}</span>
+                    <span>${c.bandeira} - ****${c.numero_final}</span>
                     <button class="btn btn-sm btn-outline-danger" onclick="remover('cartoes', ${c.id})"><i class="fas fa-trash"></i></button>
+                </div>`).join('');
+        }
+
+        async function carregarVeiculos() {
+            const res = await fetch(`/api/clientes/${clienteId}/veiculos`, { credentials: 'include' });
+            const vs = await res.json();
+            document.getElementById('listaVeiculos').innerHTML = vs.map(v => `
+                <div class="d-flex justify-content-between border-bottom py-2">
+                    <span>${v.marca} ${v.modelo} (${v.ano})</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="remover('veiculos', ${v.id})"><i class="fas fa-trash"></i></button>
                 </div>`).join('');
         }
 
@@ -108,20 +97,55 @@
             document.getElementById('listaEnderecos').innerHTML = es.map(e => `
                 <div class="d-flex justify-content-between border-bottom py-2">
                     <span>${e.logradouro}, ${e.numero}</span>
-                    <button class="btn btn-sm btn-outline-primary" onclick="alert('Funcionalidade editar via form')"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="remover('enderecos', ${e.id})"><i class="fas fa-trash"></i></button>
                 </div>`).join('');
         }
 
-        async function carregarDados() {
-            const res = await fetch(`/api/clientes/${clienteId}`, { credentials: 'include' });
-            const c = await res.json();
-            document.getElementById('formDados').innerHTML = `<p><b>Nome:</b> ${c.nome} ${c.sobrenome}</p><p><b>Email:</b> ${c.email}</p>`;
+        // --- Formulários e Modais ---
+        function abrirModalCartao() {
+            document.getElementById('modalTitle').textContent = "Adicionar Cartão";
+            document.getElementById('corpoModal').innerHTML = `
+                <input id="bandeira" class="form-control mb-2" placeholder="Bandeira (Visa/Master)">
+                <input id="numFinal" class="form-control mb-2" placeholder="Número Final (4 dígitos)">
+                <button class="btn btn-primary w-100" onclick="salvar('cartoes', {bandeira: document.getElementById('bandeira').value, numero_final: document.getElementById('numFinal').value})">Salvar</button>`;
+            new bootstrap.Modal(document.getElementById('modalGeral')).show();
         }
 
-        function abrirModal(tipo) {
-            document.getElementById('modalTitle').textContent = 'Novo ' + tipo;
-            document.getElementById('formInputs').innerHTML = `<p class="text-muted">Preencha o formulário para ${tipo}.</p><input type="text" class="form-control" placeholder="Dados necessários">`;
+        function abrirModalVeiculo() {
+            document.getElementById('modalTitle').textContent = "Adicionar Veículo";
+            document.getElementById('corpoModal').innerHTML = `
+                <input id="marca" class="form-control mb-2" placeholder="Marca">
+                <input id="modelo" class="form-control mb-2" placeholder="Modelo">
+                <input id="ano" class="form-control mb-2" type="number" placeholder="Ano">
+                <button class="btn btn-primary w-100" onclick="salvar('veiculos', {marca: document.getElementById('marca').value, modelo: document.getElementById('modelo').value, ano: document.getElementById('ano').value})">Salvar</button>`;
             new bootstrap.Modal(document.getElementById('modalGeral')).show();
+        }
+
+        function abrirModalEndereco() {
+            document.getElementById('modalTitle').textContent = "Adicionar Endereço";
+            document.getElementById('corpoModal').innerHTML = `
+                <input id="log" class="form-control mb-2" placeholder="Logradouro">
+                <input id="num" class="form-control mb-2" placeholder="Número">
+                <input id="cidade" class="form-control mb-2" placeholder="Cidade">
+                <button class="btn btn-primary w-100" onclick="salvar('enderecos', {logradouro: document.getElementById('log').value, numero: document.getElementById('num').value, cidade: document.getElementById('cidade').value})">Salvar</button>`;
+            new bootstrap.Modal(document.getElementById('modalGeral')).show();
+        }
+
+        async function salvar(tipo, dados) {
+            await fetch(`/api/clientes/${clienteId}/${tipo}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(dados),
+                credentials: 'include'
+            });
+            bootstrap.Modal.getInstance(document.getElementById('modalGeral')).hide();
+            mostrarAba(tipo === 'veiculos' ? 'garagem' : tipo);
+        }
+
+        async function remover(tipo, id) {
+            if(!confirm('Deseja excluir?')) return;
+            await fetch(`/api/clientes/${clienteId}/${tipo}/${id}`, { method: 'DELETE', credentials: 'include' });
+            mostrarAba(tipo === 'veiculos' ? 'garagem' : tipo);
         }
 
         function sair() { localStorage.removeItem('cliente'); window.location.href = 'login.html'; }
