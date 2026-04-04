@@ -6,126 +6,131 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .step-track { display: flex; justify-content: space-between; position: relative; margin: 40px 0; }
+        /* Estilos da Trilha de Status */
+        .step-track { display: flex; justify-content: space-between; position: relative; margin: 40px 0; padding: 0; }
         .step-track::before {
-            content: ''; position: absolute; top: 22px; left: 45px; right: 45px;
+            content: ''; position: absolute; top: 24px; left: 8.33%; right: 8.33%;
             height: 4px; background: #dee2e6; z-index: 0;
         }
-        .progress-line {
-            position: absolute; top: 22px; left: 45px;
-            height: 4px; background: #198754; z-index: 1;
-            transition: width 1.2s ease-in-out;
-            width: 0%;
-        }
+        .progress-container { position: absolute; top: 24px; left: 8.33%; right: 8.33%; height: 4px; z-index: 1; }
+        .progress-line { height: 100%; background: #198754; width: 0%; transition: width 1.5s ease-in-out; }
         .step-item { text-align: center; position: relative; z-index: 2; flex: 1; }
         .step-icon {
-            width: 48px; height: 48px; border-radius: 50%;
-            background: #dee2e6; color: #aaa;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 10px; font-size: 20px;
-            transition: all 0.6s ease;
-            border: 4px solid #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 48px; height: 48px; border-radius: 50%; background: #dee2e6; color: #aaa;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;
+            font-size: 20px; transition: all 0.6s ease; border: 4px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .step-icon.ativo { background: #198754; color: white; }
         .step-icon.atual { background: #0d6efd; color: white; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(13,110,253,.4)} 50%{box-shadow:0 0 0 12px rgba(13,110,253,0)} }
-        .step-label { font-size: 12px; color: #777; font-weight: 500; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(13,110,253,.4) } 50% { box-shadow: 0 0 0 12px rgba(13,110,253,0) } }
+        .step-label { font-size: 11px; color: #777; font-weight: 500; line-height: 1.2; }
         .step-label.ativo { color: #198754; font-weight: bold; }
         .card-status { border-left: 5px solid #198754; border-radius: 8px; }
-        .log-entry { animation: fadeIn 0.5s ease-out; border-left: 2px solid #e9ecef; padding-left: 15px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .log-entry { animation: fadeIn 0.5s ease-out; padding: 10px 15px; border-bottom: 1px solid #f1f1f1; }
+        #nfModal .modal-body { font-family: monospace; font-size: 12px; background: #f8f9fa; white-space: pre-wrap; }
     </style>
 </head>
 <body class="bg-light">
 
 <nav class="navbar navbar-dark bg-dark shadow-sm">
   <div class="container d-flex justify-content-between">
-    <a class="navbar-brand fw-bold" href="index.html text-uppercase">HyperPneus</a>
+    <a class="navbar-brand fw-bold" href="index.html">HYPERPNEUS</a>
     <a href="minha-conta.html" class="btn btn-outline-light btn-sm">Minha Conta</a>
   </div>
 </nav>
 
 <div class="container my-5">
+    <!-- HEADER -->
     <div class="text-center mb-5">
         <div id="iconePagamento" class="mb-3">
             <i class="fas fa-circle-notch fa-spin fa-4x text-primary"></i>
         </div>
-        <h2 id="tituloPagamento" class="fw-bold">Estamos processando seu pedido...</h2>
-        <p id="subtituloPagamento" class="text-muted fs-5">Falta pouco para seus pneus novos chegarem até você.</p>
+        <h2 id="tituloPagamento" class="fw-bold">Processando seu pedido...</h2>
+        <p id="subtituloPagamento" class="text-muted fs-5">Acompanhe cada etapa da sua entrega aqui.</p>
     </div>
 
+    <!-- RASTREAMENTO -->
     <div class="card shadow border-0 mb-4">
         <div class="card-body p-4">
             <h5 class="fw-bold mb-4 d-flex align-items-center">
                 <i class="fas fa-map-marked-alt me-2 text-primary"></i>
-                Linha do Tempo do Pedido 
-                <span id="numeroPedido" class="badge bg-dark ms-3 px-3"></span>
+                Acompanhamento em Tempo Real <span id="numeroPedido" class="badge bg-dark ms-3 px-3"></span>
             </h5>
 
-            <div class="step-track" id="stepTrack">
-                <div class="progress-line" id="progressLine"></div>
+            <div class="step-track">
+                <div class="progress-container"><div class="progress-line" id="progressLine"></div></div>
                 <div class="step-item" id="step0"><div class="step-icon"><i class="fas fa-file-invoice"></i></div><div class="step-label">Pedido<br>Recebido</div></div>
                 <div class="step-item" id="step1"><div class="step-icon"><i class="fas fa-credit-card"></i></div><div class="step-label">Pagamento<br>Confirmado</div></div>
-                <div class="step-item" id="step2"><div class="step-icon"><i class="fas fa-box-open"></i></div><div class="step-label">Preparando<br>Envio</div></div>
-                <div class="step-item" id="step3"><div class="step-icon"><i class="fas fa-shipping-fast"></i></div><div class="step-label">Com a<br>Transportadora</div></div>
-                <div class="step-item" id="step4"><div class="step-icon"><i class="fas fa-truck"></i></div><div class="step-label">Mercadoria<br>em Trânsito</div></div>
-                <div class="step-item" id="step5"><div class="step-icon"><i class="fas fa-check-double"></i></div><div class="step-label">Entrega<br>Concluída</div></div>
+                <div class="step-item" id="step2"><div class="step-icon"><i class="fas fa-box-open"></i></div><div class="step-label">Em<br>Separação</div></div>
+                <div class="step-item" id="step3"><div class="step-icon"><i class="fas fa-shipping-fast"></i></div><div class="step-label">Na<br>Transportadora</div></div>
+                <div class="step-item" id="step4"><div class="step-icon"><i class="fas fa-truck"></i></div><div class="step-label">Saiu para<br>Entrega</div></div>
+                <div class="step-item" id="step5"><div class="step-icon"><i class="fas fa-home"></i></div><div class="step-label">Produto<br>Entregue</div></div>
             </div>
 
-            <div id="logEventos" class="mt-5 pt-3 border-top">
-                <h6 class="text-muted mb-3"><i class="fas fa-history me-2"></i>Histórico Detalhado:</h6>
+            <div id="logEventos" class="mt-5 pt-3 border-top bg-white rounded shadow-sm">
+                <div class="px-3 py-2 bg-light border-bottom rounded-top"><h6 class="mb-0 text-muted small text-uppercase fw-bold">Histórico Detalhado</h6></div>
             </div>
         </div>
     </div>
 
+    <!-- CARDS RESUMO -->
     <div class="row g-4" id="cardsResumo" style="display:none!important">
-        <div class="col-md-4"><div class="card shadow-sm h-100 card-status border-0"><div class="card-body"><h6 class="text-muted mb-2 small text-uppercase">Onde entregaremos</h6><p class="mb-0 fw-bold" id="enderecoConfirm"></p></div></div></div>
-        <div class="col-md-4"><div class="card shadow-sm h-100 card-status border-0"><div class="card-body"><h6 class="text-muted mb-2 small text-uppercase">Resumo Financeiro</h6><div id="resumoConfirm"></div></div></div></div>
-        <div class="col-md-4"><div class="card shadow-sm h-100 card-status border-0"><div class="card-body"><h6 class="text-muted mb-2 small text-uppercase">Método de Pagamento</h6><div id="pagamentoConfirm"></div></div></div></div>
+        <div class="col-md-4"><div class="card shadow-sm h-100 card-status border-0"><div class="card-body"><h6 class="text-muted mb-2 small text-uppercase">Entrega em</h6><p class="mb-0 fw-bold" id="enderecoConfirm"></p></div></div></div>
+        <div class="col-md-4"><div class="card shadow-sm h-100 card-status border-0"><div class="card-body"><h6 class="text-muted mb-2 small text-uppercase">Total do Pedido</h6><div id="resumoConfirm"></div></div></div></div>
+        <div class="col-md-4"><div class="card shadow-sm h-100 card-status border-0"><div class="card-body"><h6 class="text-muted mb-2 small text-uppercase">Pagamento</h6><div id="pagamentoConfirm"></div></div></div></div>
     </div>
 
+    <!-- AÇÕES -->
     <div class="text-center mt-5 d-flex gap-3 justify-content-center" id="acoes" style="display:none!important">
-        <button onclick="verNF()" class="btn btn-outline-dark px-4"><i class="fas fa-file-pdf me-2"></i>Nota Fiscal</button>
-        <a href="index.html" class="btn btn-primary btn-lg px-5 shadow">Voltar à Loja</a>
+        <button onclick="verNF()" class="btn btn-outline-dark px-4"><i class="fas fa-file-invoice me-2"></i>Ver Nota Fiscal</button>
+        <a href="index.html" class="btn btn-primary btn-lg px-5 shadow">Voltar para a Loja</a>
     </div>
 </div>
 
+<!-- Modal Nota Fiscal -->
+<div class="modal fade" id="nfModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Nota Fiscal Eletrônica - NF-e</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="conteudoNF"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="imprimirNF()"><i class="fas fa-print me-2"></i>Imprimir</button>
+                <button class="btn btn-dark" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 let pedidoData = null;
 
 function fmt(v) { return parseFloat(v).toLocaleString('pt-BR', { style:'currency', currency:'BRL' }); }
 
 function adicionarLog(msg, tipo = 'info') {
-    const icons = { success: 'fa-check-circle text-success', info: 'fa-info-circle text-primary', warning: 'fa-truck text-warning', fast: 'fa-shipping-fast text-info' };
+    const icons = { success: 'fa-check-circle text-success', info: 'fa-info-circle text-primary', warning: 'fa-clock text-warning', shipping: 'fa-truck text-info' };
     const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     const log = document.getElementById('logEventos');
     const div = document.createElement('div');
-    div.className = 'd-flex align-items-start gap-3 mb-3 log-entry';
-    div.innerHTML = `<i class="fas ${icons[tipo] || icons.info} mt-1"></i><div><span class="d-block fw-normal">${msg}</span><small class="text-muted">${hora}</small></div>`;
-    log.appendChild(div); // Ordem cronológica (primeiro ao último)
+    div.className = 'd-flex align-items-center gap-3 log-entry';
+    div.innerHTML = `<i class="fas ${icons[tipo] || icons.info} fs-5"></i><div><span class="d-block fw-normal text-dark">${msg}</span><small class="text-muted">${hora}</small></div>`;
+    log.appendChild(div);
 }
 
 function ativarStep(idx) {
-    const totalSteps = 5;
-    // Cálculo preciso: a largura da linha verde é uma porcentagem entre os pontos de início e fim
-    const progressWidth = (idx / totalSteps) * 100;
-    
+    const progressWidth = (idx / 5) * 100;
     document.querySelectorAll('.step-item').forEach((item, i) => {
         const icon = item.querySelector('.step-icon');
         const label = item.querySelector('.step-label');
         icon.classList.remove('atual', 'ativo');
-        label.classList.remove('atual', 'ativo');
-
-        if (i < idx) {
-            icon.classList.add('ativo');
-            label.classList.add('ativo');
-        } else if (i === idx) {
-            icon.classList.add('atual');
-            label.classList.add('ativo');
-        }
+        label.classList.remove('ativo');
+        if (i < idx) { icon.classList.add('ativo'); label.classList.add('ativo'); }
+        else if (i === idx) { icon.classList.add('atual'); label.classList.add('ativo'); }
     });
-    document.getElementById('progressLine').style.width = `calc(${progressWidth}% - 0px)`;
+    document.getElementById('progressLine').style.width = progressWidth + '%';
 }
 
 function esperar(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
@@ -137,53 +142,44 @@ async function carregarPedido(pedidoId) {
         pedidoData = await res.json();
 
         document.getElementById('numeroPedido').textContent = `Pedido #${pedidoData.id}`;
-        document.getElementById('enderecoConfirm').innerHTML = `${pedidoData.logradouro}, ${pedidoData.numero}<br><small class="text-muted">${pedidoData.cidade} - ${pedidoData.estado}</small>`;
-        document.getElementById('resumoConfirm').innerHTML = `<span class="fs-5 fw-bold text-primary">${fmt(pedidoData.total)}</span><br><small class="text-muted">Frete incluso</small>`;
-        document.getElementById('pagamentoConfirm').innerHTML = (pedidoData.pagamentos || []).map(p => `<div><i class="fab fa-cc-${p.bandeira.toLowerCase()} me-1"></i> ${p.bandeira} **** ${p.numero_final}</div>`).join('');
+        document.getElementById('enderecoConfirm').innerHTML = `${pedidoData.logradouro}, ${pedidoData.numero}<br><small>${pedidoData.cidade}/${pedidoData.estado}</small>`;
+        document.getElementById('resumoConfirm').innerHTML = `<span class="fs-5 fw-bold text-primary">${fmt(pedidoData.total)}</span>`;
+        document.getElementById('pagamentoConfirm').innerHTML = (pedidoData.pagamentos || []).map(p => `<div><i class="fab fa-cc-${p.bandeira.toLowerCase()} me-1"></i> ${p.bandeira}</div>`).join('');
 
-        if (pedidoData.status === 'ENTREGUE') {
-            exibirEstadoFinalizado();
-        } else {
-            iniciarSimulacao(pedidoId);
-        }
+        if (pedidoData.status === 'ENTREGUE') { exibirEstadoFinalizado(); }
+        else { iniciarSimulacao(pedidoId); }
     } catch (e) { console.warn(e); }
 }
 
 async function iniciarSimulacao(pedidoId) {
     const delay = 15000;
-
-    adicionarLog('Recebemos seu pedido! Ele já está registrado em nosso sistema e aguarda os próximos passos.', 'success');
+    adicionarLog('Recebemos seu pedido! Ele já está sendo processado em nosso sistema.', 'success');
     ativarStep(0);
 
     await esperar(delay);
-    document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-check-circle fa-4x text-warning"></i>';
-    document.getElementById('tituloPagamento').textContent = 'Confirmando pagamento...';
-    adicionarLog('Estamos aguardando a confirmação da operadora do seu cartão.', 'info');
-    
-    await esperar(5000); // pequeno intervalo interno para parecer real
     document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-check-circle fa-4x text-success"></i>';
-    document.getElementById('tituloPagamento').textContent = 'Pagamento Aprovado!';
-    document.getElementById('subtituloPagamento').textContent = 'Tudo certo com sua compra. Já começamos a correria por aqui!';
-    adicionarLog('✓ Pagamento aprovado! Agora vamos preparar seus pneus com todo cuidado.', 'success');
+    document.getElementById('tituloPagamento').textContent = 'Pagamento Confirmado!';
+    document.getElementById('subtituloPagamento').textContent = 'Seu pagamento foi aprovado com sucesso.';
+    adicionarLog('✓ Pagamento aprovado pela operadora do cartão.', 'success');
     ativarStep(1);
     document.getElementById('cardsResumo').style.setProperty('display', 'flex', 'important');
     document.getElementById('acoes').style.setProperty('display', 'flex', 'important');
 
     await esperar(delay);
-    adicionarLog('Seu produto foi localizado no estoque e já está sendo embalado para envio.', 'info');
+    adicionarLog('Produto em separação: nossa equipe está preparando seus pneus para o envio.', 'info');
     ativarStep(2);
 
     await esperar(delay);
-    adicionarLog('Mercadoria entregue à transportadora. Seus pneus já iniciaram a jornada até você.', 'fast');
+    adicionarLog('A transportadora coletou seu pedido e ele já está em trânsito.', 'shipping');
     ativarStep(3);
 
     await esperar(delay);
-    adicionarLog('🚚 Mercadoria em trânsito: O motorista acabou de sair para realizar a entrega no seu endereço.', 'warning');
+    adicionarLog('🚚 Saiu para entrega: O motorista iniciou a rota para o seu endereço.', 'warning');
     ativarStep(4);
 
     await esperar(delay);
-    adicionarLog('✅ Pedido entregue! Esperamos que aproveite seus novos pneus. Obrigado pela confiança!', 'success');
-    document.getElementById('tituloPagamento').textContent = 'Sua entrega foi concluída!';
+    adicionarLog('✅ Entrega Concluída: Esperamos que tenha uma ótima experiência!', 'success');
+    document.getElementById('tituloPagamento').textContent = 'Entrega Realizada!';
     ativarStep(5);
 
     await fetch(`/api/pedidos/${pedidoId}/status`, {
@@ -196,11 +192,48 @@ async function iniciarSimulacao(pedidoId) {
 function exibirEstadoFinalizado() {
     ativarStep(5);
     document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-check-circle fa-4x text-success"></i>';
-    document.getElementById('tituloPagamento').textContent = 'Pedido Entregue';
-    document.getElementById('subtituloPagamento').textContent = 'Agradecemos a confiança em comprar na HyperPneus!';
+    document.getElementById('tituloPagamento').textContent = 'Entrega Concluída';
+    document.getElementById('subtituloPagamento').textContent = 'Sua mercadoria foi entregue com sucesso.';
     document.getElementById('cardsResumo').style.setProperty('display', 'flex', 'important');
     document.getElementById('acoes').style.setProperty('display', 'flex', 'important');
-    adicionarLog('Histórico de entrega finalizado com sucesso.', 'success');
+    adicionarLog('O pedido passou por todas as etapas e foi entregue.', 'success');
+}
+
+function verNF() {
+    if (!pedidoData) return;
+    const nf = `
+    NOTA FISCAL ELETRÔNICA - HYPERPNEUS LTDA
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    CNPJ: 00.000.000/0001-00
+    PEDIDO: #${pedidoData.id}
+    DATA: ${new Date().toLocaleDateString('pt-BR')}
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    DESTINATÁRIO:
+    ${pedidoData.logradouro}, ${pedidoData.numero}
+    ${pedidoData.bairro} - ${pedidoData.cidade}/${pedidoData.estado}
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ITENS:
+    ${(pedidoData.itens || []).map(i => `${i.marca} ${i.modelo} (x${i.quantidade}) - ${fmt(i.preco_unitario * i.quantidade)}`).join('\n    ')}
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    FRETE: ${fmt(pedidoData.frete)}
+    TOTAL: ${fmt(pedidoData.total)}
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    PAGAMENTO:
+    ${(pedidoData.pagamentos || []).map(p => `${p.bandeira}: ${fmt(p.valor)}`).join('\n    ')}
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    CHAVE DE ACESSO:
+    ${Math.random().toString(36).substr(2, 44).toUpperCase()}
+    `;
+    document.getElementById('conteudoNF').textContent = nf;
+    new bootstrap.Modal(document.getElementById('nfModal')).show();
+}
+
+function imprimirNF() {
+    const conteudo = document.getElementById('conteudoNF').textContent;
+    const w = window.open('', '_blank');
+    w.document.write(`<html><body style="font-family:monospace; white-space:pre-wrap;">${conteudo}</body></html>`);
+    w.document.close();
+    w.print();
 }
 
 window.onload = () => {
