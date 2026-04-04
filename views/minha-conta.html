@@ -1,245 +1,107 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <title>Minha Conta - HyperPneus</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --kabum-orange: #ff6500; --kabum-blue: #0060b1; }
-        body { background-color: #f2f3f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-
-        /* Sidebar Customizada */
-        .list-group-item { border: none; font-size: 14px; color: #555; padding: 12px 20px; }
-        .list-group-item.active { background-color: var(--kabum-blue) !important; border-color: var(--kabum-blue) !important; font-weight: bold; }
-        .list-group-item:hover:not(.active) { background-color: #e9ecef; }
-
-        /* Barra de Busca e Filtros Pedidos */
-        .filter-section { background: white; padding: 20px; border-radius: 4px; border: 1px solid #ddd; margin-bottom: 20px; }
-        .search-container { position: relative; }
-        .search-container i { position: absolute; left: 15px; top: 13px; color: #999; }
-        .search-input { padding-left: 40px; height: 45px; border-radius: 4px; font-size: 14px; }
-
-        /* Card do Pedido Estilo KaBuM */
-        .order-card { background: white; border-radius: 4px; border: 1px solid #eee; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .order-header { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
-        .order-info-title { font-weight: bold; color: #555; font-size: 14px; }
-        
-        .order-body { padding: 20px; }
-        .status-text { font-weight: bold; font-size: 14px; margin-bottom: 8px; }
-        .status-entregue { color: #198754; }
-        .status-pendente { color: var(--kabum-orange); }
-
-        .payment-label { font-size: 13px; color: #777; margin-bottom: 15px; display: flex; align-items: center; }
-        .payment-label i { margin-right: 8px; }
-
-        /* Botões Estilizados */
-        .btn-kabum { background-color: var(--kabum-orange); color: white; font-weight: bold; font-size: 12px; text-transform: uppercase; border: none; padding: 10px 20px; border-radius: 4px; }
-        .btn-kabum:hover { background-color: #e55a00; color: white; }
-        .btn-detalhes { border: 1px solid var(--kabum-orange); color: var(--kabum-orange); font-weight: bold; font-size: 12px; text-transform: uppercase; padding: 10px 20px; text-decoration: none; border-radius: 4px; transition: 0.3s; }
-        .btn-detalhes:hover { background: #fff5f0; color: var(--kabum-orange); }
-
-        /* Mini Lista de Produtos */
-        .mini-product { display: flex; align-items: center; padding-top: 15px; border-top: 1px solid #f8f8f8; }
-        .mini-img { width: 55px; height: 55px; object-fit: contain; border: 1px solid #eee; padding: 5px; margin-right: 15px; border-radius: 4px; }
-        .mini-name { font-size: 13px; font-weight: bold; color: var(--kabum-blue); }
+        :root { --kabum-blue: #0060b1; --kabum-orange: #ff6500; }
+        body { background-color: #f2f3f5; font-family: 'Segoe UI', sans-serif; }
+        .breadcrumb-custom { font-size: 12px; color: #888; margin-bottom: 20px; }
+        .breadcrumb-custom a { color: var(--kabum-blue); text-decoration: none; }
+        .list-group-item.active { background-color: var(--kabum-blue); border-color: var(--kabum-blue); font-weight: bold; }
+        .order-card { background: white; border-radius: 4px; border: 1px solid #eee; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .order-header { padding: 12px 20px; border-bottom: 1px solid #f0f0f0; background: #fff; display: flex; justify-content: space-between; align-items: center; }
+        .btn-kabum { background: var(--kabum-orange); color: #fff; font-weight: bold; font-size: 12px; text-transform: uppercase; border: none; padding: 10px 20px; }
+        .btn-kabum:hover { background: #e55a00; color: #fff; }
+        .btn-outline-orange { border: 1px solid var(--kabum-orange); color: var(--kabum-orange); font-weight: bold; font-size: 12px; text-transform: uppercase; padding: 10px 20px; text-decoration: none; border-radius: 4px; }
+        .btn-outline-orange:hover { background: #fff5f0; }
     </style>
 </head>
-
 <body>
-
-    <nav class="navbar navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="index.html">HYPERPNEUS</a>
-            <div class="d-flex align-items-center gap-3">
-                <span class="text-white small" id="nomeNav"></span>
-                <button onclick="sair()" class="btn btn-outline-light btn-sm">Sair</button>
-            </div>
-        </div>
+    <nav class="navbar navbar-dark bg-dark shadow-sm">
+        <div class="container"><a class="navbar-brand fw-bold" href="index.html">HYPERPNEUS</a>
+        <div class="text-white small d-flex gap-3 align-items-center"><span id="nomeNav"></span><button onclick="sair()" class="btn btn-outline-light btn-sm">Sair</button></div></div>
     </nav>
 
     <div class="container my-5">
-        <div class="mb-2 small text-muted">Central Minha Conta / <strong>Meus Pedidos</strong></div>
+        <div class="breadcrumb-custom"><a href="minha-conta.html">Central Minha Conta</a> / <strong>Meus Pedidos</strong></div>
         <h2 class="mb-4 fw-bold">Minha Conta</h2>
-        
-        <div id="alerta" class="alert d-none mb-3"></div>
+        <div id="alerta" class="alert d-none"></div>
 
         <div class="row">
             <!-- Sidebar -->
             <div class="col-md-3">
-                <div class="list-group shadow-sm">
-                    <a href="#" onclick="mostrarAba('pedidos')" class="list-group-item list-group-item-action active" id="aba-pedidos">
-                        <i class="fas fa-box me-2"></i> Meus Pedidos
-                    </a>
-                    <a href="#" onclick="mostrarAba('garagem')" class="list-group-item list-group-item-action" id="aba-garagem">
-                        <i class="fas fa-car me-2"></i> Minha Garagem
-                    </a>
-                    <a href="#" onclick="mostrarAba('cartoes')" class="list-group-item list-group-item-action" id="aba-cartoes">
-                        <i class="fas fa-credit-card me-2"></i> Meus Cartões
-                    </a>
-                    <a href="#" onclick="mostrarAba('enderecos')" class="list-group-item list-group-item-action" id="aba-enderecos">
-                        <i class="fas fa-map-marker-alt me-2"></i> Meus Endereços
-                    </a>
-                    <a href="#" onclick="mostrarAba('dados')" class="list-group-item list-group-item-action" id="aba-dados">
-                        <i class="fas fa-user-cog me-2"></i> Dados Pessoais
-                    </a>
+                <div class="list-group shadow-sm border-0">
+                    <a href="#" onclick="mostrarAba('pedidos')" class="list-group-item list-group-item-action active" id="aba-pedidos"><i class="fas fa-box me-2"></i> Meus Pedidos</a>
+                    <a href="#" onclick="mostrarAba('garagem')" class="list-group-item list-group-item-action" id="aba-garagem"><i class="fas fa-car me-2"></i> Minha Garagem</a>
+                    <a href="#" onclick="mostrarAba('cartoes')" class="list-group-item list-group-item-action" id="aba-cartoes"><i class="fas fa-credit-card me-2"></i> Meus Cartões</a>
+                    <a href="#" onclick="mostrarAba('enderecos')" class="list-group-item list-group-item-action" id="aba-enderecos"><i class="fas fa-map-marker-alt me-2"></i> Meus Endereços</a>
+                    <a href="#" onclick="mostrarAba('dados')" class="list-group-item list-group-item-action" id="aba-dados"><i class="fas fa-user-cog me-2"></i> Dados Pessoais</a>
                 </div>
             </div>
 
-            <!-- Conteúdo Principal -->
+            <!-- Conteúdo -->
             <div class="col-md-9">
-
-                <!-- ABA PEDIDOS (ESTILO KABUM) -->
+                <!-- PEDIDOS -->
                 <div id="sec-pedidos">
-                    <div class="filter-section shadow-sm">
-                        <div class="row g-2">
-                            <div class="col-md-6">
-                                <div class="search-container">
-                                    <i class="fas fa-search"></i>
-                                    <input type="text" class="form-control search-input" placeholder="Digite o número do pedido ou produto...">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select search-input"><option>Último ano</option><option>2024</option></select>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select search-input"><option>Todos os pedidos</option><option>Concluídos</option></select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="listaPedidos">
-                        <!-- JS injeta os cards aqui -->
-                    </div>
+                    <div id="listaPedidos"></div>
                 </div>
 
-                <!-- ABA GARAGEM -->
+                <!-- GARAGEM -->
                 <div id="sec-garagem" class="d-none">
-                    <div class="card shadow-sm mb-3">
-                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                            <strong>Meus Veículos</strong>
-                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalVeiculo"><i class="fas fa-plus"></i> Adicionar</button>
-                        </div>
-                        <div class="card-body" id="listaVeiculos"></div>
-                    </div>
+                    <div class="card shadow-sm border-0"><div class="card-header bg-white d-flex justify-content-between align-items-center"><strong><i class="fas fa-car me-2"></i>Meus Veículos</strong><button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalVeiculo">+ Adicionar</button></div>
+                    <div class="card-body" id="listaVeiculos"></div></div>
                 </div>
 
-                <!-- ABA CARTÕES -->
+                <!-- CARTÕES -->
                 <div id="sec-cartoes" class="d-none">
-                    <div class="card shadow-sm mb-3">
-                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                            <strong>Meus Cartões</strong>
-                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCartao"><i class="fas fa-plus"></i> Adicionar</button>
-                        </div>
-                        <div class="card-body" id="listaCartoes"></div>
-                    </div>
+                    <div class="card shadow-sm border-0"><div class="card-header bg-white d-flex justify-content-between align-items-center"><strong><i class="fas fa-credit-card me-2"></i>Meus Cartões</strong><button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCartao">+ Adicionar</button></div>
+                    <div class="card-body" id="listaCartoes"></div></div>
                 </div>
 
-                <!-- ABA ENDEREÇOS -->
+                <!-- ENDEREÇOS -->
                 <div id="sec-enderecos" class="d-none">
-                    <div class="card shadow-sm mb-3">
-                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                            <strong>Meus Endereços</strong>
-                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEndereco" onclick="limparModalEndereco()"><i class="fas fa-plus"></i> Adicionar</button>
-                        </div>
-                        <div class="card-body" id="listaEnderecos"></div>
-                    </div>
+                    <div class="card shadow-sm border-0"><div class="card-header bg-white d-flex justify-content-between align-items-center"><strong><i class="fas fa-map-marker-alt me-2"></i>Meus Endereços</strong><button class="btn btn-primary btn-sm" onclick="limparModalEndereco()">+ Adicionar</button></div>
+                    <div class="card-body" id="listaEnderecos"></div></div>
                 </div>
 
-                <!-- ABA DADOS PESSOAIS -->
+                <!-- DADOS PESSOAIS -->
                 <div id="sec-dados" class="d-none">
-                    <div class="card shadow-sm mb-3">
-                        <div class="card-header bg-white"><strong>Dados Pessoais</strong></div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6 mb-3"><label class="form-label">Nome</label><input type="text" id="editNome" class="form-control"></div>
-                                <div class="col-md-6 mb-3"><label class="form-label">Sobrenome</label><input type="text" id="editSobrenome" class="form-control"></div>
-                            </div>
-                            <div class="mb-4"><label class="form-label">E-mail</label><input type="email" id="editEmail" class="form-control"></div>
-                            <button onclick="salvarDados()" class="btn btn-primary">Salvar Alterações</button>
+                    <div class="card shadow-sm border-0 p-4">
+                        <h6 class="fw-bold mb-4">Dados Pessoais</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label class="form-label small fw-bold">Nome</label><input type="text" id="editNome" class="form-control"></div>
+                            <div class="col-md-6 mb-3"><label class="form-label small fw-bold">Sobrenome</label><input type="text" id="editSobrenome" class="form-control"></div>
                         </div>
-                    </div>
-                    <div class="card shadow-sm border-danger">
-                        <div class="card-header bg-white text-danger"><strong>Zona de Perigo</strong></div>
-                        <div class="card-body d-flex justify-content-between align-items-center">
-                            <span>Inativar minha conta permanentemente.</span>
-                            <button class="btn btn-outline-danger btn-sm" onclick="encerrarConta()">Encerrar Conta</button>
-                        </div>
+                        <div class="mb-4"><label class="form-label small fw-bold">E-mail</label><input type="email" id="editEmail" class="form-control"></div>
+                        <button onclick="salvarDados()" class="btn btn-primary px-4 fw-bold">Salvar Alterações</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL VEÍCULO -->
-    <div class="modal fade" id="modalVeiculo" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title">Adicionar Veículo</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body">
-                    <input type="text" id="vMarca" class="form-control mb-2" placeholder="Marca">
-                    <input type="text" id="vModelo" class="form-control mb-2" placeholder="Modelo">
-                    <input type="number" id="vAno" class="form-control mb-2" placeholder="Ano">
-                    <input type="text" id="vVersao" class="form-control mb-2" placeholder="Versão">
-                    <div class="form-check"><input type="checkbox" id="vPrincipal" class="form-check-input"><label class="form-check-label">Principal</label></div>
-                </div>
-                <div class="modal-footer"><button class="btn btn-primary" onclick="adicionarVeiculo()">Salvar</button></div>
-            </div>
+    <!-- Modal Endereço -->
+    <div class="modal fade" id="modalEndereco" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-body">
+        <input type="hidden" id="enderecoId">
+        <div class="row g-2">
+            <div class="col-12"><input type="text" id="eNome" class="form-control" placeholder="Nome Destinatário"></div>
+            <div class="col-md-4"><input type="text" id="eCep" class="form-control" placeholder="CEP"></div>
+            <div class="col-md-8"><input type="text" id="eLogradouro" class="form-control" placeholder="Logradouro"></div>
+            <div class="col-md-3"><input type="text" id="eNumero" class="form-control" placeholder="Número"></div>
+            <div class="col-md-9"><input type="text" id="eBairro" class="form-control" placeholder="Bairro"></div>
+            <div class="col-md-8"><input type="text" id="eCidade" class="form-control" placeholder="Cidade"></div>
+            <div class="col-md-4"><input type="text" id="eEstado" class="form-control" placeholder="UF"></div>
         </div>
-    </div>
+        <button class="btn btn-primary w-100 mt-3" onclick="salvarEndereco()">Salvar Endereço</button>
+    </div></div></div></div>
 
-    <!-- MODAL CARTÃO -->
-    <div class="modal fade" id="modalCartao" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title">Adicionar Cartão</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body">
-                    <select id="cBandeira" class="form-select mb-2"><option>Visa</option><option>MasterCard</option><option>Elo</option></select>
-                    <input type="text" id="cNome" class="form-control mb-2" placeholder="Nome no Cartão">
-                    <input type="text" id="cNumero" class="form-control mb-2" placeholder="Número">
-                    <input type="text" id="cCvv" class="form-control mb-2" placeholder="CVV">
-                    <div class="form-check"><input type="checkbox" id="cPrincipal" class="form-check-input"><label class="form-check-label">Principal</label></div>
-                </div>
-                <div class="modal-footer"><button class="btn btn-primary" onclick="adicionarCartao()">Salvar</button></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL ENDEREÇO -->
-    <div class="modal fade" id="modalEndereco" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title" id="modalEnderecoTitulo">Endereço</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body">
-                    <input type="hidden" id="enderecoId">
-                    <div class="row">
-                        <div class="col-md-6 mb-2"><input type="text" id="eNome" class="form-control" placeholder="Nome Destinatário"></div>
-                        <div class="col-md-4 mb-2"><input type="text" id="eCep" class="form-control" placeholder="CEP" oninput="formatarCEP(this)"></div>
-                        <div class="col-md-2 mb-2"><button class="btn btn-outline-primary w-100" onclick="buscarCEP()">CEP</button></div>
-                        <div class="col-md-9 mb-2"><input type="text" id="eLogradouro" class="form-control" placeholder="Rua"></div>
-                        <div class="col-md-3 mb-2"><input type="text" id="eNumero" class="form-control" placeholder="Nº"></div>
-                        <div class="col-md-4 mb-2"><input type="text" id="eBairro" class="form-control" placeholder="Bairro"></div>
-                        <div class="col-md-5 mb-2"><input type="text" id="eCidade" class="form-control" placeholder="Cidade"></div>
-                        <div class="col-md-3 mb-2"><input type="text" id="eEstado" class="form-control" placeholder="UF"></div>
-                    </div>
-                </div>
-                <div class="modal-footer"><button class="btn btn-primary" onclick="salvarEndereco()">Salvar</button></div>
-            </div>
-        </div>
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const API = '';
         let clienteId = null;
-
-        function mostrarAlerta(msg, tipo = 'danger') {
-            const el = document.getElementById('alerta');
-            el.className = `alert alert-${tipo}`;
-            el.textContent = msg;
-            el.classList.remove('d-none');
-            setTimeout(() => el.classList.add('d-none'), 4000);
-        }
+        function mostrarAlerta(m, t='danger') { const el = document.getElementById('alerta'); el.className=`alert alert-${t}`; el.textContent=m; el.classList.remove('d-none'); setTimeout(()=>el.classList.add('d-none'), 3000); }
 
         function mostrarAba(aba) {
             ['pedidos', 'garagem', 'cartoes', 'enderecos', 'dados'].forEach(a => {
@@ -248,110 +110,94 @@
             });
             document.getElementById(`sec-${aba}`).classList.remove('d-none');
             document.getElementById(`aba-${aba}`).classList.add('active');
-            if (aba === 'pedidos') carregarPedidos();
-            else if (aba === 'garagem') carregarVeiculos();
-            else if (aba === 'cartoes') carregarCartoes();
-            else if (aba === 'enderecos') carregarEnderecos();
-            else if (aba === 'dados') carregarDados();
+            if(aba==='pedidos') carregarPedidos();
+            if(aba==='garagem') carregarVeiculos();
+            if(aba==='cartoes') carregarCartoes();
+            if(aba==='enderecos') carregarEnderecos();
+            if(aba==='dados') carregarDados();
         }
 
         async function carregarPedidos() {
-            const lista = document.getElementById('listaPedidos');
-            lista.innerHTML = '<p class="text-center py-5"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></p>';
-            try {
-                const res = await fetch(`${API}/api/pedidos`);
-                if (res.status === 401) { window.location.href = 'login.html'; return; }
-                const pedidos = await res.json();
-                if (!pedidos.length) { lista.innerHTML = '<div class="alert alert-light text-center py-5">Nenhum pedido encontrado.</div>'; return; }
-
-                lista.innerHTML = pedidos.map(p => {
-                    const data = new Date(p.criado_em).toLocaleDateString('pt-BR');
-                    const isEntregue = p.status === 'ENTREGUE';
-                    return `
-                    <div class="order-card">
-                        <div class="order-header">
-                            <span class="order-info-title text-uppercase">Pedido: ${p.id} - ${data}</span>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-kabum"><i class="fas fa-tools me-1"></i> Gerenciar</button>
-                                <a href="confirmacao.html?pedido=${p.id}" class="btn btn-detalhes">Ver Detalhes</a>
-                            </div>
-                        </div>
-                        <div class="order-body">
-                            <div class="status-text ${isEntregue ? 'status-entregue' : 'status-pendente'}">
-                                <i class="fas ${isEntregue ? 'fa-check-circle' : 'fa-clock'} me-1"></i> ${isEntregue ? 'Pedido concluído.' : 'Em processamento...'}
-                            </div>
-                            <div class="payment-label"><i class="fas fa-credit-card"></i> Pagamento via Cartão de Crédito</div>
-                            <div class="mini-product">
-                                <img src="https://images.kabum.com.br/produtos/fotos/placeholder.jpg" class="mini-img">
-                                <div class="mini-name">Itens do Pedido #${p.id} (${p.qtd_itens} itens)</div>
-                            </div>
-                        </div>
-                    </div>`;
-                }).join('');
-            } catch (err) { lista.innerHTML = '<p class="text-danger">Erro ao carregar pedidos.</p>'; }
+            const res = await fetch(`/api/pedidos`);
+            const pedidos = await res.json();
+            document.getElementById('listaPedidos').innerHTML = pedidos.map(p => `
+                <div class="order-card shadow-sm">
+                    <div class="order-header"><span class="small fw-bold text-uppercase">Pedido #${p.id} - ${new Date(p.criado_em).toLocaleDateString('pt-BR')}</span>
+                    <div class="d-flex gap-2"><button class="btn btn-kabum">GERENCIAR</button><a href="confirmacao.html?pedido=${p.id}" class="btn btn-outline-orange">Ver Detalhes</a></div></div>
+                    <div class="p-3"><span class="${p.status==='ENTREGUE'?'text-success':'text-warning'} fw-bold" style="font-size:13px"><i class="fas fa-check-circle me-1"></i>${p.status==='ENTREGUE'?'Pedido concluído.':'Em processamento...'}</span></div>
+                </div>`).join('') || '<p>Nenhum pedido.</p>';
         }
 
-        // Funções de Endereço
-        function formatarCEP(i) { let v = i.value.replace(/\D/g, '').slice(0, 8); if (v.length > 5) v = v.replace(/(\d{5})(\d{1,3})/, '$1-$2'); i.value = v; }
-        async function buscarCEP() {
-            const cep = document.getElementById('eCep').value.replace(/\D/g, '');
-            if (cep.length !== 8) return;
-            const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-            const d = await res.json();
-            if (d.erro) return;
-            document.getElementById('eLogradouro').value = d.logradouro || '';
-            document.getElementById('eBairro').value = d.bairro || '';
-            document.getElementById('eCidade').value = d.localidade || '';
-            document.getElementById('eEstado').value = d.uf || '';
+        async function carregarVeiculos() {
+            const res = await fetch(`/api/clientes/${clienteId}/veiculos`);
+            const vs = await res.json();
+            document.getElementById('listaVeiculos').innerHTML = vs.map(v => `
+                <div class="border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <div><h6 class="mb-0 fw-bold">${v.marca} ${v.modelo}</h6><small class="text-muted">${v.ano} — Versão: ${v.versao}</small></div>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removerVeiculo(${v.id})"><i class="fas fa-trash"></i></button>
+                </div>`).join('') || '<p class="text-muted">Nenhum veículo.</p>';
+        }
+
+        async function carregarCartoes() {
+            const res = await fetch(`/api/clientes/${clienteId}/cartoes`);
+            const cs = await res.json();
+            document.getElementById('listaCartoes').innerHTML = cs.map(c => `
+                <div class="border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <div><h6 class="mb-0 fw-bold">${c.bandeira}</h6><small class="text-muted">Final **** ${c.numero_final}</small></div>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removerCartao(${c.id})"><i class="fas fa-trash"></i></button>
+                </div>`).join('') || '<p class="text-muted">Nenhum cartão.</p>';
         }
 
         async function carregarEnderecos() {
-            const res = await fetch(`${API}/api/clientes/${clienteId}/enderecos`);
-            const enderecos = await res.json();
-            const lista = document.getElementById('listaEnderecos');
-            lista.innerHTML = enderecos.map(e => `
-                <div class="border rounded p-3 mb-2 d-flex justify-content-between align-items-center">
-                    <div><strong>${e.nome_destinatario}</strong><br><small>${e.logradouro}, ${e.numero} - ${e.cidade}/${e.estado}</small></div>
+            const res = await fetch(`/api/clientes/${clienteId}/enderecos`);
+            const es = await res.json();
+            document.getElementById('listaEnderecos').innerHTML = es.map(e => `
+                <div class="border rounded p-3 mb-3 d-flex justify-content-between align-items-center">
+                    <div><h6 class="mb-1 fw-bold">${e.nome_destinatario}</h6><small class="text-muted">${e.logradouro}, ${e.numero} - ${e.cidade}/${e.estado}</small></div>
                     <div class="d-flex gap-2">
                         <button class="btn btn-sm btn-outline-primary" onclick="editarEndereco(${e.id})"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-sm btn-outline-danger" onclick="removerEndereco(${e.id})"><i class="fas fa-trash"></i></button>
                     </div>
-                </div>`).join('') || '<p>Nenhum endereço.</p>';
-        }
-
-        async function salvarEndereco() {
-            const id = document.getElementById('enderecoId').value;
-            const dados = { nome_destinatario: document.getElementById('eNome').value, cep: document.getElementById('eCep').value, logradouro: document.getElementById('eLogradouro').value, numero: document.getElementById('eNumero').value, bairro: document.getElementById('eBairro').value, cidade: document.getElementById('eCidade').value, estado: document.getElementById('eEstado').value, tipo: 'entrega' };
-            const res = await fetch(id ? `${API}/api/clientes/${clienteId}/enderecos/${id}` : `${API}/api/clientes/${clienteId}/enderecos`, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) });
-            if (res.ok) { bootstrap.Modal.getInstance(document.getElementById('modalEndereco')).hide(); carregarEnderecos(); }
-        }
-
-        // Funções de Veículos e Cartões (Abreviadas)
-        async function carregarVeiculos() {
-            const res = await fetch(`${API}/api/clientes/${clienteId}/veiculos`);
-            const vs = await res.json();
-            document.getElementById('listaVeiculos').innerHTML = vs.map(v => `<div class="py-2 border-bottom">${v.marca} ${v.modelo} (${v.ano})</div>`).join('') || 'Nenhum veículo.';
-        }
-        async function carregarCartoes() {
-            const res = await fetch(`${API}/api/clientes/${clienteId}/cartoes`);
-            const cs = await res.json();
-            document.getElementById('listaCartoes').innerHTML = cs.map(c => `<div class="py-2 border-bottom">${c.bandeira} **** ${c.numero_final}</div>`).join('') || 'Nenhum cartão.';
+                </div>`).join('') || '<p class="text-muted">Nenhum endereço.</p>';
         }
 
         async function carregarDados() {
-            const res = await fetch(`${API}/api/clientes/${clienteId}`);
+            const res = await fetch(`/api/clientes/${clienteId}`);
             const c = await res.json();
             document.getElementById('editNome').value = c.nome; document.getElementById('editSobrenome').value = c.sobrenome; document.getElementById('editEmail').value = c.email;
         }
 
-        function sair() { localStorage.removeItem('cliente'); window.location.href = 'login.html'; }
+        async function salvarDados() {
+            const dados = { nome: document.getElementById('editNome').value, sobrenome: document.getElementById('editSobrenome').value, email: document.getElementById('editEmail').value };
+            const res = await fetch(`/api/clientes/${clienteId}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(dados) });
+            if(res.ok) mostrarAlerta('Dados salvos com sucesso!', 'success');
+        }
+
+        async function removerVeiculo(id) { await fetch(`/api/clientes/${clienteId}/veiculos/${id}`, {method:'DELETE'}); carregarVeiculos(); }
+        async function removerCartao(id) { await fetch(`/api/clientes/${clienteId}/cartoes/${id}`, {method:'DELETE'}); carregarCartoes(); }
+        async function removerEndereco(id) { await fetch(`/api/clientes/${clienteId}/enderecos/${id}`, {method:'DELETE'}); carregarEnderecos(); }
+
+        function limparModalEndereco() { document.getElementById('enderecoId').value=''; ['eNome','eCep','eLogradouro','eNumero','eBairro','eCidade','eEstado'].forEach(id=>document.getElementById(id).value=''); new bootstrap.Modal(document.getElementById('modalEndereco')).show(); }
+        async function editarEndereco(id) { 
+            const res = await fetch(`/api/clientes/${clienteId}/enderecos`); 
+            const es = await res.json(); const e = es.find(x => x.id === id);
+            document.getElementById('enderecoId').value = e.id; document.getElementById('eNome').value = e.nome_destinatario; document.getElementById('eCep').value = e.cep; document.getElementById('eLogradouro').value = e.logradouro; document.getElementById('eNumero').value = e.numero; document.getElementById('eCidade').value = e.cidade; document.getElementById('eEstado').value = e.estado;
+            new bootstrap.Modal(document.getElementById('modalEndereco')).show();
+        }
+
+        async function salvarEndereco() {
+            const id = document.getElementById('enderecoId').value;
+            const dados = { nome_destinatario: document.getElementById('eNome').value, cep: document.getElementById('eCep').value, logradouro: document.getElementById('eLogradouro').value, numero: document.getElementById('eNumero').value, cidade: document.getElementById('eCidade').value, estado: document.getElementById('eEstado').value, tipo: 'entrega' };
+            await fetch(id ? `/api/clientes/${clienteId}/enderecos/${id}` : `/api/clientes/${clienteId}/enderecos`, { method: id?'PUT':'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(dados) });
+            bootstrap.Modal.getInstance(document.getElementById('modalEndereco')).hide(); carregarEnderecos();
+        }
+
+        function sair() { localStorage.removeItem('cliente'); window.location.href='login.html'; }
 
         window.onload = () => {
             const cliente = JSON.parse(localStorage.getItem('cliente'));
-            if (!cliente) return window.location.href = 'login.html';
-            clienteId = cliente.id;
-            document.getElementById('nomeNav').textContent = `Olá, ${cliente.nome}!`;
-            carregarPedidos();
+            if(!cliente) return window.location.href='login.html';
+            clienteId = cliente.id; document.getElementById('nomeNav').textContent = `Olá, ${cliente.nome}!`; carregarPedidos();
         };
     </script>
 </body>
