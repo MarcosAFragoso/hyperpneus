@@ -32,18 +32,14 @@
             </div>
             <div class="col-md-9">
                 <div id="sec-pedidos"><div id="listaPedidos"></div></div>
-                <div id="sec-garagem" class="d-none"><div class="card shadow-sm"><div class="card-header bg-white d-flex justify-content-between"><strong>Garagem</strong><button class="btn btn-primary btn-sm" onclick="abrirModalVeiculo()">+ Adicionar</button></div><div class="card-body" id="listaVeiculos"></div></div></div>
-                <div id="sec-cartoes" class="d-none"><div class="card shadow-sm"><div class="card-header bg-white d-flex justify-content-between"><strong>Cartões</strong><button class="btn btn-primary btn-sm" onclick="abrirModalCartao()">+ Adicionar</button></div><div class="card-body" id="listaCartoes"></div></div></div>
-                <div id="sec-enderecos" class="d-none"><div class="card shadow-sm"><div class="card-header bg-white d-flex justify-content-between"><strong>Endereços</strong><button class="btn btn-primary btn-sm" onclick="abrirModalEndereco()">+ Adicionar</button></div><div class="card-body" id="listaEnderecos"></div></div></div>
-                <div id="sec-dados" class="d-none"><div class="card shadow-sm p-4"><div id="formDados"></div><button class="btn btn-danger mt-3" onclick="encerrarConta()">Inativar Conta</button></div></div>
+                <div id="sec-garagem" class="d-none"><div class="card shadow-sm p-3"><div class="d-flex justify-content-between mb-3"><strong>Garagem</strong></div><div id="listaVeiculos">Carregando...</div></div></div>
+                <div id="sec-cartoes" class="d-none"><div class="card shadow-sm p-3"><div class="d-flex justify-content-between mb-3"><strong>Cartões</strong></div><div id="listaCartoes">Carregando...</div></div></div>
+                <div id="sec-enderecos" class="d-none"><div class="card shadow-sm p-3"><div class="d-flex justify-content-between mb-3"><strong>Endereços</strong></div><div id="listaEnderecos">Carregando...</div></div></div>
+                <div id="sec-dados" class="d-none"><div class="card shadow-sm p-4"><div id="formDados"></div></div></div>
             </div>
         </div>
     </div>
 
-    <!-- Modais simplificados para manter a estrutura -->
-    <div class="modal fade" id="modalGeral" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body" id="corpoModal"></div></div></div></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let clienteId = null;
 
@@ -60,36 +56,51 @@
         }
 
         async function carregarPedidos() {
-            const lista = document.getElementById('listaPedidos');
-            lista.innerHTML = 'Carregando...';
-            try {
-                const res = await fetch('/api/pedidos', { credentials: 'include' });
-                const pedidos = await res.json();
-                lista.innerHTML = pedidos.map(p => `
-                    <div class="order-card p-3 shadow-sm">
-                        <div class="d-flex justify-content-between"><strong>Pedido #${p.id}</strong> <span>${parseFloat(p.total).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span></div>
-                        <div class="mt-2 text-muted">Status: ${p.status.replace(/_/g, ' ')}</div>
-                        <div class="mt-2"><a href="confirmacao.html?pedido=${p.id}&modo=visualizar" class="btn btn-dark btn-sm">DETALHES</a> <a href="troca.html?pedido=${p.id}" class="btn btn-kabum">GERENCIAR</a></div>
-                    </div>`).join('');
-            } catch(e) { lista.innerHTML = 'Erro.'; }
+            const res = await fetch('/api/pedidos', { credentials: 'include' });
+            const p = await res.json();
+            document.getElementById('listaPedidos').innerHTML = p.map(x => `
+                <div class="order-card p-3 shadow-sm">
+                    <strong>Pedido #${x.id}</strong> - ${parseFloat(x.total).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+                    <div class="mt-2"><a href="confirmacao.html?pedido=${x.id}&modo=visualizar" class="btn btn-dark btn-sm">DETALHES</a> <a href="troca.html?pedido=${x.id}" class="btn btn-kabum">GERENCIAR</a></div>
+                </div>`).join('');
         }
 
-        // Funções placeholders para manter sua interface funcionando enquanto você preenche a lógica de API
-        async function carregarVeiculos() { document.getElementById('listaVeiculos').innerHTML = 'Função ativa: Conecte ao seu veiculoController'; }
-        async function carregarCartoes() { document.getElementById('listaCartoes').innerHTML = 'Função ativa: Conecte ao seu cartaoController'; }
-        async function carregarEnderecos() { document.getElementById('listaEnderecos').innerHTML = 'Função ativa: Conecte ao seu enderecoController'; }
-        async function carregarDados() { document.getElementById('formDados').innerHTML = 'Dados do Cliente aqui'; }
-        
-        function abrirModalVeiculo() { new bootstrap.Modal(document.getElementById('modalGeral')).show(); }
-        function abrirModalCartao() { new bootstrap.Modal(document.getElementById('modalGeral')).show(); }
-        function abrirModalEndereco() { new bootstrap.Modal(document.getElementById('modalGeral')).show(); }
-        function encerrarConta() { if(confirm('Tem certeza?')) console.log('Inativando...'); }
-        function sair() { localStorage.removeItem('cliente'); window.location.href = 'login.html'; }
+        async function carregarCartoes() {
+            // AQUI ESTAVA O ERRO: Adicionamos o clienteId na URL conforme seu server.js exige
+            const res = await fetch(`/api/clientes/${clienteId}/cartoes`, { credentials: 'include' });
+            const cs = await res.json();
+            document.getElementById('listaCartoes').innerHTML = cs.map(c => `
+                <div class="d-flex justify-content-between border-bottom py-2">
+                    <span>${c.bandeira} ****${c.numero_final}</span>
+                </div>`).join('');
+        }
 
+        async function carregarVeiculos() {
+            const res = await fetch(`/api/clientes/${clienteId}/veiculos`, { credentials: 'include' });
+            const vs = await res.json();
+            document.getElementById('listaVeiculos').innerHTML = vs.map(v => `
+                <div class="border-bottom py-2">${v.marca} ${v.modelo}</div>`).join('');
+        }
+
+        async function carregarEnderecos() {
+            const res = await fetch(`/api/clientes/${clienteId}/enderecos`, { credentials: 'include' });
+            const es = await res.json();
+            document.getElementById('listaEnderecos').innerHTML = es.map(e => `
+                <div class="border-bottom py-2">${e.logradouro}, ${e.numero}</div>`).join('');
+        }
+
+        async function carregarDados() {
+            const res = await fetch(`/api/clientes/${clienteId}`, { credentials: 'include' });
+            const c = await res.json();
+            document.getElementById('formDados').innerHTML = `<p><b>Nome:</b> ${c.nome}</p><p><b>Email:</b> ${c.email}</p>`;
+        }
+
+        function sair() { localStorage.removeItem('cliente'); window.location.href = 'login.html'; }
+        
         window.onload = () => {
             const c = JSON.parse(localStorage.getItem('cliente') || '{}');
             if(!c.id) window.location.href = 'login.html';
-            clienteId = c.id;
+            clienteId = c.id; 
             document.getElementById('nomeNav').textContent = `Olá, ${c.nome}!`;
             carregarPedidos();
         };
