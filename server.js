@@ -8,7 +8,10 @@ require('dotenv').config();
 
 const app = express();
 
-// --- 1. CONFIGURAÇÃO DO BANCO DE DADOS (POOL) ---
+// --- 1. CONFIGURAÇÃO DO PROXY E BANCO DE DADOS ---
+// Necessário para o Render entender que está atrás de um balanceador de carga
+app.set('trust proxy', 1);
+
 const pgPool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -16,11 +19,11 @@ const pgPool = new pg.Pool({
   }
 });
 
-// --- 2. CONFIGURAÇÃO DO CORS (PARA O FRONTEND) ---
+// --- 2. CONFIGURAÇÃO DO CORS (LIBERAL PARA RENDER) ---
 app.use(cors({
-  origin: 'https://hyperpneus.onrender.com', 
-  credentials: true,               
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: true, // Permite qualquer origem para evitar bloqueios no Render
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -41,9 +44,9 @@ app.use(session({
   saveUninitialized: false,
   cookie: { 
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    secure: process.env.NODE_ENV === 'production', // true se estiver no Render
+    secure: process.env.NODE_ENV === 'production', // true no Render
     httpOnly: true,
-    sameSite: 'lax'
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   }
 }));
 
@@ -75,5 +78,5 @@ app.use('/api/pedidos', pedidoRoutes);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`\x1b[32m%s\x1b[0m`, `✔ Servidor rodando na porta ${PORT}`);
-    console.log(`\x1b[36m%s\x1b[0m`, `ℹ Sessões persistentes ativadas via banco de dados Neon.`);
+    console.log(`\x1b[36m%s\x1b[0m`, `ℹ Modo: ${process.env.NODE_ENV || 'development'}`);
 });

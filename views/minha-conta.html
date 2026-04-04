@@ -1,125 +1,49 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <title>Minha Conta - HyperPneus</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --kabum-blue: #0060b1;
-            --kabum-orange: #ff6500;
-        }
-
-        body {
-            background-color: #f2f3f5;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        .list-group-item.active {
-            background-color: var(--kabum-blue);
-            border-color: var(--kabum-blue);
-            font-weight: bold;
-        }
-
-        .order-card {
-            background: white;
-            border-radius: 4px;
-            border: 1px solid #eee;
-            margin-bottom: 15px;
-        }
-
-        .order-header {
-            padding: 10px 15px;
-            border-bottom: 1px solid #f0f0f0;
-            background: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .btn-kabum {
-            background: var(--kabum-orange);
-            color: #fff;
-            font-weight: bold;
-            font-size: 12px;
-            padding: 8px 15px;
-            border: none;
-        }
-    </style>
 </head>
-
 <body>
-    <nav class="navbar navbar-dark bg-dark">
+    <nav class="navbar navbar-dark bg-dark mb-4">
         <div class="container"><a class="navbar-brand fw-bold" href="index.html">HYPERPNEUS</a>
-            <div class="text-white small"><span id="nomeNav"></span> <button onclick="sair()"
-                    class="btn btn-outline-light btn-sm">Sair</button></div>
-        </div>
+        <button onclick="sair()" class="btn btn-outline-light btn-sm">Sair</button></div>
     </nav>
-
-    <div class="container my-5">
-        <h2 class="mb-4">Minha Conta</h2>
-        <div id="listaPedidos"></div>
+    <div class="container">
+        <h2>Meus Pedidos</h2>
+        <div id="listaPedidos" class="mt-4">Carregando...</div>
     </div>
-
     <script>
         async function carregarPedidos() {
             const lista = document.getElementById('listaPedidos');
-            lista.innerHTML = 'Carregando...';
             try {
-                // O credentials: 'include' é vital para enviar o cookie da sessão ao Render
                 const res = await fetch('/api/pedidos', { credentials: 'include' });
-
                 if (res.status === 401) {
-                    window.location.href = 'login.html';
+                    lista.innerHTML = '<div class="alert alert-warning">Você não está logado. <a href="login.html">Ir para Login</a></div>';
                     return;
                 }
-
                 const pedidos = await res.json();
-                console.log("Pedidos recebidos:", pedidos);
-
                 if (!Array.isArray(pedidos) || pedidos.length === 0) {
                     lista.innerHTML = '<div class="alert alert-info">Nenhum pedido encontrado.</div>';
                     return;
                 }
-
-                lista.innerHTML = pedidos.map(p => {
-                    const total = parseFloat(p.total) || 0;
-                    return `
-                        <div class="order-card p-3 shadow-sm">
-                            <div class="d-flex justify-content-between">
-                                <strong>Pedido #${p.id}</strong>
-                                <span>${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                            </div>
-                            <div class="mt-2 text-muted">Status: ${p.status.replace(/_/g, ' ')}</div>
-                            <a href="confirmacao.html?pedido=${p.id}&modo=visualizar" class="btn btn-dark btn-sm mt-2">Ver Detalhes</a>
-                        </div>`;
-                }).join('');
+                lista.innerHTML = pedidos.map(p => `
+                    <div class="card mb-3 p-3">
+                        <div class="d-flex justify-content-between">
+                            <strong>Pedido #${p.id}</strong>
+                            <span>${parseFloat(p.total).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span>
+                        </div>
+                        <p>Status: ${p.status.replace(/_/g, ' ')}</p>
+                        <a href="confirmacao.html?pedido=${p.id}&modo=visualizar" class="btn btn-dark btn-sm">Ver Detalhes</a>
+                    </div>
+                `).join('');
             } catch (err) {
-                lista.innerHTML = '<div class="alert alert-danger">Erro ao carregar pedidos.</div>';
-                console.error(err);
+                lista.innerHTML = '<div class="alert alert-danger">Erro de conexão.</div>';
             }
         }
-
         function sair() { localStorage.removeItem('cliente'); window.location.href = 'login.html'; }
-        window.onload = async () => {
-            // Não confie apenas no localStorage, pergunte ao servidor se a sessão é válida
-            try {
-                const res = await fetch('/api/pedidos', { credentials: 'include' });
-
-                if (res.status === 401) {
-                    // Só redireciona se o servidor disser que não está logado
-                    window.location.href = 'login.html';
-                } else {
-                    // Se o servidor responder ok, carrega os pedidos
-                    carregarPedidos();
-                }
-            } catch (err) {
-                console.error("Erro ao validar sessão:", err);
-            }
-        };
+        window.onload = carregarPedidos;
     </script>
 </body>
-
 </html>
