@@ -4,46 +4,80 @@
     <meta charset="UTF-8">
     <title>Minha Conta - HyperPneus</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --kabum-blue: #0060b1; --kabum-orange: #ff6500; }
+        body { background-color: #f2f3f5; font-family: 'Segoe UI', sans-serif; }
+        .list-group-item.active { background-color: var(--kabum-blue); border-color: var(--kabum-blue); font-weight: bold; }
+        .order-card { background: white; border-radius: 4px; border: 1px solid #eee; margin-bottom: 15px; }
+        .btn-kabum { background: var(--kabum-orange); color: #fff; font-weight: bold; font-size: 12px; padding: 8px 15px; border: none; }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-dark bg-dark mb-4">
         <div class="container"><a class="navbar-brand fw-bold" href="index.html">HYPERPNEUS</a>
-        <button onclick="sair()" class="btn btn-outline-light btn-sm">Sair</button></div>
+        <div class="text-white small"><span id="nomeNav"></span> <button onclick="sair()" class="btn btn-outline-light btn-sm">Sair</button></div></div>
     </nav>
-    <div class="container">
-        <h2>Meus Pedidos</h2>
-        <div id="listaPedidos" class="mt-4">Carregando...</div>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="list-group shadow-sm">
+                    <a href="#" onclick="mostrarAba('pedidos')" class="list-group-item list-group-item-action active" id="aba-pedidos">Meus Pedidos</a>
+                    <a href="#" onclick="mostrarAba('garagem')" class="list-group-item list-group-item-action" id="aba-garagem">Minha Garagem</a>
+                    <a href="#" onclick="mostrarAba('cartoes')" class="list-group-item list-group-item-action" id="aba-cartoes">Meus Cartões</a>
+                    <a href="#" onclick="mostrarAba('enderecos')" class="list-group-item list-group-item-action" id="aba-enderecos">Meus Endereços</a>
+                    <a href="#" onclick="mostrarAba('dados')" class="list-group-item list-group-item-action" id="aba-dados">Dados Pessoais</a>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div id="sec-pedidos"><div id="listaPedidos"></div></div>
+                <!-- Divs das outras abas (garagem, cartões, etc) permanecem aqui para serem alternadas -->
+                <div id="sec-garagem" class="d-none"><h4>Garagem</h4>...conteúdo...</div>
+                <div id="sec-cartoes" class="d-none"><h4>Cartões</h4>...conteúdo...</div>
+                <div id="sec-enderecos" class="d-none"><h4>Endereços</h4>...conteúdo...</div>
+                <div id="sec-dados" class="d-none"><h4>Dados Pessoais</h4>...conteúdo...</div>
+            </div>
+        </div>
     </div>
+
     <script>
+        function mostrarAba(aba) {
+            document.querySelectorAll('.list-group-item').forEach(a => a.classList.remove('active'));
+            document.querySelectorAll('[id^="sec-"]').forEach(s => s.classList.add('d-none'));
+            document.getElementById(`aba-${aba}`).classList.add('active');
+            document.getElementById(`sec-${aba}`).classList.remove('d-none');
+            if(aba === 'pedidos') carregarPedidos();
+        }
+
         async function carregarPedidos() {
             const lista = document.getElementById('listaPedidos');
+            lista.innerHTML = 'Carregando...';
             try {
                 const res = await fetch('/api/pedidos', { credentials: 'include' });
-                if (res.status === 401) {
-                    lista.innerHTML = '<div class="alert alert-warning">Você não está logado. <a href="login.html">Ir para Login</a></div>';
-                    return;
-                }
                 const pedidos = await res.json();
-                if (!Array.isArray(pedidos) || pedidos.length === 0) {
-                    lista.innerHTML = '<div class="alert alert-info">Nenhum pedido encontrado.</div>';
-                    return;
-                }
                 lista.innerHTML = pedidos.map(p => `
-                    <div class="card mb-3 p-3">
-                        <div class="d-flex justify-content-between">
+                    <div class="order-card p-3 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center">
                             <strong>Pedido #${p.id}</strong>
-                            <span>${parseFloat(p.total).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span>
+                            <span class="text-primary fw-bold">${parseFloat(p.total).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</span>
                         </div>
-                        <p>Status: ${p.status.replace(/_/g, ' ')}</p>
-                        <a href="confirmacao.html?pedido=${p.id}&modo=visualizar" class="btn btn-dark btn-sm">Ver Detalhes</a>
+                        <div class="mt-1">Status: ${p.status.replace(/_/g, ' ')}</div>
+                        <div class="mt-3 d-flex gap-2">
+                            <a href="confirmacao.html?pedido=${p.id}&modo=visualizar" class="btn btn-outline-dark btn-sm">DETALHES</a>
+                            <a href="troca.html?pedido=${p.id}" class="btn btn-kabum">GERENCIAR PEDIDO</a>
+                        </div>
                     </div>
                 `).join('');
-            } catch (err) {
-                lista.innerHTML = '<div class="alert alert-danger">Erro de conexão.</div>';
-            }
+            } catch (err) { lista.innerHTML = 'Erro ao carregar.'; }
         }
+
         function sair() { localStorage.removeItem('cliente'); window.location.href = 'login.html'; }
-        window.onload = carregarPedidos;
+        window.onload = () => {
+            const c = JSON.parse(localStorage.getItem('cliente') || '{}');
+            document.getElementById('nomeNav').textContent = c.nome ? `Olá, ${c.nome}!` : '';
+            carregarPedidos();
+        };
     </script>
 </body>
 </html>
