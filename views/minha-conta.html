@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --kabum-blue: #0060b1; --kabum-orange: #ff6500; }
-        body { background-color: #f2f3f5; }
+        body { background-color: #f2f3f5; font-family: 'Segoe UI', sans-serif; }
         .list-group-item.active { background-color: var(--kabum-blue); border-color: var(--kabum-blue); font-weight: bold; }
         .order-card { background: white; border-radius: 4px; border: 1px solid #eee; margin-bottom: 15px; }
-        .order-header { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+        .order-header { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; background: #fff; display: flex; justify-content: space-between; align-items: center; }
         .btn-kabum { background: var(--kabum-orange); color: #fff; font-weight: bold; font-size: 12px; padding: 8px 15px; border: none; }
     </style>
 </head>
@@ -48,7 +48,7 @@
                 </div>
 
                 <div id="sec-enderecos" class="d-none">
-                    <div class="card shadow-sm border-0"><div class="card-header bg-white d-flex justify-content-between"><strong>Endereços</strong><button class="btn btn-primary btn-sm" onclick="limparModalEndereco()">+ Adicionar</button></div>
+                    <div class="card shadow-sm border-0"><div class="card-header bg-white d-flex justify-content-between"><strong>Meus Endereços</strong><button class="btn btn-primary btn-sm" onclick="limparModalEndereco()">+ Adicionar</button></div>
                     <div class="card-body" id="listaEnderecos"></div></div>
                 </div>
 
@@ -87,15 +87,20 @@
         <button class="btn btn-primary w-100" onclick="adicionarCartao()">Salvar Cartão</button>
     </div></div></div></div>
 
-    <!-- Modal Endereço -->
+    <!-- Modal Endereço COMPLETO -->
     <div class="modal fade" id="modalEndereco" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-body">
+        <h6 id="modalEndTitulo">Endereço</h6>
         <input type="hidden" id="enderecoId">
-        <input type="text" id="eNome" class="form-control mb-2" placeholder="Destinatário">
-        <input type="text" id="eLogradouro" class="form-control mb-2" placeholder="Rua">
-        <input type="text" id="eNumero" class="form-control mb-2" placeholder="Número">
-        <input type="text" id="eCidade" class="form-control mb-2" placeholder="Cidade">
-        <input type="text" id="eEstado" class="form-control mb-2" placeholder="UF">
-        <button class="btn btn-primary w-100" onclick="salvarEndereco()">Salvar Endereço</button>
+        <div class="row g-2">
+            <div class="col-12"><input type="text" id="eNome" class="form-control mb-1" placeholder="Nome Destinatário"></div>
+            <div class="col-md-4"><input type="text" id="eCep" class="form-control mb-1" placeholder="CEP"></div>
+            <div class="col-md-8"><input type="text" id="eLogradouro" class="form-control mb-1" placeholder="Rua"></div>
+            <div class="col-md-3"><input type="text" id="eNumero" class="form-control mb-1" placeholder="Número"></div>
+            <div class="col-md-9"><input type="text" id="eBairro" class="form-control mb-1" placeholder="Bairro"></div>
+            <div class="col-md-8"><input type="text" id="eCidade" class="form-control mb-1" placeholder="Cidade"></div>
+            <div class="col-md-4"><input type="text" id="eEstado" class="form-control mb-1" placeholder="UF"></div>
+        </div>
+        <button class="btn btn-primary w-100 mt-3" onclick="salvarEndereco()">Salvar Endereço</button>
     </div></div></div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -156,7 +161,17 @@
         async function carregarEnderecos() {
             const res = await fetch(`/api/clientes/${clienteId}/enderecos`);
             const es = await res.json();
-            document.getElementById('listaEnderecos').innerHTML = es.map(e => `<div class="border rounded p-3 mb-2 d-flex justify-content-between"><div><strong>${e.nome_destinatario}</strong><br>${e.logradouro}, ${e.numero}</div><button class="btn btn-sm btn-outline-danger" onclick="removerEndereco(${e.id})"><i class="fas fa-trash"></i></button></div>`).join('');
+            document.getElementById('listaEnderecos').innerHTML = es.map(e => `
+                <div class="border rounded p-3 mb-2 d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${e.nome_destinatario}</strong><br>
+                        <small class="text-muted">${e.logradouro}, ${e.numero} - ${e.bairro}<br>${e.cidade}/${e.estado} - CEP: ${e.cep}</small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="editarEndereco(${e.id})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removerEndereco(${e.id})"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`).join('') || '<p class="text-muted">Nenhum endereço cadastrado.</p>';
         }
 
         async function carregarDados() {
@@ -173,10 +188,33 @@
 
         async function removerVeiculo(id) { await fetch(`/api/clientes/${clienteId}/veiculos/${id}`, {method:'DELETE'}); carregarVeiculos(); }
         async function removerCartao(id) { await fetch(`/api/clientes/${clienteId}/cartoes/${id}`, {method:'DELETE'}); carregarCartoes(); }
-        async function removerEndereco(id) { await fetch(`/api/clientes/${clienteId}/enderecos/${id}`, {method:'DELETE'}); carregarEnderecos(); }
-        async function encerrarConta() { if(confirm('Sair?')) { await fetch(`/api/clientes/${clienteId}/inativar`, {method:'PATCH'}); sair(); } }
+        async function removerEndereco(id) { if(confirm('Excluir este endereço?')) { await fetch(`/api/clientes/${clienteId}/enderecos/${id}`, {method:'DELETE'}); carregarEnderecos(); } }
+        async function encerrarConta() { if(confirm('Tem certeza que deseja inativar sua conta?')) { await fetch(`/api/clientes/${clienteId}/inativar`, {method:'PATCH'}); sair(); } }
         
-        function limparModalEndereco() { document.getElementById('enderecoId').value=''; new bootstrap.Modal(document.getElementById('modalEndereco')).show(); }
+        function limparModalEndereco() { document.getElementById('enderecoId').value=''; document.getElementById('modalEndTitulo').textContent='Adicionar Endereço'; ['eNome','eCep','eLogradouro','eNumero','eBairro','eCidade','eEstado'].forEach(id=>document.getElementById(id).value=''); new bootstrap.Modal(document.getElementById('modalEndereco')).show(); }
+        
+        async function editarEndereco(id) { 
+            const res = await fetch(`/api/clientes/${clienteId}/enderecos`); 
+            const es = await res.json(); const e = es.find(x => x.id === id);
+            document.getElementById('enderecoId').value = e.id; 
+            document.getElementById('modalEndTitulo').textContent = 'Editar Endereço';
+            document.getElementById('eNome').value = e.nome_destinatario; 
+            document.getElementById('eCep').value = e.cep; 
+            document.getElementById('eLogradouro').value = e.logradouro; 
+            document.getElementById('eNumero').value = e.numero; 
+            document.getElementById('eBairro').value = e.bairro; 
+            document.getElementById('eCidade').value = e.cidade; 
+            document.getElementById('eEstado').value = e.estado;
+            new bootstrap.Modal(document.getElementById('modalEndereco')).show();
+        }
+
+        async function salvarEndereco() {
+            const id = document.getElementById('enderecoId').value;
+            const dados = { nome_destinatario: document.getElementById('eNome').value, cep: document.getElementById('eCep').value, logradouro: document.getElementById('eLogradouro').value, numero: document.getElementById('eNumero').value, bairro: document.getElementById('eBairro').value, cidade: document.getElementById('eCidade').value, estado: document.getElementById('eEstado').value, tipo: 'entrega' };
+            await fetch(id ? `/api/clientes/${clienteId}/enderecos/${id}` : `/api/clientes/${clienteId}/enderecos`, { method: id?'PUT':'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(dados) });
+            bootstrap.Modal.getInstance(document.getElementById('modalEndereco')).hide(); carregarEnderecos();
+        }
+
         function sair() { localStorage.removeItem('cliente'); window.location.href='login.html'; }
 
         window.onload = () => {
