@@ -388,6 +388,8 @@
         async function modoVisualizacao(pedidoId) {
             await carregarPedido(pedidoId);
 
+            console.log('STATUS ATUAL:', pedidoData.status); // DEBUG
+
             document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-check-circle fa-4x text-success"></i>';
             document.getElementById('tituloPagamento').textContent = 'Pedido Confirmado';
             document.getElementById('subtituloPagamento').textContent = 'Resumo e acompanhamento do seu pedido.';
@@ -410,15 +412,15 @@
                 'ENTREGUE': 5
             };
 
-            // 🔥 CORREÇÃO 1: normaliza o status vindo do backend
-            const status = pedidoData.status?.trim().toUpperCase();
-            const idxAtual = statusIndex[status] ?? 0;
+            const statusNormalizado = pedidoData.status?.trim().toUpperCase();
+            const idxAtual = statusIndex[statusNormalizado] ?? 0;
+
+            console.log('IDX CALCULADO:', idxAtual); // DEBUG
 
             const porcentagens = [0, 20, 40, 60, 80, 100];
 
             document.getElementById('logEventos').innerHTML = '';
 
-            // Logs até o status atual
             for (let i = 0; i <= idxAtual; i++) {
                 adicionarLog(
                     logsPossiveis[i].msg,
@@ -427,94 +429,50 @@
                 );
             }
 
-            async function modoVisualizacao(pedidoId) {
-                await carregarPedido(pedidoId);
+            // 🔥 CHAMA A FUNÇÃO GLOBAL CORRETA (SEM DUPLICAR)
+            ativarStep(idxAtual, porcentagens[idxAtual]);
 
-                console.log('STATUS ATUAL:', pedidoData.status); // DEBUG
+            mostrarCardsEAcoes();
+        }
 
-                document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-check-circle fa-4x text-success"></i>';
-                document.getElementById('tituloPagamento').textContent = 'Pedido Confirmado';
-                document.getElementById('subtituloPagamento').textContent = 'Resumo e acompanhamento do seu pedido.';
+        function ativarStep(idx, progressPct, ehAtual = true) {
+            for (let i = 0; i <= 5; i++) {
+                const step = document.getElementById(`step${i}`);
+                if (!step) continue;
 
-                const logsPossiveis = [
-                    { msg: 'Pedido recebido e registrado no sistema.', tipo: 'success' },
-                    { msg: '✓ Pagamento aprovado pela operadora.', tipo: 'success' },
-                    { msg: '📦 Pedido em separação.', tipo: 'info' },
-                    { msg: '🚚 Pedido na transportadora.', tipo: 'info' },
-                    { msg: '🚚 Saiu para entrega.', tipo: 'truck' },
-                    { msg: '🏠 Pedido entregue com sucesso!', tipo: 'home' }
-                ];
+                const icon = step.querySelector('.step-icon');
+                const label = step.querySelector('.step-label');
 
-                const statusIndex = {
-                    'AGUARDANDO_PAGAMENTO': 0,
-                    'PAGAMENTO_APROVADO': 1,
-                    'EM_PROCESSAMENTO': 2,
-                    'ENVIADO': 3,
-                    'SAIU_PARA_ENTREGA': 4,
-                    'ENTREGUE': 5
-                };
+                if (!icon || !label) continue;
 
-                const statusNormalizado = pedidoData.status?.trim().toUpperCase();
-                const idxAtual = statusIndex[statusNormalizado] ?? 0;
+                icon.classList.remove('atual', 'ativo');
+                label.classList.remove('atual', 'ativo');
 
-                console.log('IDX CALCULADO:', idxAtual); // DEBUG
-
-                const porcentagens = [0, 20, 40, 60, 80, 100];
-
-                document.getElementById('logEventos').innerHTML = '';
-
-                for (let i = 0; i <= idxAtual; i++) {
-                    adicionarLog(
-                        logsPossiveis[i].msg,
-                        logsPossiveis[i].tipo,
-                        new Date(pedidoData.criado_em).toLocaleTimeString('pt-BR')
-                    );
+                if (i < idx) {
+                    icon.classList.add('ativo');
+                    label.classList.add('ativo');
+                } else if (i === idx) {
+                    icon.classList.add('atual');
+                    label.classList.add('atual');
                 }
-
-                // 🔥 CHAMA A FUNÇÃO GLOBAL CORRETA (SEM DUPLICAR)
-                ativarStep(idxAtual, porcentagens[idxAtual]);
-
-                mostrarCardsEAcoes();
             }
 
-            function ativarStep(idx, progressPct, ehAtual = true) {
+            // 🔥 SE FOR ENTREGUE, TUDO VERDE
+            if (idx === 5) {
                 for (let i = 0; i <= 5; i++) {
                     const step = document.getElementById(`step${i}`);
                     if (!step) continue;
 
-                    const icon = step.querySelector('.step-icon');
-                    const label = step.querySelector('.step-label');
-
-                    if (!icon || !label) continue;
-
-                    icon.classList.remove('atual', 'ativo');
-                    label.classList.remove('atual', 'ativo');
-
-                    if (i < idx) {
-                        icon.classList.add('ativo');
-                        label.classList.add('ativo');
-                    } else if (i === idx) {
-                        icon.classList.add('atual');
-                        label.classList.add('atual');
-                    }
-                }
-
-                // 🔥 SE FOR ENTREGUE, TUDO VERDE
-                if (idx === 5) {
-                    for (let i = 0; i <= 5; i++) {
-                        const step = document.getElementById(`step${i}`);
-                        if (!step) continue;
-
-                        step.querySelector('.step-icon')?.classList.add('ativo');
-                        step.querySelector('.step-label')?.classList.add('ativo');
-                    }
-                }
-
-                const progress = document.getElementById('progressLine');
-                if (progress) {
-                    progress.style.width = progressPct + '%';
+                    step.querySelector('.step-icon')?.classList.add('ativo');
+                    step.querySelector('.step-label')?.classList.add('ativo');
                 }
             }
+
+            const progress = document.getElementById('progressLine');
+            if (progress) {
+                progress.style.width = progressPct + '%';
+            }
+        }
         }
 
         // ── Nota Fiscal ────────────────────────────────────────────────
