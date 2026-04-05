@@ -1,293 +1,186 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Minha Conta</title>
+    <meta charset="UTF-8">
+    <title>Minha Conta</title>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/CSS/bootstrap.min.css">
+    <link rel="stylesheet" href="/CSS/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<style>
-.order-card {
-    border: 1px solid #ddd;
-    padding: 12px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-}
-</style>
 </head>
 
-<body class="bg-light">
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light px-3">
+    <a class="navbar-brand" href="#">Minha Conta</a>
+
+    <div class="ms-auto">
+        <a href="/index.html" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-store"></i> Ir para Loja
+        </a>
+    </div>
+</nav>
 
 <div class="container mt-4">
-    <h4 id="nomeNav"></h4>
 
-    <div class="row mt-3">
-        <div class="col-md-3">
-            <div class="list-group">
-                <button id="aba-pedidos" class="list-group-item" onclick="mostrarAba('pedidos')">Pedidos</button>
-                <button id="aba-garagem" class="list-group-item" onclick="mostrarAba('garagem')">Veículos</button>
-                <button id="aba-cartoes" class="list-group-item" onclick="mostrarAba('cartoes')">Cartões</button>
-                <button id="aba-enderecos" class="list-group-item" onclick="mostrarAba('enderecos')">Endereços</button>
-                <button id="aba-dados" class="list-group-item" onclick="mostrarAba('dados')">Dados</button>
-                <button class="list-group-item text-danger" onclick="sair()">Sair</button>
-            </div>
-        </div>
+    <!-- DADOS -->
+    <h4>Meus Dados</h4>
+    <div id="dadosContainer" class="mb-4"></div>
 
-        <div class="col-md-9">
+    <!-- ENDEREÇOS -->
+    <h4>Endereços</h4>
+    <div id="listaEnderecos" class="mb-4"></div>
 
-            <div id="sec-pedidos">
-                <h5>Pedidos</h5>
-                <div id="listaPedidos"></div>
-            </div>
+    <!-- VEÍCULOS -->
+    <h4>Minha Garagem</h4>
+    <div id="listaVeiculos" class="mb-4"></div>
 
-            <div id="sec-garagem" class="d-none">
-                <h5>Veículos</h5>
-                <div id="listaVeiculos"></div>
-            </div>
+    <!-- CARTÕES -->
+    <h4>Cartões</h4>
+    <div id="listaCartoes" class="mb-4"></div>
 
-            <div id="sec-cartoes" class="d-none">
-                <h5>Cartões</h5>
-                <div id="listaCartoes"></div>
-            </div>
+    <!-- PEDIDOS -->
+    <h4>Meus Pedidos</h4>
+    <div id="listaPedidos"></div>
 
-            <div id="sec-enderecos" class="d-none">
-                <h5>Endereços</h5>
-                <div id="listaEnderecos"></div>
-            </div>
-
-            <div id="sec-dados" class="d-none">
-                <h5>Dados</h5>
-                <div id="formDados"></div>
-            </div>
-
-        </div>
-    </div>
 </div>
-
-<!-- MODAL VEICULO -->
-<div class="modal fade" id="modalVeiculo">
-  <div class="modal-dialog">
-    <div class="modal-content p-3">
-        <h5>Veículo</h5>
-        <input id="vMarca" class="form-control mb-2" placeholder="Marca">
-        <input id="vModelo" class="form-control mb-2" placeholder="Modelo">
-        <input id="vAno" class="form-control mb-2" placeholder="Ano">
-        <input id="vVersao" class="form-control mb-2" placeholder="Versão">
-        <button class="btn btn-success" onclick="salvarVeiculo()">Salvar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL ENDERECO -->
-<div class="modal fade" id="modalEndereco">
-  <div class="modal-dialog">
-    <div class="modal-content p-3">
-        <h5>Endereço</h5>
-        <input id="cep" class="form-control mb-2" placeholder="CEP" onblur="buscarCEP()">
-        <input id="logradouro" class="form-control mb-2" placeholder="Rua">
-        <input id="numero" class="form-control mb-2" placeholder="Número">
-        <input id="complemento" class="form-control mb-2" placeholder="Complemento">
-        <input id="bairro" class="form-control mb-2" placeholder="Bairro">
-        <input id="cidade" class="form-control mb-2" placeholder="Cidade">
-        <input id="estado" class="form-control mb-2" placeholder="Estado">
-        <button class="btn btn-success" onclick="salvarEndereco()">Salvar</button>
-    </div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-let clienteId = null;
-let listaVeiculos, listaCartoes, listaEnderecos, formDados;
+const clienteId = 1; // depois você pode dinamizar isso
 
-let veiculoEditando = null;
-let enderecoEditando = null;
+// ================= DADOS =================
+async function carregarDados() {
+    const res = await fetch(`/api/clientes/${clienteId}`, { credentials: 'include' });
+    const d = await res.json();
 
-// ---------------- ABAS ----------------
-function mostrarAba(aba){
-    document.querySelectorAll('[id^="sec-"]').forEach(s => s.classList.add('d-none'));
-    document.getElementById('sec-'+aba).classList.remove('d-none');
-
-    if(aba==='pedidos') carregarPedidos();
-    if(aba==='garagem') carregarVeiculos();
-    if(aba==='cartoes') carregarCartoes();
-    if(aba==='enderecos') carregarEnderecos();
-    if(aba==='dados') carregarDados();
-}
-
-// ---------------- PEDIDOS ----------------
-async function carregarPedidos(){
-    const lista = document.getElementById('listaPedidos');
-    const res = await fetch('/api/pedidos',{credentials:'include'});
-    const p = await res.json();
-
-    lista.innerHTML = p.map(x=>`
-        <div class="order-card">
-            <b>#${x.id}</b> - ${x.status}
+    dadosContainer.innerHTML = `
+        <div class="card p-3">
+            <strong>${d.nome}</strong><br>
+            ${d.email}
+            <button class="btn btn-sm btn-outline-primary mt-2" onclick="editarDados()">
+                <i class="fas fa-edit"></i> Editar
+            </button>
         </div>
-    `).join('');
-}
-
-// ---------------- VEICULOS ----------------
-async function carregarVeiculos(){
-    const res = await fetch(`/api/clientes/${clienteId}/veiculos`,{credentials:'include'});
-    const vs = await res.json();
-
-    listaVeiculos.innerHTML = `
-    <button class="btn btn-success mb-2" onclick="addVeiculo()">+ Adicionar</button>
-    ${vs.map(v=>`
-        <div class="order-card d-flex justify-content-between">
-            <span>
-                <b>${v.marca} ${v.modelo}</b><br>
-                Ano: ${v.ano} | Versão: ${v.versao||'-'}
-            </span>
-            <div>
-                <button class="btn btn-sm btn-outline-primary" onclick="editVeiculo(${v.id})">
-                    <i class="fas fa-pen"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="remover('veiculos',${v.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `).join('')}
     `;
 }
 
-function addVeiculo(){
-    veiculoEditando=null;
-    new bootstrap.Modal(document.getElementById('modalVeiculo')).show();
-}
-
-function editVeiculo(id){
-    veiculoEditando=id;
-    new bootstrap.Modal(document.getElementById('modalVeiculo')).show();
-}
-
-async function salvarVeiculo(){
-    const data={
-        marca:vMarca.value,
-        modelo:vModelo.value,
-        ano:vAno.value,
-        versao:vVersao.value
-    };
-
-    if(veiculoEditando){
-        await fetch(`/api/clientes/${clienteId}/veiculos/${veiculoEditando}`,{
-            method:'PUT',headers:{'Content-Type':'application/json'},
-            credentials:'include',body:JSON.stringify(data)
-        });
-    } else {
-        await fetch(`/api/clientes/${clienteId}/veiculos`,{
-            method:'POST',headers:{'Content-Type':'application/json'},
-            credentials:'include',body:JSON.stringify(data)
-        });
-    }
-
-    carregarVeiculos();
-}
-
-// ---------------- ENDERECOS ----------------
-async function carregarEnderecos(){
-    const res = await fetch(`/api/clientes/${clienteId}/enderecos`,{credentials:'include'});
+// ================= ENDEREÇOS =================
+async function carregarEnderecos() {
+    const res = await fetch(`/api/clientes/${clienteId}/enderecos`);
     const es = await res.json();
 
     listaEnderecos.innerHTML = `
-    <button class="btn btn-success mb-2" onclick="addEndereco()">+ Adicionar</button>
-    ${es.map(e=>`
-        <div class="order-card d-flex justify-content-between">
-            <span>
-                ${e.logradouro}, ${e.numero}<br>
-                ${e.bairro} - ${e.cidade}/${e.estado}
-            </span>
-            <div>
-                <button class="btn btn-sm btn-outline-primary" onclick="editEndereco(${e.id})">
-                    <i class="fas fa-pen"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="remover('enderecos',${e.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
+        <button class="btn btn-success btn-sm mb-2" onclick="addEndereco()">
+            <i class="fas fa-plus"></i> Adicionar
+        </button>
+
+        ${es.map(e => `
+            <div class="card p-3 mb-2">
+                <strong>${e.logradouro}, ${e.numero}</strong><br>
+                ${e.bairro} - ${e.cidade}/${e.estado}<br>
+                CEP: ${e.cep}
+
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="editEndereco(${e.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="remover('enderecos', ${e.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </div>
-        </div>
-    `).join('')}
+        `).join('')}
     `;
 }
 
-function addEndereco(){
-    enderecoEditando=null;
-    new bootstrap.Modal(document.getElementById('modalEndereco')).show();
+// ================= VEÍCULOS =================
+async function carregarVeiculos() {
+    const res = await fetch(`/api/clientes/${clienteId}/veiculos`);
+    const vs = await res.json();
+
+    listaVeiculos.innerHTML = `
+        <button class="btn btn-success btn-sm mb-2" onclick="addVeiculo()">
+            <i class="fas fa-plus"></i> Adicionar
+        </button>
+
+        ${vs.map(v => `
+            <div class="card p-3 mb-2">
+                <strong>${v.marca} ${v.modelo}</strong><br>
+                ${v.versao || ''} - ${v.ano}
+
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="editVeiculo(${v.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="remover('veiculos', ${v.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('')}
+    `;
 }
 
-function editEndereco(id){
-    enderecoEditando=id;
-    new bootstrap.Modal(document.getElementById('modalEndereco')).show();
+// ================= CARTÕES =================
+async function carregarCartoes() {
+    const res = await fetch(`/api/clientes/${clienteId}/cartoes`);
+    const cs = await res.json();
+
+    listaCartoes.innerHTML = `
+        <button class="btn btn-success btn-sm mb-2" onclick="addCartao()">
+            <i class="fas fa-plus"></i> Adicionar
+        </button>
+
+        ${cs.map(c => `
+            <div class="card p-3 mb-2 d-flex justify-content-between align-items-center">
+                <span>${c.bandeira} - **** ${c.numero_final}</span>
+
+                <div>
+                    <button class="btn btn-sm btn-outline-primary" onclick="editCartao(${c.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="remover('cartoes', ${c.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('')}
+    `;
 }
 
-async function salvarEndereco(){
-    const data={
-        cep:cep.value,
-        logradouro:logradouro.value,
-        numero:numero.value,
-        complemento:complemento.value,
-        bairro:bairro.value,
-        cidade:cidade.value,
-        estado:estado.value
-    };
-
-    if(enderecoEditando){
-        await fetch(`/api/clientes/${clienteId}/enderecos/${enderecoEditando}`,{
-            method:'PUT',headers:{'Content-Type':'application/json'},
-            credentials:'include',body:JSON.stringify(data)
-        });
-    } else {
-        await fetch(`/api/clientes/${clienteId}/enderecos`,{
-            method:'POST',headers:{'Content-Type':'application/json'},
-            credentials:'include',body:JSON.stringify(data)
-        });
-    }
-
-    carregarEnderecos();
-}
-
-async function buscarCEP(){
-    const res = await fetch(`https://viacep.com.br/ws/${cep.value}/json/`);
-    const d = await res.json();
-    logradouro.value=d.logradouro;
-    bairro.value=d.bairro;
-    cidade.value=d.localidade;
-    estado.value=d.uf;
-}
-
-// ---------------- GERAL ----------------
-async function remover(tipo,id){
-    await fetch(`/api/clientes/${clienteId}/${tipo}/${id}`,{
-        method:'DELETE',credentials:'include'
+// ================= REMOVER =================
+async function remover(tipo, id) {
+    await fetch(`/api/clientes/${clienteId}/${tipo}/${id}`, {
+        method: 'DELETE'
     });
-    mostrarAba(tipo==='veiculos'?'garagem':tipo);
+
+    carregarTudo();
 }
 
-function sair(){
-    localStorage.removeItem('cliente');
-    window.location.href='login.html';
+// ================= FUNÇÕES PLACEHOLDER =================
+function addCartao() { alert("Abrir modal de cartão"); }
+function editCartao(id) { alert("Editar cartão " + id); }
+
+function addEndereco() { alert("Abrir modal endereço"); }
+function editEndereco(id) { alert("Editar endereço " + id); }
+
+function addVeiculo() { alert("Abrir modal veículo"); }
+function editVeiculo(id) { alert("Editar veículo " + id); }
+
+function editarDados() { alert("Editar dados"); }
+
+// ================= LOAD =================
+function carregarTudo() {
+    carregarDados();
+    carregarEnderecos();
+    carregarVeiculos();
+    carregarCartoes();
 }
 
-window.onload=()=>{
-    const c=JSON.parse(localStorage.getItem('cliente')||'{}');
-    if(!c.id) return window.location='login.html';
+carregarTudo();
 
-    clienteId=c.id;
-
-    listaVeiculos=document.getElementById('listaVeiculos');
-    listaCartoes=document.getElementById('listaCartoes');
-    listaEnderecos=document.getElementById('listaEnderecos');
-    formDados=document.getElementById('formDados');
-
-    nomeNav.textContent=`Olá, ${c.nome}`;
-
-    mostrarAba('pedidos');
-};
 </script>
 
 </body>
