@@ -476,10 +476,51 @@
 
                 mostrarCardsEAcoes();
             }
-            // ── Nota Fiscal ────────────────────────────────────────────────
-            function verNF() {
-                if (!pedidoData) return;
-                const nf = `
+
+            function ativarStep(idx, progressPct, ehAtual = true) {
+                for (let i = 0; i <= 5; i++) {
+                    const step = document.getElementById(`step${i}`);
+                    if (!step) continue;
+
+                    const icon = step.querySelector('.step-icon');
+                    const label = step.querySelector('.step-label');
+
+                    if (!icon || !label) continue;
+
+                    icon.classList.remove('atual', 'ativo');
+                    label.classList.remove('atual', 'ativo');
+
+                    if (i < idx) {
+                        icon.classList.add('ativo');
+                        label.classList.add('ativo');
+                    } else if (i === idx) {
+                        icon.classList.add('atual');
+                        label.classList.add('atual');
+                    }
+                }
+
+                // 🔥 SE FOR ENTREGUE, TUDO VERDE
+                if (idx === 5) {
+                    for (let i = 0; i <= 5; i++) {
+                        const step = document.getElementById(`step${i}`);
+                        if (!step) continue;
+
+                        step.querySelector('.step-icon')?.classList.add('ativo');
+                        step.querySelector('.step-label')?.classList.add('ativo');
+                    }
+                }
+
+                const progress = document.getElementById('progressLine');
+                if (progress) {
+                    progress.style.width = progressPct + '%';
+                }
+            }
+        }
+
+        // ── Nota Fiscal ────────────────────────────────────────────────
+        function verNF() {
+            if (!pedidoData) return;
+            const nf = `
 NOTA FISCAL ELETRÔNICA - NF-e
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 HYPERPNEUS LTDA
@@ -495,45 +536,45 @@ CEP: ${pedidoData.cep}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ITENS
 ${(pedidoData.itens || []).map(i =>
-                    `${i.marca} ${i.modelo} ${i.largura}/${i.perfil} R${i.aro}
+                `${i.marca} ${i.modelo} ${i.largura}/${i.perfil} R${i.aro}
   Qtd: ${i.quantidade} x ${fmt(i.preco_unitario)} = ${fmt(i.preco_unitario * i.quantidade)}`
-                ).join('\n')}
+            ).join('\n')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Frete            : ${fmt(pedidoData.frete)}
 TOTAL            : ${fmt(pedidoData.total)}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FORMA DE PAGAMENTO
 ${(pedidoData.pagamentos || []).map(p =>
-                    `${p.bandeira} **** ${p.numero_final}: ${fmt(p.valor)}`
-                ).join('\n')}
+                `${p.bandeira} **** ${p.numero_final}: ${fmt(p.valor)}`
+            ).join('\n')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Chave NF-e: ${Math.random().toString(36).substr(2, 44).toUpperCase()}
     `;
-                document.getElementById('conteudoNF').innerHTML = `<pre>${nf}</pre>`;
-                new bootstrap.Modal(document.getElementById('nfModal')).show();
+            document.getElementById('conteudoNF').innerHTML = `<pre>${nf}</pre>`;
+            new bootstrap.Modal(document.getElementById('nfModal')).show();
+        }
+
+        function imprimirNF() {
+            const conteudo = document.getElementById('conteudoNF').innerHTML;
+            const w = window.open('', '_blank');
+            w.document.write(`<html><body><pre style="font-family:monospace">${conteudo}</pre></body></html>`);
+            w.print();
+        }
+
+        // ── Init ───────────────────────────────────────────────────────
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            const pedidoId = params.get('pedido');
+            const modo = params.get('modo'); // 'visualizar' = vem de Meus Pedidos
+
+            if (!pedidoId) { window.location.href = 'index.html'; return; }
+
+            if (modo === 'visualizar') {
+                modoVisualizacao(pedidoId);
+            } else {
+                iniciarSimulacao(pedidoId);
             }
-
-            function imprimirNF() {
-                const conteudo = document.getElementById('conteudoNF').innerHTML;
-                const w = window.open('', '_blank');
-                w.document.write(`<html><body><pre style="font-family:monospace">${conteudo}</pre></body></html>`);
-                w.print();
-            }
-
-            // ── Init ───────────────────────────────────────────────────────
-            window.onload = () => {
-                const params = new URLSearchParams(window.location.search);
-                const pedidoId = params.get('pedido');
-                const modo = params.get('modo'); // 'visualizar' = vem de Meus Pedidos
-
-                if (!pedidoId) { window.location.href = 'index.html'; return; }
-
-                if (modo === 'visualizar') {
-                    modoVisualizacao(pedidoId);
-                } else {
-                    iniciarSimulacao(pedidoId);
-                }
-            };
+        };
     </script>
 </body>
 
