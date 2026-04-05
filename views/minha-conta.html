@@ -1,376 +1,443 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <title>Minha Conta - HyperPneus</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #f2f3f5; font-family: 'Segoe UI', sans-serif; }
-        .list-group-item.active { background-color: #0060b1; border-color: #0060b1; font-weight: bold; }
-        .order-card { background: white; border-radius: 6px; border: 1px solid #eee; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-        .order-header { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; background: #fff; border-radius: 6px 6px 0 0; display: flex; justify-content: space-between; align-items: center; }
-        .badge-principal { background-color: #e7f3ff; color: #0060b1; font-size: 10px; padding: 3px 8px; border-radius: 10px; margin-left: 6px; border: 1px solid #0060b1; }
+        body {
+            background-color: #f2f3f5;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .list-group-item.active {
+            background-color: #0060b1;
+            border-color: #0060b1;
+            font-weight: bold;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #eee;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+        }
+
+        .order-header {
+            padding: 10px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fff;
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge-principal {
+            background-color: #e7f3ff;
+            color: #0060b1;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+            border: 1px solid #0060b1;
+        }
     </style>
 </head>
+
 <body>
 
-<nav class="navbar navbar-dark bg-dark">
-    <div class="container d-flex justify-content-between align-items-center">
-        <a class="navbar-brand fw-bold" href="index.html">
-            <i class="fas fa-car-side me-2"></i>HyperPneus
-        </a>
-        <div class="d-flex align-items-center gap-3">
-            <span class="text-white small" id="nomeNav"></span>
-            <a href="carrinho.html" class="btn btn-outline-light btn-sm">
-                <i class="fas fa-shopping-cart"></i> Carrinho
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="fas fa-car-side me-2"></i>HyperPneus
             </a>
-            <button onclick="sair()" class="btn btn-outline-light btn-sm">
-                <i class="fas fa-sign-out-alt me-1"></i>Sair
-            </button>
-        </div>
-    </div>
-</nav>
-
-<div class="container my-5">
-    <h2 class="mb-4 fw-bold">Minha Conta</h2>
-    <div id="alerta" class="alert d-none mb-3"></div>
-
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3">
-            <div class="list-group shadow-sm">
-                <a href="#" onclick="mostrarAba('pedidos')" class="list-group-item list-group-item-action active" id="aba-pedidos">
-                    <i class="fas fa-box me-2"></i>Meus Pedidos
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-white small" id="nomeNav"></span>
+                <a href="carrinho.html" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-shopping-cart"></i> Carrinho
                 </a>
-                <a href="#" onclick="mostrarAba('garagem')" class="list-group-item list-group-item-action" id="aba-garagem">
-                    <i class="fas fa-car me-2"></i>Minha Garagem
-                </a>
-                <a href="#" onclick="mostrarAba('cartoes')" class="list-group-item list-group-item-action" id="aba-cartoes">
-                    <i class="fas fa-credit-card me-2"></i>Meus Cartões
-                </a>
-                <a href="#" onclick="mostrarAba('enderecos')" class="list-group-item list-group-item-action" id="aba-enderecos">
-                    <i class="fas fa-map-marker-alt me-2"></i>Meus Endereços
-                </a>
-                <a href="#" onclick="mostrarAba('dados')" class="list-group-item list-group-item-action" id="aba-dados">
-                    <i class="fas fa-user-cog me-2"></i>Dados Pessoais
-                </a>
+                <button onclick="sair()" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-sign-out-alt me-1"></i>Sair
+                </button>
             </div>
         </div>
+    </nav>
 
-        <!-- Conteúdo -->
-        <div class="col-md-9">
+    <div class="container my-5">
+        <h2 class="mb-4 fw-bold">Minha Conta</h2>
+        <div id="alerta" class="alert d-none mb-3"></div>
 
-            <!-- ABA PEDIDOS -->
-            <div id="sec-pedidos">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white fw-bold">
-                        <i class="fas fa-box me-2 text-primary"></i>Meus Pedidos
-                    </div>
-                    <div class="card-body" id="listaPedidos">
-                        <p class="text-muted text-center py-3">
-                            <i class="fas fa-spinner fa-spin d-block fa-2x mb-2"></i>Carregando...
-                        </p>
-                    </div>
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <div class="list-group shadow-sm">
+                    <a href="#" onclick="mostrarAba('pedidos')" class="list-group-item list-group-item-action active"
+                        id="aba-pedidos">
+                        <i class="fas fa-box me-2"></i>Meus Pedidos
+                    </a>
+                    <a href="#" onclick="mostrarAba('garagem')" class="list-group-item list-group-item-action"
+                        id="aba-garagem">
+                        <i class="fas fa-car me-2"></i>Minha Garagem
+                    </a>
+                    <a href="#" onclick="mostrarAba('cartoes')" class="list-group-item list-group-item-action"
+                        id="aba-cartoes">
+                        <i class="fas fa-credit-card me-2"></i>Meus Cartões
+                    </a>
+                    <a href="#" onclick="mostrarAba('enderecos')" class="list-group-item list-group-item-action"
+                        id="aba-enderecos">
+                        <i class="fas fa-map-marker-alt me-2"></i>Meus Endereços
+                    </a>
+                    <a href="#" onclick="mostrarAba('dados')" class="list-group-item list-group-item-action"
+                        id="aba-dados">
+                        <i class="fas fa-user-cog me-2"></i>Dados Pessoais
+                    </a>
                 </div>
             </div>
 
-            <!-- ABA GARAGEM -->
-            <div id="sec-garagem" class="d-none">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                        <strong><i class="fas fa-car me-2 text-primary"></i>Minha Garagem</strong>
-                        <button class="btn btn-primary btn-sm" onclick="abrirModalVeiculo()">
-                            <i class="fas fa-plus me-1"></i>Adicionar
-                        </button>
-                    </div>
-                    <div class="card-body" id="listaVeiculos">
-                        <p class="text-muted">Carregando...</p>
+            <!-- Conteúdo -->
+            <div class="col-md-9">
+
+                <!-- ABA PEDIDOS -->
+                <div id="sec-pedidos">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white fw-bold">
+                            <i class="fas fa-box me-2 text-primary"></i>Meus Pedidos
+                        </div>
+                        <div class="card-body" id="listaPedidos">
+                            <p class="text-muted text-center py-3">
+                                <i class="fas fa-spinner fa-spin d-block fa-2x mb-2"></i>Carregando...
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- ABA CARTÕES -->
-            <div id="sec-cartoes" class="d-none">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                        <strong><i class="fas fa-credit-card me-2 text-primary"></i>Meus Cartões</strong>
-                        <button class="btn btn-primary btn-sm" onclick="abrirModalCartao()">
-                            <i class="fas fa-plus me-1"></i>Adicionar
-                        </button>
-                    </div>
-                    <div class="card-body" id="listaCartoes">
-                        <p class="text-muted">Carregando...</p>
+                <!-- ABA GARAGEM -->
+                <div id="sec-garagem" class="d-none">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <strong><i class="fas fa-car me-2 text-primary"></i>Minha Garagem</strong>
+                            <button class="btn btn-primary btn-sm" onclick="abrirModalVeiculo()">
+                                <i class="fas fa-plus me-1"></i>Adicionar
+                            </button>
+                        </div>
+                        <div class="card-body" id="listaVeiculos">
+                            <p class="text-muted">Carregando...</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- ABA ENDEREÇOS -->
-            <div id="sec-enderecos" class="d-none">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                        <strong><i class="fas fa-map-marker-alt me-2 text-primary"></i>Meus Endereços</strong>
-                        <button class="btn btn-primary btn-sm" onclick="abrirModalEndereco()">
-                            <i class="fas fa-plus me-1"></i>Adicionar
-                        </button>
-                    </div>
-                    <div class="card-body" id="listaEnderecos">
-                        <p class="text-muted">Carregando...</p>
+                <!-- ABA CARTÕES -->
+                <div id="sec-cartoes" class="d-none">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <strong><i class="fas fa-credit-card me-2 text-primary"></i>Meus Cartões</strong>
+                            <button class="btn btn-primary btn-sm" onclick="abrirModalCartao()">
+                                <i class="fas fa-plus me-1"></i>Adicionar
+                            </button>
+                        </div>
+                        <div class="card-body" id="listaCartoes">
+                            <p class="text-muted">Carregando...</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- ABA DADOS PESSOAIS -->
-            <div id="sec-dados" class="d-none">
-                <div class="card shadow-sm border-0 mb-3">
-                    <div class="card-header bg-white fw-bold">
-                        <i class="fas fa-user-cog me-2 text-primary"></i>Dados Pessoais
+                <!-- ABA ENDEREÇOS -->
+                <div id="sec-enderecos" class="d-none">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <strong><i class="fas fa-map-marker-alt me-2 text-primary"></i>Meus Endereços</strong>
+                            <button class="btn btn-primary btn-sm" onclick="abrirModalEndereco()">
+                                <i class="fas fa-plus me-1"></i>Adicionar
+                            </button>
+                        </div>
+                        <div class="card-body" id="listaEnderecos">
+                            <p class="text-muted">Carregando...</p>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Nome</label>
-                                <input type="text" id="editNome" class="form-control">
+                </div>
+
+                <!-- ABA DADOS PESSOAIS -->
+                <div id="sec-dados" class="d-none">
+                    <div class="card shadow-sm border-0 mb-3">
+                        <div class="card-header bg-white fw-bold">
+                            <i class="fas fa-user-cog me-2 text-primary"></i>Dados Pessoais
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nome</label>
+                                    <input type="text" id="editNome" class="form-control">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Sobrenome</label>
+                                    <input type="text" id="editSobrenome" class="form-control">
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Sobrenome</label>
-                                <input type="text" id="editSobrenome" class="form-control">
+                            <div class="mb-4">
+                                <label class="form-label">E-mail</label>
+                                <input type="email" id="editEmail" class="form-control">
                             </div>
+                            <button onclick="salvarDados()" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Salvar Alterações
+                            </button>
                         </div>
-                        <div class="mb-4">
-                            <label class="form-label">E-mail</label>
-                            <input type="email" id="editEmail" class="form-control">
+                    </div>
+                    <div class="card shadow-sm border-danger">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-danger mb-1">Encerrar Conta</h6>
+                                <p class="text-muted small mb-0">Sua conta será inativada.</p>
+                            </div>
+                            <button class="btn btn-outline-danger btn-sm" onclick="encerrarConta()">
+                                <i class="fas fa-user-slash me-1"></i>Encerrar
+                            </button>
                         </div>
-                        <button onclick="salvarDados()" class="btn btn-primary">
-                            <i class="fas fa-save me-1"></i>Salvar Alterações
-                        </button>
                     </div>
                 </div>
-                <div class="card shadow-sm border-danger">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-danger mb-1">Encerrar Conta</h6>
-                            <p class="text-muted small mb-0">Sua conta será inativada.</p>
-                        </div>
-                        <button class="btn btn-outline-danger btn-sm" onclick="encerrarConta()">
-                            <i class="fas fa-user-slash me-1"></i>Encerrar
-                        </button>
-                    </div>
-                </div>
-            </div>
 
-        </div>
-    </div>
-</div>
-
-<!-- ═══ MODAL VEÍCULO ═══ -->
-<div class="modal fade" id="modalVeiculo" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalVeiculoTitulo">Veículo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="veiculoId">
-                <div class="mb-2"><input type="text" id="vMarca" class="form-control" placeholder="Marca (ex: Fiat)"></div>
-                <div class="mb-2"><input type="text" id="vModelo" class="form-control" placeholder="Modelo (ex: Argo)"></div>
-                <div class="mb-2"><input type="number" id="vAno" class="form-control" placeholder="Ano (ex: 2022)"></div>
-                <div class="mb-2"><input type="text" id="vVersao" class="form-control" placeholder="Versão (ex: Drive 1.0)"></div>
-                <div class="form-check mt-2">
-                    <input type="checkbox" id="vPrincipal" class="form-check-input">
-                    <label class="form-check-label">Definir como principal</label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn btn-primary" onclick="salvarVeiculo()">Salvar</button>
             </div>
         </div>
     </div>
-</div>
 
-<!-- ═══ MODAL CARTÃO ═══ -->
-<div class="modal fade" id="modalCartao" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalCartaoTitulo">Cartão</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="cartaoId">
-                <div class="mb-2">
-                    <select id="cBandeira" class="form-select">
-                        <option value="">Selecione a bandeira</option>
-                        <option>Visa</option>
-                        <option>MasterCard</option>
-                        <option>Elo</option>
-                        <option>American Express</option>
-                        <option>Hipercard</option>
-                    </select>
+    <!-- ═══ MODAL VEÍCULO ═══ -->
+    <div class="modal fade" id="modalVeiculo" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalVeiculoTitulo">Veículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="mb-2"><input type="text" id="cNome" class="form-control" placeholder="Nome impresso no cartão"></div>
-                <div class="mb-2"><input type="text" id="cNumero" class="form-control" placeholder="Número do cartão" maxlength="19"></div>
-                <div class="mb-2"><input type="text" id="cCvv" class="form-control" placeholder="CVV" maxlength="4"></div>
-                <div class="form-check mt-2">
-                    <input type="checkbox" id="cPrincipal" class="form-check-input">
-                    <label class="form-check-label">Definir como principal</label>
+                <div class="modal-body">
+                    <input type="hidden" id="veiculoId">
+                    <div class="mb-2"><input type="text" id="vMarca" class="form-control"
+                            placeholder="Marca (ex: Fiat)"></div>
+                    <div class="mb-2"><input type="text" id="vModelo" class="form-control"
+                            placeholder="Modelo (ex: Argo)"></div>
+                    <div class="mb-2"><input type="number" id="vAno" class="form-control" placeholder="Ano (ex: 2022)">
+                    </div>
+                    <div class="mb-2"><input type="text" id="vVersao" class="form-control"
+                            placeholder="Versão (ex: Drive 1.0)"></div>
+                    <div class="form-check mt-2">
+                        <input type="checkbox" id="vPrincipal" class="form-check-input">
+                        <label class="form-check-label">Definir como principal</label>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn btn-primary" onclick="salvarCartao()">Salvar</button>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-primary" onclick="salvarVeiculo()">Salvar</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- ═══ MODAL ENDEREÇO ═══ -->
-<div class="modal fade" id="modalEndereco" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalEnderecoTitulo">Endereço</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="enderecoId">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Nome do Destinatário <span class="text-danger">*</span></label>
-                        <input type="text" id="eNome" class="form-control" placeholder="Ex: João Silva">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">CEP <span class="text-danger">*</span></label>
-                        <input type="text" id="eCep" class="form-control" placeholder="00000-000"
-                               maxlength="9" oninput="formatarCEP(this)">
-                    </div>
-                    <div class="col-md-3 mb-3 d-flex align-items-end">
-                        <button class="btn btn-outline-primary w-100" onclick="buscarCEP()">
-                            <i class="fas fa-search me-1"></i>Buscar
-                        </button>
-                    </div>
+    <!-- ═══ MODAL CARTÃO ═══ -->
+    <div class="modal fade" id="modalCartao" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCartaoTitulo">Cartão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="row">
-                    <div class="col-md-8 mb-3">
-                        <label class="form-label">Logradouro <span class="text-danger">*</span></label>
-                        <input type="text" id="eLogradouro" class="form-control" placeholder="Rua, Avenida...">
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label">Número <span class="text-danger">*</span></label>
-                        <input type="text" id="eNumero" class="form-control" placeholder="123">
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label">Complemento</label>
-                        <input type="text" id="eComplemento" class="form-control" placeholder="Apto">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Bairro <span class="text-danger">*</span></label>
-                        <input type="text" id="eBairro" class="form-control">
-                    </div>
-                    <div class="col-md-5 mb-3">
-                        <label class="form-label">Cidade <span class="text-danger">*</span></label>
-                        <input type="text" id="eCidade" class="form-control">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">Estado <span class="text-danger">*</span></label>
-                        <select id="eEstado" class="form-select">
-                            <option value="">UF</option>
-                            <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
-                            <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
-                            <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
-                            <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
-                            <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
-                            <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
-                            <option>SP</option><option>SE</option><option>TO</option>
+                <div class="modal-body">
+                    <input type="hidden" id="cartaoId">
+                    <div class="mb-2">
+                        <select id="cBandeira" class="form-select">
+                            <option value="">Selecione a bandeira</option>
+                            <option>Visa</option>
+                            <option>MasterCard</option>
+                            <option>Elo</option>
+                            <option>American Express</option>
+                            <option>Hipercard</option>
                         </select>
                     </div>
+                    <div class="mb-2"><input type="text" id="cNome" class="form-control"
+                            placeholder="Nome impresso no cartão"></div>
+                    <div class="mb-2"><input type="text" id="cNumero" class="form-control"
+                            placeholder="Número do cartão" maxlength="19"></div>
+                    <div class="mb-2"><input type="text" id="cCvv" class="form-control" placeholder="CVV" maxlength="4">
+                    </div>
+                    <div class="form-check mt-2">
+                        <input type="checkbox" id="cPrincipal" class="form-check-input">
+                        <label class="form-check-label">Definir como principal</label>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn btn-primary" onclick="salvarEndereco()">Salvar</button>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-primary" onclick="salvarCartao()">Salvar</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-const API = '';
-let clienteId = null;
+    <!-- ═══ MODAL ENDEREÇO ═══ -->
+    <div class="modal fade" id="modalEndereco" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEnderecoTitulo">Endereço</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="enderecoId">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nome do Destinatário <span class="text-danger">*</span></label>
+                            <input type="text" id="eNome" class="form-control" placeholder="Ex: João Silva">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">CEP <span class="text-danger">*</span></label>
+                            <input type="text" id="eCep" class="form-control" placeholder="00000-000" maxlength="9"
+                                oninput="formatarCEP(this)">
+                        </div>
+                        <div class="col-md-3 mb-3 d-flex align-items-end">
+                            <button class="btn btn-outline-primary w-100" onclick="buscarCEP()">
+                                <i class="fas fa-search me-1"></i>Buscar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Logradouro <span class="text-danger">*</span></label>
+                            <input type="text" id="eLogradouro" class="form-control" placeholder="Rua, Avenida...">
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Número <span class="text-danger">*</span></label>
+                            <input type="text" id="eNumero" class="form-control" placeholder="123">
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">Complemento</label>
+                            <input type="text" id="eComplemento" class="form-control" placeholder="Apto">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Bairro <span class="text-danger">*</span></label>
+                            <input type="text" id="eBairro" class="form-control">
+                        </div>
+                        <div class="col-md-5 mb-3">
+                            <label class="form-label">Cidade <span class="text-danger">*</span></label>
+                            <input type="text" id="eCidade" class="form-control">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Estado <span class="text-danger">*</span></label>
+                            <select id="eEstado" class="form-select">
+                                <option value="">UF</option>
+                                <option>AC</option>
+                                <option>AL</option>
+                                <option>AP</option>
+                                <option>AM</option>
+                                <option>BA</option>
+                                <option>CE</option>
+                                <option>DF</option>
+                                <option>ES</option>
+                                <option>GO</option>
+                                <option>MA</option>
+                                <option>MT</option>
+                                <option>MS</option>
+                                <option>MG</option>
+                                <option>PA</option>
+                                <option>PB</option>
+                                <option>PR</option>
+                                <option>PE</option>
+                                <option>PI</option>
+                                <option>RJ</option>
+                                <option>RN</option>
+                                <option>RS</option>
+                                <option>RO</option>
+                                <option>RR</option>
+                                <option>SC</option>
+                                <option>SP</option>
+                                <option>SE</option>
+                                <option>TO</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-primary" onclick="salvarEndereco()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-function mostrarAlerta(msg, tipo = 'danger') {
-    const el = document.getElementById('alerta');
-    el.className = `alert alert-${tipo}`;
-    el.textContent = msg;
-    el.classList.remove('d-none');
-    setTimeout(() => el.classList.add('d-none'), 4000);
-}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API = '';
+        let clienteId = null;
 
-function mostrarAba(aba) {
-    document.querySelectorAll('.list-group-item').forEach(a => a.classList.remove('active'));
-    document.querySelectorAll('[id^="sec-"]').forEach(s => s.classList.add('d-none'));
-    document.getElementById(`aba-${aba}`).classList.add('active');
-    document.getElementById(`sec-${aba}`).classList.remove('d-none');
-    if (aba === 'pedidos')   carregarPedidos();
-    if (aba === 'garagem')   carregarVeiculos();
-    if (aba === 'cartoes')   carregarCartoes();
-    if (aba === 'enderecos') carregarEnderecos();
-    if (aba === 'dados')     carregarDados();
-}
+        function mostrarAlerta(msg, tipo = 'danger') {
+            const el = document.getElementById('alerta');
+            el.className = `alert alert-${tipo}`;
+            el.textContent = msg;
+            el.classList.remove('d-none');
+            setTimeout(() => el.classList.add('d-none'), 4000);
+        }
 
-// ══════════════════════════════════════════
-// PEDIDOS
-// ══════════════════════════════════════════
-async function carregarPedidos() {
-    const lista = document.getElementById('listaPedidos');
-    lista.innerHTML = '<p class="text-muted text-center py-3"><i class="fas fa-spinner fa-spin me-2"></i>Carregando...</p>';
+        function mostrarAba(aba) {
+            document.querySelectorAll('.list-group-item').forEach(a => a.classList.remove('active'));
+            document.querySelectorAll('[id^="sec-"]').forEach(s => s.classList.add('d-none'));
+            document.getElementById(`aba-${aba}`).classList.add('active');
+            document.getElementById(`sec-${aba}`).classList.remove('d-none');
+            if (aba === 'pedidos') carregarPedidos();
+            if (aba === 'garagem') carregarVeiculos();
+            if (aba === 'cartoes') carregarCartoes();
+            if (aba === 'enderecos') carregarEnderecos();
+            if (aba === 'dados') carregarDados();
+        }
 
-    try {
-        const res = await fetch(`${API}/api/pedidos`);
+        // ══════════════════════════════════════════
+        // PEDIDOS
+        // ══════════════════════════════════════════
+        async function carregarPedidos() {
+            const lista = document.getElementById('listaPedidos');
+            lista.innerHTML = '<p class="text-muted text-center py-3"><i class="fas fa-spinner fa-spin me-2"></i>Carregando...</p>';
 
-        if (res.status === 401) {
-            lista.innerHTML = `
+            try {
+                const res = await fetch(`${API}/api/pedidos`);
+
+                if (res.status === 401) {
+                    lista.innerHTML = `
                 <div class="text-center py-3">
                     <i class="fas fa-lock fa-2x text-warning d-block mb-2"></i>
                     <p class="text-muted">Sessão expirada. <a href="login.html">Faça login novamente</a>.</p>
                 </div>`;
-            return;
-        }
+                    return;
+                }
 
-        const pedidos = await res.json();
+                const pedidos = await res.json();
 
-        if (!Array.isArray(pedidos) || !pedidos.length) {
-            lista.innerHTML = `
+                if (!Array.isArray(pedidos) || !pedidos.length) {
+                    lista.innerHTML = `
                 <div class="text-center py-4 text-muted">
                     <i class="fas fa-box-open fa-3x d-block mb-3"></i>
                     Você ainda não possui pedidos.
                     <br><a href="index.html" class="btn btn-primary btn-sm mt-3">Ver Pneus</a>
                 </div>`;
-            return;
-        }
+                    return;
+                }
 
-        const statusCor = {
-            'AGUARDANDO_PAGAMENTO': 'warning',
-            'EM_PROCESSAMENTO':     'primary',
-            'ENVIADO':              'info',
-            'ENTREGUE':             'success',
-            'CANCELADO':            'danger'
-        };
+                const statusCor = {
+                    'AGUARDANDO_PAGAMENTO': 'warning',
+                    'EM_PROCESSAMENTO': 'primary',
+                    'ENVIADO': 'info',
+                    'ENTREGUE': 'success',
+                    'CANCELADO': 'danger'
+                };
 
-        lista.innerHTML = pedidos.map(p => {
-            const total    = parseFloat(p.total) || 0;
-            const frete    = parseFloat(p.frete) || 0;
-            const totalFmt = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            const data     = p.criado_em ? new Date(p.criado_em).toLocaleDateString('pt-BR') : '';
-            const cor      = statusCor[p.status] || 'secondary';
-            const label    = (p.status || '').replace(/_/g, ' ');
+                lista.innerHTML = pedidos.map(p => {
+                    const total = parseFloat(p.total) || 0;
+                    const frete = parseFloat(p.frete) || 0;
+                    const totalFmt = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    const data = p.criado_em ? new Date(p.criado_em).toLocaleDateString('pt-BR') : '';
+                    const cor = statusCor[p.status] || 'secondary';
+                    const label = (p.status || '').replace(/_/g, ' ');
 
-            return `
+                    return `
                 <div class="order-card">
                     <div class="order-header">
                         <div>
@@ -380,8 +447,12 @@ async function carregarPedidos() {
                         <div class="d-flex gap-2 align-items-center">
                             <strong class="text-primary">${totalFmt}</strong>
                             <a href="confirmacao.html?pedido=${p.id}&modo=visualizar"
-                               class="btn btn-outline-dark btn-sm">
+                            class="btn btn-outline-dark btn-sm">
                                 <i class="fas fa-eye me-1"></i>Ver Detalhes
+                            </a>
+                            <a href="troca.html?pedido=${p.id}"
+                            class="btn btn-warning btn-sm fw-bold">
+                                <i class="fas fa-exchange-alt me-1"></i>Troca/Dev.
                             </a>
                         </div>
                     </div>
@@ -393,24 +464,24 @@ async function carregarPedidos() {
                         </small>
                     </div>
                 </div>`;
-        }).join('');
+                }).join('');
 
-    } catch (err) {
-        lista.innerHTML = '<p class="text-danger p-3">Erro ao carregar pedidos.</p>';
-    }
-}
+            } catch (err) {
+                lista.innerHTML = '<p class="text-danger p-3">Erro ao carregar pedidos.</p>';
+            }
+        }
 
-// ══════════════════════════════════════════
-// VEÍCULOS
-// ══════════════════════════════════════════
-async function carregarVeiculos() {
-    const res = await fetch(`${API}/api/clientes/${clienteId}/veiculos`);
-    const vs  = await res.json();
-    const el  = document.getElementById('listaVeiculos');
+        // ══════════════════════════════════════════
+        // VEÍCULOS
+        // ══════════════════════════════════════════
+        async function carregarVeiculos() {
+            const res = await fetch(`${API}/api/clientes/${clienteId}/veiculos`);
+            const vs = await res.json();
+            const el = document.getElementById('listaVeiculos');
 
-    if (!vs.length) { el.innerHTML = '<p class="text-muted">Nenhum veículo cadastrado.</p>'; return; }
+            if (!vs.length) { el.innerHTML = '<p class="text-muted">Nenhum veículo cadastrado.</p>'; return; }
 
-    el.innerHTML = vs.map(v => `
+            el.innerHTML = vs.map(v => `
         <div class="d-flex justify-content-between align-items-center border-bottom py-3">
             <div>
                 <strong>${v.marca} ${v.modelo}</strong>
@@ -430,72 +501,72 @@ async function carregarVeiculos() {
                 </button>
             </div>
         </div>`).join('');
-}
+        }
 
-function abrirModalVeiculo() {
-    document.getElementById('veiculoId').value = '';
-    document.getElementById('modalVeiculoTitulo').textContent = 'Adicionar Veículo';
-    ['vMarca','vModelo','vAno','vVersao'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('vPrincipal').checked = false;
-    new bootstrap.Modal(document.getElementById('modalVeiculo')).show();
-}
+        function abrirModalVeiculo() {
+            document.getElementById('veiculoId').value = '';
+            document.getElementById('modalVeiculoTitulo').textContent = 'Adicionar Veículo';
+            ['vMarca', 'vModelo', 'vAno', 'vVersao'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('vPrincipal').checked = false;
+            new bootstrap.Modal(document.getElementById('modalVeiculo')).show();
+        }
 
-async function editarVeiculo(id) {
-    const res = await fetch(`${API}/api/clientes/${clienteId}/veiculos`);
-    const vs  = await res.json();
-    const v   = vs.find(x => x.id === id);
-    if (!v) return;
-    document.getElementById('veiculoId').value          = v.id;
-    document.getElementById('modalVeiculoTitulo').textContent = 'Editar Veículo';
-    document.getElementById('vMarca').value             = v.marca;
-    document.getElementById('vModelo').value            = v.modelo;
-    document.getElementById('vAno').value               = v.ano;
-    document.getElementById('vVersao').value            = v.versao || '';
-    document.getElementById('vPrincipal').checked       = v.principal;
-    new bootstrap.Modal(document.getElementById('modalVeiculo')).show();
-}
+        async function editarVeiculo(id) {
+            const res = await fetch(`${API}/api/clientes/${clienteId}/veiculos`);
+            const vs = await res.json();
+            const v = vs.find(x => x.id === id);
+            if (!v) return;
+            document.getElementById('veiculoId').value = v.id;
+            document.getElementById('modalVeiculoTitulo').textContent = 'Editar Veículo';
+            document.getElementById('vMarca').value = v.marca;
+            document.getElementById('vModelo').value = v.modelo;
+            document.getElementById('vAno').value = v.ano;
+            document.getElementById('vVersao').value = v.versao || '';
+            document.getElementById('vPrincipal').checked = v.principal;
+            new bootstrap.Modal(document.getElementById('modalVeiculo')).show();
+        }
 
-async function salvarVeiculo() {
-    const id    = document.getElementById('veiculoId').value;
-    const dados = {
-        marca:     document.getElementById('vMarca').value,
-        modelo:    document.getElementById('vModelo').value,
-        ano:       parseInt(document.getElementById('vAno').value),
-        versao:    document.getElementById('vVersao').value,
-        principal: document.getElementById('vPrincipal').checked
-    };
-    if (!dados.marca || !dados.modelo || !dados.ano) return mostrarAlerta('Preencha marca, modelo e ano.');
+        async function salvarVeiculo() {
+            const id = document.getElementById('veiculoId').value;
+            const dados = {
+                marca: document.getElementById('vMarca').value,
+                modelo: document.getElementById('vModelo').value,
+                ano: parseInt(document.getElementById('vAno').value),
+                versao: document.getElementById('vVersao').value,
+                principal: document.getElementById('vPrincipal').checked
+            };
+            if (!dados.marca || !dados.modelo || !dados.ano) return mostrarAlerta('Preencha marca, modelo e ano.');
 
-    const url    = id ? `${API}/api/clientes/${clienteId}/veiculos/${id}` : `${API}/api/clientes/${clienteId}/veiculos`;
-    const method = id ? 'PUT' : 'POST';
-    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) });
-    bootstrap.Modal.getInstance(document.getElementById('modalVeiculo')).hide();
-    carregarVeiculos();
-    mostrarAlerta(id ? 'Veículo atualizado!' : 'Veículo adicionado!', 'success');
-}
+            const url = id ? `${API}/api/clientes/${clienteId}/veiculos/${id}` : `${API}/api/clientes/${clienteId}/veiculos`;
+            const method = id ? 'PUT' : 'POST';
+            await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) });
+            bootstrap.Modal.getInstance(document.getElementById('modalVeiculo')).hide();
+            carregarVeiculos();
+            mostrarAlerta(id ? 'Veículo atualizado!' : 'Veículo adicionado!', 'success');
+        }
 
-async function removerVeiculo(id) {
-    if (!confirm('Remover este veículo?')) return;
-    await fetch(`${API}/api/clientes/${clienteId}/veiculos/${id}`, { method: 'DELETE' });
-    carregarVeiculos();
-}
+        async function removerVeiculo(id) {
+            if (!confirm('Remover este veículo?')) return;
+            await fetch(`${API}/api/clientes/${clienteId}/veiculos/${id}`, { method: 'DELETE' });
+            carregarVeiculos();
+        }
 
-async function tornarPrincipalVeiculo(id) {
-    await fetch(`${API}/api/clientes/${clienteId}/veiculos/${id}/principal`, { method: 'PATCH' });
-    carregarVeiculos();
-}
+        async function tornarPrincipalVeiculo(id) {
+            await fetch(`${API}/api/clientes/${clienteId}/veiculos/${id}/principal`, { method: 'PATCH' });
+            carregarVeiculos();
+        }
 
-// ══════════════════════════════════════════
-// CARTÕES
-// ══════════════════════════════════════════
-async function carregarCartoes() {
-    const res = await fetch(`${API}/api/clientes/${clienteId}/cartoes`);
-    const cs  = await res.json();
-    const el  = document.getElementById('listaCartoes');
+        // ══════════════════════════════════════════
+        // CARTÕES
+        // ══════════════════════════════════════════
+        async function carregarCartoes() {
+            const res = await fetch(`${API}/api/clientes/${clienteId}/cartoes`);
+            const cs = await res.json();
+            const el = document.getElementById('listaCartoes');
 
-    if (!cs.length) { el.innerHTML = '<p class="text-muted">Nenhum cartão cadastrado.</p>'; return; }
+            if (!cs.length) { el.innerHTML = '<p class="text-muted">Nenhum cartão cadastrado.</p>'; return; }
 
-    el.innerHTML = cs.map(c => `
+            el.innerHTML = cs.map(c => `
         <div class="d-flex justify-content-between align-items-center border-bottom py-3">
             <div>
                 <i class="fas fa-credit-card me-2 text-primary"></i>
@@ -516,76 +587,76 @@ async function carregarCartoes() {
                 </button>
             </div>
         </div>`).join('');
-}
+        }
 
-function abrirModalCartao() {
-    document.getElementById('cartaoId').value = '';
-    document.getElementById('modalCartaoTitulo').textContent = 'Adicionar Cartão';
-    document.getElementById('cBandeira').value = '';
-    document.getElementById('cNome').value     = '';
-    document.getElementById('cNumero').value   = '';
-    document.getElementById('cCvv').value      = '';
-    document.getElementById('cPrincipal').checked = false;
-    new bootstrap.Modal(document.getElementById('modalCartao')).show();
-}
+        function abrirModalCartao() {
+            document.getElementById('cartaoId').value = '';
+            document.getElementById('modalCartaoTitulo').textContent = 'Adicionar Cartão';
+            document.getElementById('cBandeira').value = '';
+            document.getElementById('cNome').value = '';
+            document.getElementById('cNumero').value = '';
+            document.getElementById('cCvv').value = '';
+            document.getElementById('cPrincipal').checked = false;
+            new bootstrap.Modal(document.getElementById('modalCartao')).show();
+        }
 
-async function editarCartao(id) {
-    const res = await fetch(`${API}/api/clientes/${clienteId}/cartoes`);
-    const cs  = await res.json();
-    const c   = cs.find(x => x.id === id);
-    if (!c) return;
-    document.getElementById('cartaoId').value               = c.id;
-    document.getElementById('modalCartaoTitulo').textContent = 'Editar Cartão';
-    document.getElementById('cBandeira').value              = c.bandeira;
-    document.getElementById('cNome').value                  = c.nome_impresso;
-    document.getElementById('cNumero').value                = '**** ' + c.numero_final;
-    document.getElementById('cPrincipal').checked           = c.principal;
-    new bootstrap.Modal(document.getElementById('modalCartao')).show();
-}
+        async function editarCartao(id) {
+            const res = await fetch(`${API}/api/clientes/${clienteId}/cartoes`);
+            const cs = await res.json();
+            const c = cs.find(x => x.id === id);
+            if (!c) return;
+            document.getElementById('cartaoId').value = c.id;
+            document.getElementById('modalCartaoTitulo').textContent = 'Editar Cartão';
+            document.getElementById('cBandeira').value = c.bandeira;
+            document.getElementById('cNome').value = c.nome_impresso;
+            document.getElementById('cNumero').value = '**** ' + c.numero_final;
+            document.getElementById('cPrincipal').checked = c.principal;
+            new bootstrap.Modal(document.getElementById('modalCartao')).show();
+        }
 
-async function salvarCartao() {
-    const id     = document.getElementById('cartaoId').value;
-    const numero = document.getElementById('cNumero').value.replace(/\s/g, '');
-    if (!id && numero.length < 13) return mostrarAlerta('Número do cartão inválido.');
-    const dados  = {
-        bandeira:      document.getElementById('cBandeira').value,
-        nome_impresso: document.getElementById('cNome').value.toUpperCase(),
-        numero_final:  numero.slice(-4),
-        token:         'tok_' + Math.random().toString(36).substr(2, 16),
-        principal:     document.getElementById('cPrincipal').checked
-    };
-    if (!dados.bandeira || !dados.nome_impresso) return mostrarAlerta('Preencha todos os campos.');
+        async function salvarCartao() {
+            const id = document.getElementById('cartaoId').value;
+            const numero = document.getElementById('cNumero').value.replace(/\s/g, '');
+            if (!id && numero.length < 13) return mostrarAlerta('Número do cartão inválido.');
+            const dados = {
+                bandeira: document.getElementById('cBandeira').value,
+                nome_impresso: document.getElementById('cNome').value.toUpperCase(),
+                numero_final: numero.slice(-4),
+                token: 'tok_' + Math.random().toString(36).substr(2, 16),
+                principal: document.getElementById('cPrincipal').checked
+            };
+            if (!dados.bandeira || !dados.nome_impresso) return mostrarAlerta('Preencha todos os campos.');
 
-    const url    = id ? `${API}/api/clientes/${clienteId}/cartoes/${id}` : `${API}/api/clientes/${clienteId}/cartoes`;
-    const method = id ? 'PUT' : 'POST';
-    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) });
-    bootstrap.Modal.getInstance(document.getElementById('modalCartao')).hide();
-    carregarCartoes();
-    mostrarAlerta(id ? 'Cartão atualizado!' : 'Cartão adicionado!', 'success');
-}
+            const url = id ? `${API}/api/clientes/${clienteId}/cartoes/${id}` : `${API}/api/clientes/${clienteId}/cartoes`;
+            const method = id ? 'PUT' : 'POST';
+            await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) });
+            bootstrap.Modal.getInstance(document.getElementById('modalCartao')).hide();
+            carregarCartoes();
+            mostrarAlerta(id ? 'Cartão atualizado!' : 'Cartão adicionado!', 'success');
+        }
 
-async function removerCartao(id) {
-    if (!confirm('Remover este cartão?')) return;
-    await fetch(`${API}/api/clientes/${clienteId}/cartoes/${id}`, { method: 'DELETE' });
-    carregarCartoes();
-}
+        async function removerCartao(id) {
+            if (!confirm('Remover este cartão?')) return;
+            await fetch(`${API}/api/clientes/${clienteId}/cartoes/${id}`, { method: 'DELETE' });
+            carregarCartoes();
+        }
 
-async function tornarPrincipalCartao(id) {
-    await fetch(`${API}/api/clientes/${clienteId}/cartoes/${id}/principal`, { method: 'PATCH' });
-    carregarCartoes();
-}
+        async function tornarPrincipalCartao(id) {
+            await fetch(`${API}/api/clientes/${clienteId}/cartoes/${id}/principal`, { method: 'PATCH' });
+            carregarCartoes();
+        }
 
-// ══════════════════════════════════════════
-// ENDEREÇOS
-// ══════════════════════════════════════════
-async function carregarEnderecos() {
-    const res = await fetch(`${API}/api/clientes/${clienteId}/enderecos`);
-    const es  = await res.json();
-    const el  = document.getElementById('listaEnderecos');
+        // ══════════════════════════════════════════
+        // ENDEREÇOS
+        // ══════════════════════════════════════════
+        async function carregarEnderecos() {
+            const res = await fetch(`${API}/api/clientes/${clienteId}/enderecos`);
+            const es = await res.json();
+            const el = document.getElementById('listaEnderecos');
 
-    if (!es.length) { el.innerHTML = '<p class="text-muted">Nenhum endereço cadastrado.</p>'; return; }
+            if (!es.length) { el.innerHTML = '<p class="text-muted">Nenhum endereço cadastrado.</p>'; return; }
 
-    el.innerHTML = es.map(e => `
+            el.innerHTML = es.map(e => `
         <div class="border rounded p-3 mb-2 d-flex justify-content-between align-items-start">
             <div>
                 <strong>${e.nome_destinatario || 'Endereço'}</strong>
@@ -604,145 +675,146 @@ async function carregarEnderecos() {
                 </button>
             </div>
         </div>`).join('');
-}
+        }
 
-function abrirModalEndereco() {
-    document.getElementById('enderecoId').value = '';
-    document.getElementById('modalEnderecoTitulo').textContent = 'Adicionar Endereço';
-    ['eNome','eCep','eLogradouro','eNumero','eComplemento','eBairro','eCidade'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('eEstado').value = '';
-    new bootstrap.Modal(document.getElementById('modalEndereco')).show();
-}
+        function abrirModalEndereco() {
+            document.getElementById('enderecoId').value = '';
+            document.getElementById('modalEnderecoTitulo').textContent = 'Adicionar Endereço';
+            ['eNome', 'eCep', 'eLogradouro', 'eNumero', 'eComplemento', 'eBairro', 'eCidade'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('eEstado').value = '';
+            new bootstrap.Modal(document.getElementById('modalEndereco')).show();
+        }
 
-async function editarEndereco(id) {
-    const res = await fetch(`${API}/api/clientes/${clienteId}/enderecos`);
-    const es  = await res.json();
-    const e   = es.find(x => x.id === id);
-    if (!e) return;
-    document.getElementById('enderecoId').value               = e.id;
-    document.getElementById('modalEnderecoTitulo').textContent = 'Editar Endereço';
-    document.getElementById('eNome').value                    = e.nome_destinatario || '';
-    document.getElementById('eCep').value                     = e.cep;
-    document.getElementById('eLogradouro').value              = e.logradouro;
-    document.getElementById('eNumero').value                  = e.numero;
-    document.getElementById('eComplemento').value             = e.complemento || '';
-    document.getElementById('eBairro').value                  = e.bairro;
-    document.getElementById('eCidade').value                  = e.cidade;
-    document.getElementById('eEstado').value                  = e.estado;
-    new bootstrap.Modal(document.getElementById('modalEndereco')).show();
-}
+        async function editarEndereco(id) {
+            const res = await fetch(`${API}/api/clientes/${clienteId}/enderecos`);
+            const es = await res.json();
+            const e = es.find(x => x.id === id);
+            if (!e) return;
+            document.getElementById('enderecoId').value = e.id;
+            document.getElementById('modalEnderecoTitulo').textContent = 'Editar Endereço';
+            document.getElementById('eNome').value = e.nome_destinatario || '';
+            document.getElementById('eCep').value = e.cep;
+            document.getElementById('eLogradouro').value = e.logradouro;
+            document.getElementById('eNumero').value = e.numero;
+            document.getElementById('eComplemento').value = e.complemento || '';
+            document.getElementById('eBairro').value = e.bairro;
+            document.getElementById('eCidade').value = e.cidade;
+            document.getElementById('eEstado').value = e.estado;
+            new bootstrap.Modal(document.getElementById('modalEndereco')).show();
+        }
 
-async function salvarEndereco() {
-    const id    = document.getElementById('enderecoId').value;
-    const dados = {
-        nome_destinatario: document.getElementById('eNome').value.trim(),
-        cep:         document.getElementById('eCep').value,
-        logradouro:  document.getElementById('eLogradouro').value.trim(),
-        numero:      document.getElementById('eNumero').value.trim(),
-        complemento: document.getElementById('eComplemento').value.trim(),
-        bairro:      document.getElementById('eBairro').value.trim(),
-        cidade:      document.getElementById('eCidade').value.trim(),
-        estado:      document.getElementById('eEstado').value,
-        tipo:        'entrega'
-    };
-    if (!dados.nome_destinatario || !dados.logradouro || !dados.numero || !dados.cidade || !dados.estado)
-        return mostrarAlerta('Preencha todos os campos obrigatórios.');
+        async function salvarEndereco() {
+            const id = document.getElementById('enderecoId').value;
+            const dados = {
+                nome_destinatario: document.getElementById('eNome').value.trim(),
+                cep: document.getElementById('eCep').value,
+                logradouro: document.getElementById('eLogradouro').value.trim(),
+                numero: document.getElementById('eNumero').value.trim(),
+                complemento: document.getElementById('eComplemento').value.trim(),
+                bairro: document.getElementById('eBairro').value.trim(),
+                cidade: document.getElementById('eCidade').value.trim(),
+                estado: document.getElementById('eEstado').value,
+                tipo: 'entrega'
+            };
+            if (!dados.nome_destinatario || !dados.logradouro || !dados.numero || !dados.cidade || !dados.estado)
+                return mostrarAlerta('Preencha todos os campos obrigatórios.');
 
-    const url    = id ? `${API}/api/clientes/${clienteId}/enderecos/${id}` : `${API}/api/clientes/${clienteId}/enderecos`;
-    const method = id ? 'PUT' : 'POST';
-    const res    = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) });
-    if (res.ok) {
-        bootstrap.Modal.getInstance(document.getElementById('modalEndereco')).hide();
-        carregarEnderecos();
-        mostrarAlerta(id ? 'Endereço atualizado!' : 'Endereço adicionado!', 'success');
-    } else {
-        mostrarAlerta('Erro ao salvar endereço.');
-    }
-}
+            const url = id ? `${API}/api/clientes/${clienteId}/enderecos/${id}` : `${API}/api/clientes/${clienteId}/enderecos`;
+            const method = id ? 'PUT' : 'POST';
+            const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) });
+            if (res.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('modalEndereco')).hide();
+                carregarEnderecos();
+                mostrarAlerta(id ? 'Endereço atualizado!' : 'Endereço adicionado!', 'success');
+            } else {
+                mostrarAlerta('Erro ao salvar endereço.');
+            }
+        }
 
-async function removerEndereco(id) {
-    if (!confirm('Remover este endereço?')) return;
-    await fetch(`${API}/api/clientes/${clienteId}/enderecos/${id}`, { method: 'DELETE' });
-    carregarEnderecos();
-}
+        async function removerEndereco(id) {
+            if (!confirm('Remover este endereço?')) return;
+            await fetch(`${API}/api/clientes/${clienteId}/enderecos/${id}`, { method: 'DELETE' });
+            carregarEnderecos();
+        }
 
-function formatarCEP(input) {
-    let v = input.value.replace(/\D/g, '').slice(0, 8);
-    if (v.length > 5) v = v.replace(/(\d{5})(\d{1,3})/, '$1-$2');
-    input.value = v;
-}
+        function formatarCEP(input) {
+            let v = input.value.replace(/\D/g, '').slice(0, 8);
+            if (v.length > 5) v = v.replace(/(\d{5})(\d{1,3})/, '$1-$2');
+            input.value = v;
+        }
 
-async function buscarCEP() {
-    const cep = document.getElementById('eCep').value.replace(/\D/g, '');
-    if (cep.length !== 8) return mostrarAlerta('CEP inválido. Digite 8 dígitos.');
-    try {
-        const res  = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-        const data = await res.json();
-        if (data.erro) return mostrarAlerta('CEP não encontrado.');
-        document.getElementById('eLogradouro').value = data.logradouro || '';
-        document.getElementById('eBairro').value     = data.bairro || '';
-        document.getElementById('eCidade').value     = data.localidade || '';
-        document.getElementById('eEstado').value     = data.uf || '';
-        document.getElementById('eNumero').focus();
-    } catch { mostrarAlerta('Erro ao buscar CEP.'); }
-}
+        async function buscarCEP() {
+            const cep = document.getElementById('eCep').value.replace(/\D/g, '');
+            if (cep.length !== 8) return mostrarAlerta('CEP inválido. Digite 8 dígitos.');
+            try {
+                const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                const data = await res.json();
+                if (data.erro) return mostrarAlerta('CEP não encontrado.');
+                document.getElementById('eLogradouro').value = data.logradouro || '';
+                document.getElementById('eBairro').value = data.bairro || '';
+                document.getElementById('eCidade').value = data.localidade || '';
+                document.getElementById('eEstado').value = data.uf || '';
+                document.getElementById('eNumero').focus();
+            } catch { mostrarAlerta('Erro ao buscar CEP.'); }
+        }
 
-// ══════════════════════════════════════════
-// DADOS PESSOAIS
-// ══════════════════════════════════════════
-async function carregarDados() {
-    const res = await fetch(`${API}/api/clientes/${clienteId}`);
-    const c   = await res.json();
-    document.getElementById('editNome').value      = c.nome || '';
-    document.getElementById('editSobrenome').value = c.sobrenome || '';
-    document.getElementById('editEmail').value     = c.email || '';
-}
+        // ══════════════════════════════════════════
+        // DADOS PESSOAIS
+        // ══════════════════════════════════════════
+        async function carregarDados() {
+            const res = await fetch(`${API}/api/clientes/${clienteId}`);
+            const c = await res.json();
+            document.getElementById('editNome').value = c.nome || '';
+            document.getElementById('editSobrenome').value = c.sobrenome || '';
+            document.getElementById('editEmail').value = c.email || '';
+        }
 
-async function salvarDados() {
-    const dados = {
-        nome:      document.getElementById('editNome').value,
-        sobrenome: document.getElementById('editSobrenome').value,
-        email:     document.getElementById('editEmail').value
-    };
-    const res = await fetch(`${API}/api/clientes/${clienteId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dados)
-    });
-    mostrarAlerta(res.ok ? 'Dados atualizados!' : 'Erro ao atualizar dados.', res.ok ? 'success' : 'danger');
-}
+        async function salvarDados() {
+            const dados = {
+                nome: document.getElementById('editNome').value,
+                sobrenome: document.getElementById('editSobrenome').value,
+                email: document.getElementById('editEmail').value
+            };
+            const res = await fetch(`${API}/api/clientes/${clienteId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            mostrarAlerta(res.ok ? 'Dados atualizados!' : 'Erro ao atualizar dados.', res.ok ? 'success' : 'danger');
+        }
 
-async function encerrarConta() {
-    if (!confirm('Tem certeza que deseja encerrar sua conta?')) return;
-    const res = await fetch(`${API}/api/clientes/${clienteId}/inativar`, { method: 'PATCH' });
-    if (res.ok) {
-        mostrarAlerta('Conta encerrada. Até logo!', 'warning');
-        setTimeout(() => { localStorage.removeItem('cliente'); window.location.href = 'login.html'; }, 2000);
-    } else {
-        mostrarAlerta('Erro ao encerrar conta.');
-    }
-}
+        async function encerrarConta() {
+            if (!confirm('Tem certeza que deseja encerrar sua conta?')) return;
+            const res = await fetch(`${API}/api/clientes/${clienteId}/inativar`, { method: 'PATCH' });
+            if (res.ok) {
+                mostrarAlerta('Conta encerrada. Até logo!', 'warning');
+                setTimeout(() => { localStorage.removeItem('cliente'); window.location.href = 'login.html'; }, 2000);
+            } else {
+                mostrarAlerta('Erro ao encerrar conta.');
+            }
+        }
 
-function sair() {
-    fetch(`${API}/api/auth/logout`, { method: 'POST' }).catch(() => {});
-    localStorage.removeItem('cliente');
-    window.location.href = 'login.html';
-}
+        function sair() {
+            fetch(`${API}/api/auth/logout`, { method: 'POST' }).catch(() => { });
+            localStorage.removeItem('cliente');
+            window.location.href = 'login.html';
+        }
 
-// ══════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════
-window.onload = () => {
-    const cliente = JSON.parse(localStorage.getItem('cliente'));
-    if (!cliente) return window.location.href = 'login.html';
-    clienteId = cliente.id;
-    document.getElementById('nomeNav').textContent = `Olá, ${cliente.nome}!`;
+        // ══════════════════════════════════════════
+        // INIT
+        // ══════════════════════════════════════════
+        window.onload = () => {
+            const cliente = JSON.parse(localStorage.getItem('cliente'));
+            if (!cliente) return window.location.href = 'login.html';
+            clienteId = cliente.id;
+            document.getElementById('nomeNav').textContent = `Olá, ${cliente.nome}!`;
 
-    // Verifica se veio com aba específica na URL
-    const params = new URLSearchParams(window.location.search);
-    const aba    = params.get('aba') || 'pedidos';
-    mostrarAba(aba);
-};
-</script>
+            // Verifica se veio com aba específica na URL
+            const params = new URLSearchParams(window.location.search);
+            const aba = params.get('aba') || 'pedidos';
+            mostrarAba(aba);
+        };
+    </script>
 </body>
+
 </html>
