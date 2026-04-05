@@ -41,6 +41,33 @@ module.exports = {
     return rows[0];
   },
 
+  async atualizar(id, clienteId, dados) {
+  if (dados.principal) {
+    await pool.query(
+      `UPDATE veiculos SET principal=FALSE WHERE cliente_id=$1`,
+      [clienteId]
+    );
+  }
+
+  const { rows } = await pool.query(
+    `UPDATE veiculos 
+     SET marca=$1, modelo=$2, ano=$3, versao=$4, principal=$5
+     WHERE id=$6 AND cliente_id=$7
+     RETURNING *`,
+    [
+      dados.marca,
+      dados.modelo,
+      dados.ano,
+      dados.versao,
+      dados.principal || false,
+      id,
+      clienteId
+    ]
+  );
+
+  return rows[0];
+},
+
   async remover(id, clienteId) {
     await pool.query(
       `DELETE FROM veiculos WHERE id=$1 AND cliente_id=$2`, [id, clienteId]

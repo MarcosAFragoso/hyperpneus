@@ -19,10 +19,35 @@ module.exports = {
     }
   },
 
+  async atualizar(req, res) {
+    try {
+      const veiculo = await Veiculo.atualizar(
+        req.params.id,
+        req.params.clienteId,
+        req.body
+      );
+
+      if (!veiculo) {
+        return res.status(404).json({ erro: 'Veículo não encontrado' });
+      }
+
+      res.json(veiculo);
+    } catch (err) {
+      res.status(500).json({ erro: err.message });
+    }
+  },
+
   async definirPrincipal(req, res) {
     try {
-      const veiculo = await Veiculo.definirPrincipal(req.params.id, req.params.clienteId);
-      if (!veiculo) return res.status(404).json({ erro: 'Veículo não encontrado' });
+      const veiculo = await Veiculo.definirPrincipal(
+        req.params.id,
+        req.params.clienteId
+      );
+
+      if (!veiculo) {
+        return res.status(404).json({ erro: 'Veículo não encontrado' });
+      }
+
       res.json(veiculo);
     } catch (err) {
       res.status(500).json({ erro: err.message });

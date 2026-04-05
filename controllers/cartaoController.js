@@ -19,10 +19,35 @@ module.exports = {
     }
   },
 
+  async atualizar(req, res) {
+    try {
+      const cartao = await Cartao.atualizar(
+        req.params.id,
+        req.params.clienteId,
+        req.body
+      );
+
+      if (!cartao) {
+        return res.status(404).json({ erro: 'Cartão não encontrado' });
+      }
+
+      res.json(cartao);
+    } catch (err) {
+      res.status(500).json({ erro: err.message });
+    }
+  },
+
   async definirPrincipal(req, res) {
     try {
-      const cartao = await Cartao.definirPrincipal(req.params.id, req.params.clienteId);
-      if (!cartao) return res.status(404).json({ erro: 'Cartão não encontrado' });
+      const cartao = await Cartao.definirPrincipal(
+        req.params.id,
+        req.params.clienteId
+      );
+
+      if (!cartao) {
+        return res.status(404).json({ erro: 'Cartão não encontrado' });
+      }
+
       res.json(cartao);
     } catch (err) {
       res.status(500).json({ erro: err.message });

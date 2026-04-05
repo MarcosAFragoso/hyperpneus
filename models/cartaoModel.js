@@ -35,6 +35,32 @@ module.exports = {
     return rows[0];
   },
 
+  async atualizar(id, clienteId, dados) {
+  if (dados.principal) {
+    await pool.query(
+      `UPDATE cartoes SET principal=FALSE WHERE cliente_id=$1`,
+      [clienteId]
+    );
+  }
+
+  const { rows } = await pool.query(
+    `UPDATE cartoes 
+     SET bandeira=$1, nome_impresso=$2, numero_final=$3, principal=$4
+     WHERE id=$5 AND cliente_id=$6
+     RETURNING id, bandeira, nome_impresso, numero_final, principal`,
+    [
+      dados.bandeira,
+      dados.nome_impresso,
+      dados.numero_final,
+      dados.principal || false,
+      id,
+      clienteId
+    ]
+  );
+
+  return rows[0];
+},
+
   async remover(id, clienteId) {
     await pool.query(
       `DELETE FROM cartoes WHERE id=$1 AND cliente_id=$2`, [id, clienteId]
