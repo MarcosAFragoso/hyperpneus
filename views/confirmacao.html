@@ -332,6 +332,7 @@
         }
 
         // ── MODO SIMULAÇÃO (vindo do checkout) ────────────────────────
+        // ── MODO SIMULAÇÃO (vindo do checkout) ────────────────────────
         async function iniciarSimulacao(pedidoId) {
             // Tenta carregar, mas se falhar, não trava a simulação
             try {
@@ -348,28 +349,39 @@
             await esperar(2000);
             document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-check-circle fa-4x text-success"></i>';
             document.getElementById('tituloPagamento').textContent = 'Pagamento Aprovado!';
+            document.getElementById('subtituloPagamento').textContent = 'Seu pagamento foi aprovado com sucesso.';
             ativarStep(1, 20);
             mostrarCardsEAcoes();
 
             // Step 2
             await esperar(2000);
+            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-box fa-4x text-primary"></i>';
+            document.getElementById('tituloPagamento').textContent = 'Em Separação';
+            document.getElementById('subtituloPagamento').textContent = 'Estamos separando e embalando os seus produtos.';
             adicionarLog('Em separação.', 'info');
             ativarStep(2, 40);
 
             // Step 3
             await esperar(2000);
+            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-truck fa-4x text-info"></i>';
+            document.getElementById('tituloPagamento').textContent = 'Na Transportadora';
+            document.getElementById('subtituloPagamento').textContent = 'Seu pedido já foi despachado.';
             adicionarLog('Na transportadora.', 'info');
             ativarStep(3, 60);
 
             // Step 4
             await esperar(2000);
+            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-shipping-fast fa-4x text-primary"></i>';
+            document.getElementById('tituloPagamento').textContent = 'Saiu para Entrega';
+            document.getElementById('subtituloPagamento').textContent = 'O motorista está a caminho do seu endereço!';
             adicionarLog('Saiu para entrega.', 'truck');
             ativarStep(4, 80);
 
             // Step 5
             await esperar(2000);
-            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-box-open fa-4x text-success"></i>';
+            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-home fa-4x text-success"></i>';
             document.getElementById('tituloPagamento').textContent = 'Pedido Entregue!';
+            document.getElementById('subtituloPagamento').textContent = 'Aproveite os seus novos pneus!';
             adicionarLog('Pedido entregue!', 'home');
 
             // ATUALIZAÇÃO DO BANCO
@@ -382,7 +394,6 @@
             } catch (err) { console.log("Erro ao salvar no banco, ignorando..."); }
 
             ativarStep(5, 100, false);
-
         }
         // ── MODO VISUALIZAÇÃO (vindo de Meus Pedidos) ─────────────────
         async function modoVisualizacao(pedidoId) {
