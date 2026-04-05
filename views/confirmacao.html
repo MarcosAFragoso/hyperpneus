@@ -428,36 +428,39 @@
             }
 
             function ativarStep(idx, progressPct, ehAtual = true) {
-                for (let i = 0; i <= idx; i++) {
+                for (let i = 0; i <= 5; i++) {
                     const step = document.getElementById(`step${i}`);
                     const icon = step.querySelector('.step-icon');
                     const label = step.querySelector('.step-label');
 
-                    icon.classList.remove('atual');
-                    label.classList.remove('atual');
+                    // limpa tudo antes
+                    icon.classList.remove('atual', 'ativo');
+                    label.classList.remove('atual', 'ativo');
 
-                    icon.classList.add('ativo');
-                    label.classList.add('ativo');
+                    if (i < idx) {
+                        icon.classList.add('ativo');
+                        label.classList.add('ativo');
+                    } else if (i === idx) {
+                        icon.classList.add('atual');
+                        label.classList.add('atual');
+                    }
                 }
 
-                if (ehAtual && idx < 5) {
-                    const atual = document.getElementById(`step${idx}`);
-                    atual.querySelector('.step-icon').classList.replace('ativo', 'atual');
-                    atual.querySelector('.step-label').classList.replace('ativo', 'atual');
+                // 🔥 se for ENTREGUE (último step), tudo fica como concluído
+                if (idx === 5) {
+                    for (let i = 0; i <= 5; i++) {
+                        const step = document.getElementById(`step${i}`);
+                        step.querySelector('.step-icon').classList.add('ativo');
+                        step.querySelector('.step-label').classList.add('ativo');
+                    }
                 }
 
                 document.getElementById('progressLine').style.width = progressPct + '%';
             }
-
-            // 🔥 CORREÇÃO 2: CHAMAR a função que atualiza os steps
-            ativarStep(idxAtual, porcentagens[idxAtual]);
-
-            mostrarCardsEAcoes();
-        }
-        // ── Nota Fiscal ────────────────────────────────────────────────
-        function verNF() {
-            if (!pedidoData) return;
-            const nf = `
+            // ── Nota Fiscal ────────────────────────────────────────────────
+            function verNF() {
+                if (!pedidoData) return;
+                const nf = `
 NOTA FISCAL ELETRÔNICA - NF-e
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 HYPERPNEUS LTDA
@@ -473,45 +476,45 @@ CEP: ${pedidoData.cep}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ITENS
 ${(pedidoData.itens || []).map(i =>
-                `${i.marca} ${i.modelo} ${i.largura}/${i.perfil} R${i.aro}
+                    `${i.marca} ${i.modelo} ${i.largura}/${i.perfil} R${i.aro}
   Qtd: ${i.quantidade} x ${fmt(i.preco_unitario)} = ${fmt(i.preco_unitario * i.quantidade)}`
-            ).join('\n')}
+                ).join('\n')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Frete            : ${fmt(pedidoData.frete)}
 TOTAL            : ${fmt(pedidoData.total)}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FORMA DE PAGAMENTO
 ${(pedidoData.pagamentos || []).map(p =>
-                `${p.bandeira} **** ${p.numero_final}: ${fmt(p.valor)}`
-            ).join('\n')}
+                    `${p.bandeira} **** ${p.numero_final}: ${fmt(p.valor)}`
+                ).join('\n')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Chave NF-e: ${Math.random().toString(36).substr(2, 44).toUpperCase()}
     `;
-            document.getElementById('conteudoNF').innerHTML = `<pre>${nf}</pre>`;
-            new bootstrap.Modal(document.getElementById('nfModal')).show();
-        }
-
-        function imprimirNF() {
-            const conteudo = document.getElementById('conteudoNF').innerHTML;
-            const w = window.open('', '_blank');
-            w.document.write(`<html><body><pre style="font-family:monospace">${conteudo}</pre></body></html>`);
-            w.print();
-        }
-
-        // ── Init ───────────────────────────────────────────────────────
-        window.onload = () => {
-            const params = new URLSearchParams(window.location.search);
-            const pedidoId = params.get('pedido');
-            const modo = params.get('modo'); // 'visualizar' = vem de Meus Pedidos
-
-            if (!pedidoId) { window.location.href = 'index.html'; return; }
-
-            if (modo === 'visualizar') {
-                modoVisualizacao(pedidoId);
-            } else {
-                iniciarSimulacao(pedidoId);
+                document.getElementById('conteudoNF').innerHTML = `<pre>${nf}</pre>`;
+                new bootstrap.Modal(document.getElementById('nfModal')).show();
             }
-        };
+
+            function imprimirNF() {
+                const conteudo = document.getElementById('conteudoNF').innerHTML;
+                const w = window.open('', '_blank');
+                w.document.write(`<html><body><pre style="font-family:monospace">${conteudo}</pre></body></html>`);
+                w.print();
+            }
+
+            // ── Init ───────────────────────────────────────────────────────
+            window.onload = () => {
+                const params = new URLSearchParams(window.location.search);
+                const pedidoId = params.get('pedido');
+                const modo = params.get('modo'); // 'visualizar' = vem de Meus Pedidos
+
+                if (!pedidoId) { window.location.href = 'index.html'; return; }
+
+                if (modo === 'visualizar') {
+                    modoVisualizacao(pedidoId);
+                } else {
+                    iniciarSimulacao(pedidoId);
+                }
+            };
     </script>
 </body>
 
