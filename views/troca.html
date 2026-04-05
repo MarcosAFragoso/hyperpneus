@@ -7,15 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --kabum-orange: #ff6500;
-        }
-
-        body {
-            background-color: #f4f7f9;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
         .product-img {
             width: 80px;
             height: 80px;
@@ -25,131 +16,92 @@
             border-radius: 4px;
         }
 
-        .card {
-            border: none;
-            border-radius: 8px;
-        }
-
         .btn-confirmar {
-            background-color: var(--kabum-orange);
+            background-color: #ff6500;
             color: white;
             font-weight: bold;
             border: none;
-        }
-
-        .btn-confirmar:hover {
-            background-color: #e55a00;
-            color: white;
         }
     </style>
 </head>
 
 <body class="bg-light">
-
-    <nav class="navbar navbar-dark bg-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="index.html">HyperPneus</a>
-        </div>
-    </nav>
-
     <div class="container my-5">
-        <a href="minha-conta.html" class="text-decoration-none mb-3 d-inline-block text-muted">
-            <i class="fas fa-arrow-left me-1"></i> Voltar para Minha Conta
-        </a>
-        <h2 class="fw-bold mb-3">Troca ou Devolução</h2>
-
-        <div class="card shadow-sm">
-            <div class="card-header bg-white py-3 border-bottom">
-                <h5 class="mb-0 fw-bold" id="tituloPedido">Carregando pedido...</h5>
-            </div>
-            <div class="card-body p-4">
-                <p class="text-muted small mb-4">Selecione os itens que deseja trocar ou devolver:</p>
-                <div id="containerItens"></div>
-                <hr class="my-4">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Motivo da Solicitação</label>
-                        <select id="motivoTroca" class="form-select">
-                            <option value="" disabled selected>Selecione um motivo...</option>
-                            <option>Comprei a medida errada</option>
-                            <option>Produto com defeito</option>
-                            <option>Arrependimento / Desistência</option>
-                            <option>Outros</option>
-                        </select>
-                    </div>
+        <a href="minha-conta.html" class="text-muted"><i class="fas fa-arrow-left"></i> Voltar</a>
+        <h2 class="fw-bold my-3">Troca ou Devolução</h2>
+        <div class="card shadow-sm p-4">
+            <h5 class="fw-bold" id="tituloPedido">Carregando...</h5>
+            <div id="containerItens" class="my-4"></div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="fw-bold">Motivo</label>
+                    <select id="motivoTroca" class="form-select">
+                        <option>Produto com defeito</option>
+                        <option>Comprei medida errada</option>
+                        <option>Arrependimento</option>
+                    </select>
                 </div>
-                <div class="d-flex justify-content-end gap-3">
-                    <a href="minha-conta.html" class="btn btn-light px-4">Cancelar</a>
-                    <button class="btn btn-confirmar px-5" onclick="finalizarTroca()">SOLICITAR AGORA</button>
+                <div class="col-md-6 mb-3">
+                    <label class="fw-bold">Desejo</label>
+                    <select id="acaoDesejada" class="form-select">
+                        <option value="Vale-Troca">Vale-Troca (Crédito)</option>
+                        <option value="Estorno">Estorno no cartão</option>
+                    </select>
                 </div>
             </div>
+            <button class="btn btn-confirmar" onclick="finalizarTroca()">SOLICITAR AGORA</button>
         </div>
     </div>
 
     <script>
+        let pedidoId = null;
         async function carregarPedidoReal() {
             const params = new URLSearchParams(window.location.search);
-            const pedidoId = params.get('pedido');
-            if (!pedidoId) return window.location.href = 'minha-conta.html';
-
+            pedidoId = params.get('pedido');
             const res = await fetch(`/api/pedidos/${pedidoId}`);
             const dados = await res.json();
             document.getElementById('tituloPedido').textContent = `Pedido #${dados.id}`;
-
-            const container = document.getElementById('containerItens');
-            container.innerHTML = dados.itens.map((item, index) => `
-                <div class="d-flex align-items-center mb-4 border-bottom pb-4 item-troca" data-preco="${item.preco_unitario}">
-                    <div class="form-check me-3">
-                        <input class="form-check-input check-item" type="checkbox" id="check_${index}">
-                    </div>
-                    <img src="${item.imagem_url || 'https://via.placeholder.com/100'}" class="product-img me-3">
+            document.getElementById('containerItens').innerHTML = dados.itens.map((item, index) => `
+                <div class="d-flex align-items-center mb-3 border-bottom pb-3 item-troca" data-preco="${item.preco_unitario}">
+                    <input class="form-check-input check-item me-3" type="checkbox">
+                    <img src="${item.imagem_url || ''}" class="product-img me-3">
                     <div class="flex-grow-1">
-                        <label class="fw-bold d-block">${item.marca} ${item.modelo}</label>
-                        <small class="text-muted">Valor Unit: R$ ${item.preco_unitario}</small>
+                        <label class="fw-bold">${item.marca} ${item.modelo}</label><br>
+                        <small>R$ ${item.preco_unitario}</small>
                     </div>
-                    <div style="width: 130px;">
-                        <select class="form-select form-select-sm qtd-devolver">
-                            ${Array.from({ length: item.quantidade }, (_, i) => `<option value="${i + 1}">${i + 1} unidade(s)</option>`).join('')}
-                        </select>
-                    </div>
+                    <select class="form-select w-auto qtd-devolver">
+                        ${Array.from({ length: item.quantidade }, (_, i) => `<option value="${i + 1}">${i + 1} und</option>`).join('')}
+                    </select>
                 </div>
             `).join('');
         }
 
         async function finalizarTroca() {
             const itens = document.querySelectorAll('.item-troca');
-            let valorTotalTroca = 0;
-
+            const acao = document.getElementById('acaoDesejada').value;
+            let valorTotal = 0;
             itens.forEach(item => {
-                const checkbox = item.querySelector('.check-item');
-                if (checkbox.checked) {
-                    const qtd = parseInt(item.querySelector('.qtd-devolver').value);
-                    const precoUnit = parseFloat(item.getAttribute('data-preco'));
-                    valorTotalTroca += (qtd * precoUnit);
+                if (item.querySelector('.check-item').checked) {
+                    valorTotal += (parseInt(item.querySelector('.qtd-devolver').value) * parseFloat(item.getAttribute('data-preco')));
                 }
             });
 
-            if (valorTotalTroca <= 0) return alert("Selecione itens válidos.");
+            if (valorTotal <= 0) return alert("Selecione itens.");
 
-            try {
-                const res = await fetch('/api/pedidos/gerar-cupom-troca', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ valor: valorTotalTroca })
-                });
+            const res = await fetch('/api/pedidos/gerar-cupom-troca', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pedidoId, valor: valorTotal, acao })
+            });
 
-                const data = await res.json();
-                if (res.ok) {
-                    alert("Sucesso! Seu cupom de R$ " + valorTotalTroca.toFixed(2) + " é: " + data.codigo);
-                    window.location.href = "minha-conta.html";
-                } else {
-                    alert("Erro: " + data.erro);
-                }
-            } catch (err) {
-                alert("Erro de conexão.");
+            const data = await res.json();
+            if (res.ok) {
+                alert(acao === 'Estorno' ? "Estorno solicitado!" : "Cupom gerado: " + data.codigo);
+                window.location.href = "minha-conta.html";
+            } else {
+                alert("Erro: " + data.erro);
             }
         }
-
         window.onload = carregarPedidoReal;
     </script>
 </body>

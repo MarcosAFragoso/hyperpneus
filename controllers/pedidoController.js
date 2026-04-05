@@ -8,7 +8,7 @@ module.exports = {
       const clienteId = req.session.cliente?.id;
       if (!clienteId) return res.status(401).json({ erro: 'Faça login para finalizar a compra.' });
 
-      const { endereco_id, cartoes, cupom_codigo, cupom_troca_codigo, frete, tipo_frete } = req.body;
+      const { endereco_id, cartoes, cupom_codigo, cupom_troca_codigo, frete } = req.body;
       if (!endereco_id) return res.status(400).json({ erro: 'Selecione um endereço de entrega.' });
       if (!cartoes?.length) return res.status(400).json({ erro: 'Informe ao menos um cartão.' });
 
@@ -77,15 +77,26 @@ module.exports = {
       const clienteId = req.session.cliente?.id;
       if (!clienteId) return res.status(401).json({ erro: 'Não autenticado.' });
 
-      const { valor } = req.body;
-      if (!valor || valor <= 0) return res.status(400).json({ erro: 'Valor inválido.' });
+      const { pedidoId, valor, acao } = req.body;
 
+      // Verifica se já existe uma troca para este pedido
+      const { rows: jaExiste } = await pool.query(
+        'SELECT id FROM cupons WHERE pedido_origem_id = $1', [pedidoId]
+      );
+      if (jaExiste.length > 0) return res.status(400).json({ erro: 'Troca já solicitada para este pedido.' });
+
+      // Se for estorno, apenas valida e finaliza
+      if (acao === 'Estorno') {
+        return res.status(201).json({ mensagem: 'Solicitação de estorno enviada para análise.' });
+      }
+
+      // Se for Vale-Troca, gera o cupom
       const codigo = 'TROCA-' + Math.random().toString(36).substr(2, 6).toUpperCase();
 
       await pool.query(
-        `INSERT INTO cupons (codigo, cliente_id, valor, tipo, usado, validade)
-         VALUES ($1, $2, $3, 'troca', FALSE, NULL)`,
-        [codigo, clienteId, valor]
+        `INSERT INTO cupons (codigo, cliente_id, valor, tipo, usado, validade, pedido_origem_id)
+         VALUES ($1, $2, $3, 'troca', FALSE, NULL, $4)`,
+        [codigo, clienteId, valor, pedidoId]
       );
 
       res.status(201).json({ mensagem: 'Cupom gerado!', codigo: codigo });
