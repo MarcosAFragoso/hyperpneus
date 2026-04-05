@@ -65,10 +65,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/pneus', pneuRoutes);
 
 // Rotas vinculadas a Clientes (Endereços, Cartões, Veículos)
-app.use('/api/clientes', clienteRoutes);
 app.use('/api/clientes/:clienteId/veiculos', veiculoRoutes);
 app.use('/api/clientes/:clienteId/cartoes', cartaoRoutes);
 app.use('/api/clientes/:clienteId/enderecos', enderecoRoutes);
+app.use('/api/clientes', clienteRoutes);
 
 // Rotas de Pedidos e Carrinho (Essas usam o ID da sessão automaticamente)
 app.use('/api/carrinho', carrinhoRoutes);
