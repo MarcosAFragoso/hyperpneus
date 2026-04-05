@@ -333,32 +333,38 @@
 
         // ── MODO SIMULAÇÃO (vindo do checkout) ────────────────────────
         async function iniciarSimulacao(pedidoId) {
-            console.log("Iniciando...");
-            await carregarPedido(pedidoId);
-            console.log("Pedido carregado");
+            try {
+                console.log("1. Iniciando carregamento");
+                await carregarPedido(pedidoId);
 
-            ativarStep(0, 0);
-            console.log("Step 0 ok");
+                console.log("2. Iniciando passos");
+                ativarStep(0, 0);
+                await esperar(1000);
 
-            await esperar(2000); // 2 segundos
-            ativarStep(1, 20);
-            console.log("Step 1 ok");
+                console.log("3. Step 1");
+                ativarStep(1, 20);
+                await esperar(1000);
 
-            await esperar(2000);
-            ativarStep(2, 40);
-            console.log("Step 2 ok");
+                console.log("4. Step 2");
+                ativarStep(2, 40);
+                await esperar(1000);
 
-            await esperar(2000);
-            ativarStep(3, 60);
-            console.log("Step 3 ok");
+                console.log("5. Step 3 (Onde costuma travar)");
+                ativarStep(3, 60);
+                await esperar(1000);
 
-            await esperar(2000);
-            ativarStep(4, 80);
-            console.log("Step 4 ok");
+                console.log("6. Step 4");
+                ativarStep(4, 80);
+                await esperar(1000);
 
-            await esperar(2000);
-            ativarStep(5, 100, false);
-            console.log("Step 5 ok - FIM");
+                console.log("7. Step 5");
+                ativarStep(5, 100, false);
+                console.log("FIM DA SIMULAÇÃO");
+
+            } catch (erro) {
+                console.error("ERRO DETECTADO:", erro);
+                alert("Erro no script: " + erro.message);
+            }
         }
         // ── MODO VISUALIZAÇÃO (vindo de Meus Pedidos) ─────────────────
         async function modoVisualizacao(pedidoId) {
