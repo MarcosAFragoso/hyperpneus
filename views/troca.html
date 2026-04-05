@@ -109,7 +109,12 @@
 
             const data = await res.json();
             if (res.ok) {
-                alert(acao === 'Estorno' ? "Estorno solicitado!" : "Cupom gerado: " + data.codigo);
+                // Aqui estamos pegando o data.codigo que vem do controller
+                const msg = data.codigo === 'ESTORNO'
+                    ? "Solicitação de estorno enviada com sucesso!"
+                    : "Sucesso! Seu cupom de R$ " + valorTotal.toFixed(2) + " é: " + data.codigo;
+
+                alert(msg);
                 window.location.href = "minha-conta.html";
             } else {
                 alert("Erro: " + data.erro);

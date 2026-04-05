@@ -81,7 +81,7 @@ module.exports = {
 
       const { pedidoId, itensParaTroca, acao, valorTotal } = req.body;
 
-      // 1. Verifica se itens já foram trocados
+      // 1. Verifica duplicidade
       for (let item of itensParaTroca) {
         const { rows } = await client.query(
           'SELECT id FROM trocas WHERE pedido_id = $1 AND pneu_id = $2',
@@ -90,20 +90,21 @@ module.exports = {
         if (rows.length > 0) throw new Error(`O item ${item.pneu_id} já foi trocado.`);
       }
 
-      // 2. Se for Estorno, apenas registra as trocas sem cupom
-      // Se for Vale-Troca, gera o cupom
+      // 2. Prepara Cupom se for Vale-Troca
       let cupomId = null;
+      let codigoCupom = 'ESTORNO'; // Padrão se for estorno
+
       if (acao === 'Vale-Troca') {
-        const codigo = 'TROCA-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        codigoCupom = 'TROCA-' + Math.random().toString(36).substr(2, 6).toUpperCase();
         const { rows: [cupom] } = await client.query(
           `INSERT INTO cupons (codigo, cliente_id, valor, tipo, usado, validade)
            VALUES ($1, $2, $3, 'troca', FALSE, NULL) RETURNING id`,
-          [codigo, clienteId, valorTotal]
+          [codigoCupom, clienteId, valorTotal]
         );
         cupomId = cupom.id;
       }
 
-      // 3. Registra cada item na tabela 'trocas'
+      // 3. Registra cada item na tabela 'trocas' (AGORA ISSO ACONTECE SEMPRE)
       for (let item of itensParaTroca) {
         await client.query(
           `INSERT INTO trocas (pedido_id, pneu_id, quantidade_trocada, cupom_id) 
@@ -113,7 +114,13 @@ module.exports = {
       }
 
       await client.query('COMMIT');
-      res.status(201).json({ mensagem: 'Troca processada!', acao });
+
+      // 4. Resposta única no final
+      res.status(201).json({
+        mensagem: 'Troca processada!',
+        codigo: codigoCupom
+      });
+
     } catch (err) {
       await client.query('ROLLBACK');
       res.status(500).json({ erro: err.message });
