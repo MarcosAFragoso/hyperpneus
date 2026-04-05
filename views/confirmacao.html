@@ -355,22 +355,24 @@
             mostrarCardsEAcoes();
 
             // Step 2 — separação (5s)
-            await esperar(5000);
+            await esperar(1000);
             adicionarLog('Pedido encaminhado para o estoque — em separação.', 'info');
             ativarStep(2, 40);
+            console.log("Passou pelo Step 2");
 
             // Step 3 — transportadora (5s)
-            await esperar(5000);
+            await esperar(1000);
             adicionarLog('📦 Pedido embalado e coletado pela transportadora.', 'info');
             ativarStep(3, 60);
+            console.log("Passou pelo await do Step 3");
 
             // Step 4 — saiu para entrega (6s)
-            await esperar(6000);
+            await esperar(1000);
             adicionarLog('🚚 Saiu para entrega! O entregador está a caminho.', 'truck');
             ativarStep(4, 80);
 
             // Step 5 — entregue (6s) — fim da simulação
-            await esperar(6000);
+            await esperar(1000);
 
             try {
                 const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
