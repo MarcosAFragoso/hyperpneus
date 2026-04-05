@@ -136,7 +136,6 @@
 
     <div class="container my-5">
 
-        <!-- HEADER -->
         <div class="text-center mb-5">
             <div id="iconePagamento" class="mb-3">
                 <i class="fas fa-spinner fa-spin fa-4x text-primary"></i>
@@ -145,7 +144,6 @@
             <p id="subtituloPagamento" class="text-muted">Aguarde, estamos confirmando sua compra.</p>
         </div>
 
-        <!-- RASTREAMENTO -->
         <div class="card shadow-sm mb-4">
             <div class="card-body">
                 <h5 class="fw-bold mb-4">
@@ -187,7 +185,6 @@
             </div>
         </div>
 
-        <!-- CARDS RESUMO -->
         <div class="row g-4" id="cardsResumo" style="display:none!important">
             <div class="col-md-4">
                 <div class="card shadow-sm h-100 card-status">
@@ -215,7 +212,6 @@
             </div>
         </div>
 
-        <!-- AÇÕES -->
         <div class="text-center mt-4 d-flex gap-3 justify-content-center" id="acoes" style="display:none!important">
             <button onclick="verNF()" class="btn btn-outline-secondary">
                 <i class="fas fa-file-invoice me-2"></i>Ver Nota Fiscal
@@ -229,7 +225,6 @@
         </div>
     </div>
 
-    <!-- Modal Nota Fiscal -->
     <div class="modal fade" id="nfModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -251,6 +246,58 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let pedidoData = null;
+
+        // ── MAPA GLOBAL DE ETAPAS DO PEDIDO ────────────────────────────
+        const ETAPAS_PEDIDO = [
+            {
+                status: 'AGUARDANDO_PAGAMENTO',
+                titulo: 'Processando pagamento...',
+                subtitulo: 'Aguarde, estamos confirmando sua compra.',
+                icone: 'fa-spinner fa-spin text-primary',
+                log: 'Pedido recebido e registrado no sistema.',
+                logTipo: 'success'
+            },
+            {
+                status: 'PAGAMENTO_APROVADO',
+                titulo: 'Pagamento Confirmado',
+                subtitulo: 'Seu pagamento foi aprovado.',
+                icone: 'fa-check-circle text-success',
+                log: '✓ Pagamento aprovado pela operadora.',
+                logTipo: 'success'
+            },
+            {
+                status: 'EM_PROCESSAMENTO',
+                titulo: 'Em Separação',
+                subtitulo: 'Seu pedido está sendo preparado.',
+                icone: 'fa-box text-primary',
+                log: '📦 Pedido em separação.',
+                logTipo: 'info'
+            },
+            {
+                status: 'ENVIADO',
+                titulo: 'Na Transportadora',
+                subtitulo: 'Seu pedido está em trânsito.',
+                icone: 'fa-truck text-info',
+                log: '🚚 Pedido na transportadora.',
+                logTipo: 'info'
+            },
+            {
+                status: 'SAIU_PARA_ENTREGA',
+                titulo: 'Saiu para Entrega',
+                subtitulo: 'Seu pedido está a caminho.',
+                icone: 'fa-shipping-fast text-primary',
+                log: '🚚 Saiu para entrega.',
+                logTipo: 'truck'
+            },
+            {
+                status: 'ENTREGUE',
+                titulo: 'Pedido Entregue',
+                subtitulo: 'Seu pedido foi entregue com sucesso!',
+                icone: 'fa-home text-success',
+                log: '🏠 Pedido entregue com sucesso!',
+                logTipo: 'home'
+            }
+        ];
 
         function fmt(v) {
             return parseFloat(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -275,25 +322,6 @@
             log.appendChild(div);
             log.scrollTop = log.scrollHeight;
         }
-
-        // ── Ativar step na trilha ──────────────────────────────────────
-        /* function ativarStep(idx, progressPct, ehAtual = true) {
-             for (let i = 0; i <= idx; i++) {
-                 const step = document.getElementById(`step${i}`);
-                 const icon = step.querySelector('.step-icon');
-                 const label = step.querySelector('.step-label');
-                 icon.classList.remove('atual');
-                 icon.classList.add('ativo');
-                 label.classList.remove('atual');
-                 label.classList.add('ativo');
-             }
-             if (ehAtual && idx < 5) {
-                 const atual = document.getElementById(`step${idx}`);
-                 atual.querySelector('.step-icon').classList.replace('ativo', 'atual');
-                 atual.querySelector('.step-label').classList.replace('ativo', 'atual');
-             }
-             document.getElementById('progressLine').style.width = progressPct + '%';
-         }*/
 
         // ── Carregar dados do pedido ───────────────────────────────────
         async function carregarPedido(pedidoId) {
@@ -332,59 +360,33 @@
         }
 
         // ── MODO SIMULAÇÃO (vindo do checkout) ────────────────────────
-        // ── MODO SIMULAÇÃO (vindo do checkout) ────────────────────────
         async function iniciarSimulacao(pedidoId) {
-            // Tenta carregar, mas se falhar, não trava a simulação
-            try {
-                await carregarPedido(pedidoId);
-            } catch (e) {
-                console.error("Erro ao carregar dados, mas continuando simulação...", e);
+            try { await carregarPedido(pedidoId); } catch (e) { console.error(e); }
+
+            const porcentagens = [0, 20, 40, 60, 80, 100];
+
+            for (let i = 0; i < ETAPAS_PEDIDO.length; i++) {
+                const etapa = ETAPAS_PEDIDO[i];
+
+                // Atualiza Título, Subtítulo e Ícone no topo
+                document.getElementById('iconePagamento').innerHTML = `<i class="fas ${etapa.icone} fa-4x"></i>`;
+                document.getElementById('tituloPagamento').textContent = etapa.titulo;
+                document.getElementById('subtituloPagamento').textContent = etapa.subtitulo;
+
+                // Adiciona o Log e avança a barra
+                adicionarLog(etapa.log, etapa.logTipo);
+                ativarStep(i, porcentagens[i], i < 5);
+
+                // Mostra os cards de resumo logo após aprovar o pagamento
+                if (i === 1) mostrarCardsEAcoes();
+
+                // Espera 2 segundos antes de ir para o próximo passo (exceto no último)
+                if (i < ETAPAS_PEDIDO.length - 1) {
+                    await esperar(2000);
+                }
             }
 
-            // Step 0
-            adicionarLog('Pedido recebido.', 'success');
-            ativarStep(0, 0);
-
-            // Step 1
-            await esperar(2000);
-            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-check-circle fa-4x text-success"></i>';
-            document.getElementById('tituloPagamento').textContent = 'Pagamento Aprovado!';
-            document.getElementById('subtituloPagamento').textContent = 'Seu pagamento foi aprovado com sucesso.';
-            ativarStep(1, 20);
-            mostrarCardsEAcoes();
-
-            // Step 2
-            await esperar(2000);
-            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-box fa-4x text-primary"></i>';
-            document.getElementById('tituloPagamento').textContent = 'Em Separação';
-            document.getElementById('subtituloPagamento').textContent = 'Estamos separando e embalando os seus produtos.';
-            adicionarLog('Em separação.', 'info');
-            ativarStep(2, 40);
-
-            // Step 3
-            await esperar(2000);
-            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-truck fa-4x text-info"></i>';
-            document.getElementById('tituloPagamento').textContent = 'Na Transportadora';
-            document.getElementById('subtituloPagamento').textContent = 'Seu pedido já foi despachado.';
-            adicionarLog('Na transportadora.', 'info');
-            ativarStep(3, 60);
-
-            // Step 4
-            await esperar(2000);
-            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-shipping-fast fa-4x text-primary"></i>';
-            document.getElementById('tituloPagamento').textContent = 'Saiu para Entrega';
-            document.getElementById('subtituloPagamento').textContent = 'O motorista está a caminho do seu endereço!';
-            adicionarLog('Saiu para entrega.', 'truck');
-            ativarStep(4, 80);
-
-            // Step 5
-            await esperar(2000);
-            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-home fa-4x text-success"></i>';
-            document.getElementById('tituloPagamento').textContent = 'Pedido Entregue!';
-            document.getElementById('subtituloPagamento').textContent = 'Aproveite os seus novos pneus!';
-            adicionarLog('Pedido entregue!', 'home');
-
-            // ATUALIZAÇÃO DO BANCO
+            // ATUALIZAÇÃO DO BANCO (No final de tudo)
             try {
                 await fetch(`/api/pedidos/${pedidoId}/status`, {
                     method: 'PATCH',
@@ -392,96 +394,41 @@
                     body: JSON.stringify({ status: 'ENTREGUE' })
                 });
             } catch (err) { console.log("Erro ao salvar no banco, ignorando..."); }
-
-            ativarStep(5, 100, false);
         }
+
         // ── MODO VISUALIZAÇÃO (vindo de Meus Pedidos) ─────────────────
         async function modoVisualizacao(pedidoId) {
             await carregarPedido(pedidoId);
 
-            console.log('STATUS ATUAL:', pedidoData.status); // DEBUG
-
-            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-check-circle fa-4x text-success"></i>';
-            const statusTextos = {
-                'AGUARDANDO_PAGAMENTO': {
-                    titulo: 'Pedido Recebido',
-                    subtitulo: 'Aguardando confirmação do pagamento.',
-                    icone: '<i class="fas fa-clock fa-4x text-warning"></i>'
-                },
-                'PAGAMENTO_APROVADO': {
-                    titulo: 'Pagamento Confirmado',
-                    subtitulo: 'Seu pagamento foi aprovado.',
-                    icone: '<i class="fas fa-check-circle fa-4x text-success"></i>'
-                },
-                'EM_PROCESSAMENTO': {
-                    titulo: 'Em Separação',
-                    subtitulo: 'Seu pedido está sendo preparado.',
-                    icone: '<i class="fas fa-box fa-4x text-primary"></i>'
-                },
-                'ENVIADO': {
-                    titulo: 'Na Transportadora',
-                    subtitulo: 'Seu pedido está em trânsito.',
-                    icone: '<i class="fas fa-truck fa-4x text-info"></i>'
-                },
-                'SAIU_PARA_ENTREGA': {
-                    titulo: 'Saiu para Entrega',
-                    subtitulo: 'Seu pedido está a caminho.',
-                    icone: '<i class="fas fa-shipping-fast fa-4x text-primary"></i>'
-                },
-                'ENTREGUE': {
-                    titulo: 'Pedido Entregue',
-                    subtitulo: 'Seu pedido foi entregue com sucesso!',
-                    icone: '<i class="fas fa-home fa-4x text-success"></i>'
-                }
-            };
-
             const statusNormalizado = pedidoData.status?.trim().toUpperCase();
-            const dadosStatus = statusTextos[statusNormalizado] || statusTextos['AGUARDANDO_PAGAMENTO'];
 
-            document.getElementById('iconePagamento').innerHTML = dadosStatus.icone;
-            document.getElementById('tituloPagamento').textContent = dadosStatus.titulo;
-            document.getElementById('subtituloPagamento').textContent = dadosStatus.subtitulo;
+            // Descobre o índice do status atual no nosso array
+            const idxAtual = ETAPAS_PEDIDO.findIndex(e => e.status === statusNormalizado);
+            const idxValido = idxAtual === -1 ? 0 : idxAtual;
 
-            const logsPossiveis = [
-                { msg: 'Pedido recebido e registrado no sistema.', tipo: 'success' },
-                { msg: '✓ Pagamento aprovado pela operadora.', tipo: 'success' },
-                { msg: '📦 Pedido em separação.', tipo: 'info' },
-                { msg: '🚚 Pedido na transportadora.', tipo: 'info' },
-                { msg: '🚚 Saiu para entrega.', tipo: 'truck' },
-                { msg: '🏠 Pedido entregue com sucesso!', tipo: 'home' }
-            ];
-
-            const statusIndex = {
-                'AGUARDANDO_PAGAMENTO': 0,
-                'PAGAMENTO_APROVADO': 1,
-                'EM_PROCESSAMENTO': 2,
-                'ENVIADO': 3,
-                'SAIU_PARA_ENTREGA': 4,
-                'ENTREGUE': 5
-            };
-
-            const idxAtual = statusIndex[statusNormalizado] ?? 0;
-
-            console.log('IDX CALCULADO:', idxAtual); // DEBUG
-
+            const etapaAtual = ETAPAS_PEDIDO[idxValido];
             const porcentagens = [0, 20, 40, 60, 80, 100];
 
-            document.getElementById('logEventos').innerHTML = '';
+            // Atualiza topo
+            document.getElementById('iconePagamento').innerHTML = `<i class="fas ${etapaAtual.icone} fa-4x"></i>`;
+            document.getElementById('tituloPagamento').textContent = etapaAtual.titulo;
+            document.getElementById('subtituloPagamento').textContent = etapaAtual.subtitulo;
 
-            for (let i = 0; i <= idxAtual; i++) {
+            // Preenche o histórico de logs até o ponto atual
+            document.getElementById('logEventos').innerHTML = '';
+            for (let i = 0; i <= idxValido; i++) {
                 adicionarLog(
-                    logsPossiveis[i].msg,
-                    logsPossiveis[i].tipo,
+                    ETAPAS_PEDIDO[i].log,
+                    ETAPAS_PEDIDO[i].logTipo,
                     new Date(pedidoData.criado_em).toLocaleTimeString('pt-BR')
                 );
             }
 
-            // 🔥 CHAMA A FUNÇÃO GLOBAL CORRETA (SEM DUPLICAR)
-            ativarStep(idxAtual, porcentagens[idxAtual]);
-
+            ativarStep(idxValido, porcentagens[idxValido]);
             mostrarCardsEAcoes();
         }
 
+        // ── Ativar step na trilha ──────────────────────────────────────
         function ativarStep(idx, progressPct, ehAtual = true) {
             for (let i = 0; i <= 5; i++) {
                 const step = document.getElementById(`step${i}`);
@@ -516,7 +463,6 @@
 
             document.getElementById('progressLine').style.width = progressPct + '%';
         }
-
 
         // ── Nota Fiscal ────────────────────────────────────────────────
         function verNF() {
