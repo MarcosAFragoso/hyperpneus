@@ -371,37 +371,49 @@
 
             // Step 5 — entregue (6s) — fim da simulação
             await esperar(6000);
+
+            // 1. ATUALIZAR O BANCO DE DADOS (usando a rota que você tem)
+            try {
+                await fetch(`/api/pedidos/${pedidoId}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'ENTREGUE' })
+                });
+                console.log("Status atualizado no banco!");
+            } catch (err) {
+                console.error("Erro ao atualizar:", err);
+            }
+
+            // 2. ATUALIZAR O VISUAL
             document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-box-open fa-4x text-success"></i>';
             document.getElementById('tituloPagamento').textContent = 'Pedido Entregue!';
             document.getElementById('subtituloPagamento').textContent = 'Esperamos que você aproveite seus novos pneus!';
             adicionarLog('🏠 Pedido entregue com sucesso!', 'home');
             adicionarLog('⭐ Que tal avaliar sua experiência de compra?', 'warning');
-            ativarStep(5, 100, false); // false = não pulsa, todos verdes
+            ativarStep(5, 100, false);
         }
 
         // ── MODO VISUALIZAÇÃO (vindo de Meus Pedidos) ─────────────────
         async function modoVisualizacao(pedidoId) {
-            await carregarPedido(pedidoId);
+            await carregarPedido(pedidoId); // Isso preenche a variável pedidoData
 
-            // Mostra tudo já finalizado instantaneamente
             document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-check-circle fa-4x text-success"></i>';
             document.getElementById('tituloPagamento').textContent = 'Pedido Confirmado';
             document.getElementById('subtituloPagamento').textContent = 'Resumo e acompanhamento do seu pedido.';
 
-            // Logs históricos (sem animação de tempo)
-            const dataBase = pedidoData.criado_em
-                ? new Date(pedidoData.criado_em).toLocaleTimeString('pt-BR')
-                : '--:--:--';
+            // Mapeamento de status para o índice do Step
+            const statusMap = {
+                'AGUARDANDO_PAGAMENTO': { idx: 1, pct: 20 },
+                'EM_PROCESSAMENTO': { idx: 2, pct: 40 },
+                'ENVIADO': { idx: 3, pct: 60 },
+                'SAIU_PARA_ENTREGA': { idx: 4, pct: 80 },
+                'ENTREGUE': { idx: 5, pct: 100 }
+            };
 
-            adicionarLog('Pedido recebido e registrado no sistema.', 'success', dataBase);
-            adicionarLog('✓ Pagamento aprovado pela operadora.', 'success', dataBase);
-            adicionarLog('📧 Nota fiscal enviada para o e-mail do cliente.', 'info', dataBase);
-            adicionarLog('📦 Pedido embalado e coletado pela transportadora.', 'info', dataBase);
-            adicionarLog('🚚 Saiu para entrega.', 'truck', dataBase);
-            adicionarLog('⏳ Aguardando confirmação de entrega.', 'warning', dataBase);
+            const s = statusMap[pedidoData.status] || { idx: 0, pct: 0 };
 
-            // Trilha: Na Transportadora é o último status confirmado
-            ativarStep(3, 60);
+            // Atualiza a trilha com base no status real
+            ativarStep(s.idx, s.pct, false);
 
             mostrarCardsEAcoes();
         }
