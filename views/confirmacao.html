@@ -372,19 +372,21 @@
             // Step 5 — entregue (6s) — fim da simulação
             await esperar(6000);
 
-            // 1. ATUALIZAR O BANCO DE DADOS (usando a rota que você tem)
             try {
-                await fetch(`/api/pedidos/${pedidoId}/status`, {
+                const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: 'ENTREGUE' })
                 });
-                console.log("Status atualizado no banco!");
+
+                if (!response.ok) throw new Error('Falha ao atualizar status');
+                console.log("Status atualizado!");
             } catch (err) {
-                console.error("Erro ao atualizar:", err);
+                // Se der erro, apenas loga no console, mas NÃO PARA A ANIMAÇÃO
+                console.error("Erro na atualização automática:", err);
             }
 
-            // 2. ATUALIZAR O VISUAL
+            // VISUAL (Isso SEMPRE vai rodar agora)
             document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-box-open fa-4x text-success"></i>';
             document.getElementById('tituloPagamento').textContent = 'Pedido Entregue!';
             document.getElementById('subtituloPagamento').textContent = 'Esperamos que você aproveite seus novos pneus!';
