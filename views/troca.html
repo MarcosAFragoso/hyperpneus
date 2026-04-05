@@ -27,11 +27,13 @@
 
 <body class="bg-light">
     <div class="container my-5">
-        <a href="minha-conta.html" class="text-muted"><i class="fas fa-arrow-left"></i> Voltar</a>
+        <a href="minha-conta.html" class="text-muted text-decoration-none"><i class="fas fa-arrow-left"></i> Voltar</a>
         <h2 class="fw-bold my-3">Troca ou Devolução</h2>
+
         <div class="card shadow-sm p-4">
             <h5 class="fw-bold" id="tituloPedido">Carregando...</h5>
             <div id="containerItens" class="my-4"></div>
+
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="fw-bold">Motivo</label>
@@ -49,35 +51,36 @@
                     </select>
                 </div>
             </div>
-            <button class="btn btn-confirmar" onclick="finalizarTroca()">SOLICITAR AGORA</button>
+            <button class="btn btn-confirmar w-100 py-2" onclick="finalizarTroca()">SOLICITAR AGORA</button>
+            <div id="resultadoTroca" class="mt-3"></div>
         </div>
     </div>
 
     <script>
         let pedidoId = null;
+
         async function carregarPedidoReal() {
             const params = new URLSearchParams(window.location.search);
             pedidoId = params.get('pedido');
+            if (!pedidoId) return window.location.href = 'minha-conta.html';
+
             const res = await fetch(`/api/pedidos/${pedidoId}`);
             const dados = await res.json();
 
             document.getElementById('tituloPedido').textContent = `Pedido #${dados.id}`;
-
             document.getElementById('containerItens').innerHTML = dados.itens.map((item, index) => `
-            <div class="d-flex align-items-center mb-3 border-bottom pb-3 item-troca" data-preco="${item.preco_unitario}">
-                <!-- AQUI ESTAVA FALTANDO O VALUE -->
-                <input class="form-check-input check-item me-3" type="checkbox" value="${item.pneu_id}">
-                
-                <img src="${item.imagem_url || ''}" class="product-img me-3">
-                <div class="flex-grow-1">
-                    <label class="fw-bold">${item.marca} ${item.modelo}</label><br>
-                    <small>R$ ${item.preco_unitario}</small>
+                <div class="d-flex align-items-center mb-3 border-bottom pb-3 item-troca" data-preco="${item.preco_unitario}">
+                    <input class="form-check-input check-item me-3" type="checkbox" value="${item.pneu_id}">
+                    <img src="${item.imagem_url || ''}" class="product-img me-3">
+                    <div class="flex-grow-1">
+                        <label class="fw-bold">${item.marca} ${item.modelo}</label><br>
+                        <small>R$ ${item.preco_unitario}</small>
+                    </div>
+                    <select class="form-select w-auto qtd-devolver">
+                        ${Array.from({ length: item.quantidade }, (_, i) => `<option value="${i + 1}">${i + 1} und</option>`).join('')}
+                    </select>
                 </div>
-                <select class="form-select w-auto qtd-devolver">
-                    ${Array.from({ length: item.quantidade }, (_, i) => `<option value="${i + 1}">${i + 1} und</option>`).join('')}
-                </select>
-            </div>
-        `).join('');
+            `).join('');
         }
 
         async function finalizarTroca() {
@@ -88,7 +91,6 @@
             linhas.forEach(linha => {
                 const checkbox = linha.querySelector('.check-item');
                 if (checkbox.checked) {
-                    // Agora o pneuId virá corretamente do value="${item.pneu_id}"
                     const pneuId = parseInt(checkbox.value);
                     const qtd = parseInt(linha.querySelector('.qtd-devolver').value);
                     const preco = parseFloat(linha.getAttribute('data-preco'));
@@ -98,26 +100,32 @@
                 }
             });
 
-            if (itensParaTroca.length === 0) return alert("Selecione itens!");
+            if (itensParaTroca.length === 0) return alert("Selecione pelo menos um item!");
 
             const acao = document.getElementById('acaoDesejada').value;
-            const res = await fetch('/api/pedidos/gerar-cupom-troca', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pedidoId, itensParaTroca, valorTotal, acao })
-            });
 
-            const data = await res.json();
-            if (res.ok) {
-                // Aqui estamos pegando o data.codigo que vem do controller
-                const msg = data.codigo === 'ESTORNO'
-                    ? "Solicitação de estorno enviada com sucesso!"
-                    : "Sucesso! Seu cupom de R$ " + valorTotal.toFixed(2) + " é: " + data.codigo;
+            try {
+                const res = await fetch('/api/pedidos/gerar-cupom-troca', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pedidoId, itensParaTroca, valorTotal, acao })
+                });
 
-                alert(msg);
-                window.location.href = "minha-conta.html";
-            } else {
-                alert("Erro: " + data.erro);
+                const data = await res.json();
+                if (res.ok) {
+                    document.querySelector('.btn-confirmar').disabled = true;
+                    const div = document.getElementById('resultadoTroca');
+                    div.innerHTML = `
+                        <div class="alert alert-success">
+                            <strong>${acao === 'Estorno' ? 'Solicitação enviada!' : 'Sucesso!'}</strong><br>
+                            ${acao === 'Vale-Troca' ? `Cupom: <code>${data.codigo}</code>` : 'O estorno será analisado pela equipe.'}
+                        </div>
+                    `;
+                } else {
+                    alert("Erro: " + data.erro);
+                }
+            } catch (err) {
+                alert("Erro de conexão com o servidor.");
             }
         }
         window.onload = carregarPedidoReal;

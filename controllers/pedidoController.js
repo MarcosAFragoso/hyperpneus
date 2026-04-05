@@ -87,7 +87,7 @@ module.exports = {
           'SELECT id FROM trocas WHERE pedido_id = $1 AND pneu_id = $2',
           [pedidoId, item.pneu_id]
         );
-        if (rows.length > 0) throw new Error(`O item ${item.pneu_id} já foi trocado.`);
+        if (rows.length > 0) throw new Error(`Este item (ID ${item.pneu_id}) já foi trocado neste pedido.`);
       }
 
       // 2. Prepara Cupom se for Vale-Troca
