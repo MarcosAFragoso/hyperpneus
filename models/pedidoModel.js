@@ -27,7 +27,7 @@ module.exports = {
       const subtotal = itens.reduce((s, i) => s + parseFloat(i.preco_unitario) * parseInt(i.quantidade), 0);
 
       // 4. Frete
-      const valorFrete = parseFloat(freteValor) || 15.00;
+      const valorFrete = (freteValor ?? 0);
 
       // 5. Aplica cupons (promocional e/ou troca)
       let cupomId = null;
@@ -172,11 +172,11 @@ module.exports = {
     return { ...pedido, itens, pagamentos };
   },
 
-/* Atualiza o status no banco */
-async atualizarStatus(id, status) {
-  const sql = 'UPDATE pedidos SET status = $1 WHERE id = $2';
-  return await pool.query(sql, [status, id]);
-},
+  /* Atualiza o status no banco */
+  async atualizarStatus(id, status) {
+    const sql = 'UPDATE pedidos SET status = $1 WHERE id = $2';
+    return await pool.query(sql, [status, id]);
+  },
 
   async migrarCarrinhoAnonimo(clienteId, itensLocais) {
     for (const item of itensLocais) {
