@@ -8,27 +8,37 @@ module.exports = {
       const clienteId = req.session.cliente?.id;
       if (!clienteId) return res.status(401).json({ erro: 'Faça login para finalizar a compra.' });
 
-      // 1. Pegue também o 'tipo_frete' do corpo da requisição
-      const { endereco_id, cartoes, cupom_codigo, cupom_troca_codigo, frete, tipo_frete } = req.body;
+      const {
+        endereco_id,
+        cartoes,
+        cupom_codigo,
+        cupom_troca_codigo,
+        frete,
+        tipo_frete
+      } = req.body;
 
       if (!endereco_id) return res.status(400).json({ erro: 'Selecione um endereço de entrega.' });
-      if (!cartoes?.length) return res.status(400).json({ erro: 'Informe ao menos um cartão.' });
 
-      // 2. Lógica robusta para o frete: 
-      // Se o tipo for 'RETIRADA', o valor é obrigatoriamente 0.
-      // Caso contrário, usa o valor enviado ou o padrão de 15.00.
+      // AJUSTE 1: Lógica do Frete
+      // Se for retirada, o valor é 0. Caso contrário, usa o valor enviado ou 0 como fallback (não 15.00)
       const valorFinalFrete = (tipo_frete === 'RETIRADA') ? 0.00 : (frete ?? 0.00);
+
+      // AJUSTE 2: Validação de Cartões Dinâmica
+      // Calculamos o total esperado para saber se o cartão é realmente obrigatório
+      // (Essa verificação também é feita no Model, mas aqui evitamos o erro 400 prematuro)
+      // Se não houver cartões E o total visual não for zero, o Model lançará o erro apropriado.
 
       const resultado = await Pedido.finalizar(clienteId, {
         enderecoId: endereco_id,
-        cartoes,
+        cartoes: cartoes || [], // Envia array vazio se não houver cartões
         cupomCodigo: cupom_codigo || null,
         cupomTrocaCodigo: cupom_troca_codigo || null,
-        freteValor: valorFinalFrete // Usa o valor tratado
+        freteValor: valorFinalFrete
       });
 
       res.status(201).json(resultado);
     } catch (err) {
+      // Aqui capturamos erros como "Valor mínimo por cartão" ou "Soma não cobre o total"
       res.status(400).json({ erro: err.message });
     }
   },
@@ -51,7 +61,6 @@ module.exports = {
 
       const pedido = await Pedido.buscar(clienteId, req.params.id);
 
-      // Busca trocas vinculadas ao pedido
       const { rows: trocas } = await pool.query(
         `SELECT t.pneu_id, t.quantidade_trocada, t.status, c.codigo
        FROM trocas t
@@ -99,7 +108,6 @@ module.exports = {
 
       const { pedidoId, itensParaTroca, acao, valorTotal } = req.body;
 
-      // 1. Verifica duplicidade
       for (let item of itensParaTroca) {
         const { rows } = await client.query(
           'SELECT id FROM trocas WHERE pedido_id = $1 AND pneu_id = $2',
@@ -108,9 +116,8 @@ module.exports = {
         if (rows.length > 0) throw new Error(`Este item (ID ${item.pneu_id}) já foi trocado neste pedido.`);
       }
 
-      // 2. Prepara Cupom se for Vale-Troca
       let cupomId = null;
-      let codigoCupom = 'ESTORNO'; // Padrão se for estorno
+      let codigoCupom = 'ESTORNO';
 
       if (acao === 'Vale-Troca') {
         codigoCupom = 'TROCA-' + Math.random().toString(36).substr(2, 6).toUpperCase();
@@ -122,7 +129,6 @@ module.exports = {
         cupomId = cupom.id;
       }
 
-      // 3. Registra cada item na tabela 'trocas' (AGORA ISSO ACONTECE SEMPRE)
       for (let item of itensParaTroca) {
         await client.query(
           `INSERT INTO trocas (pedido_id, pneu_id, quantidade_trocada, cupom_id) 
@@ -133,7 +139,6 @@ module.exports = {
 
       await client.query('COMMIT');
 
-      // 4. Resposta única no final
       res.status(201).json({
         mensagem: 'Troca processada!',
         codigo: codigoCupom
