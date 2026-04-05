@@ -388,44 +388,35 @@
         async function modoVisualizacao(pedidoId) {
             await carregarPedido(pedidoId);
 
-            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-check-circle fa-4x text-success"></i>';
-            document.getElementById('tituloPagamento').textContent = 'Pedido Confirmado';
-            document.getElementById('subtituloPagamento').textContent = 'Resumo e acompanhamento do seu pedido.';
-
-            // Limpa logs anteriores
-            document.getElementById('logEventos').innerHTML = '';
-
-            const dataCriacao = new Date(pedidoData.criado_em);
-            const hora = dataCriacao.toLocaleTimeString('pt-BR');
-
-            // Lista de eventos que sempre acontecem
-            const eventos = [
+            const logsPossiveis = [
                 { msg: 'Pedido recebido e registrado no sistema.', tipo: 'success' },
                 { msg: '✓ Pagamento aprovado pela operadora.', tipo: 'success' },
-                { msg: '📧 Nota fiscal enviada para o e-mail do cliente.', tipo: 'info' },
-                { msg: '📦 Pedido embalado e coletado pela transportadora.', tipo: 'info' },
+                { msg: '📦 Pedido em separação.', tipo: 'info' },
+                { msg: '🚚 Pedido na transportadora.', tipo: 'info' },
                 { msg: '🚚 Saiu para entrega.', tipo: 'truck' },
                 { msg: '🏠 Pedido entregue com sucesso!', tipo: 'home' }
             ];
 
-            // Mapeamento de status para índice
             const statusIndex = {
                 'AGUARDANDO_PAGAMENTO': 0,
-                'EM_PROCESSAMENTO': 1,
+                'PAGAMENTO_APROVADO': 1,
+                'EM_PROCESSAMENTO': 2,
                 'ENVIADO': 3,
                 'SAIU_PARA_ENTREGA': 4,
                 'ENTREGUE': 5
             };
 
-            const idxAtual = statusIndex[pedidoData.status] || 0;
-            const pct = [0, 20, 40, 60, 80, 100][idxAtual];
+            const idxAtual = statusIndex[pedidoData.status] ?? 0;
+            const porcentagens = [0, 20, 40, 60, 80, 100];
 
-            // Adiciona logs até o status atual
+            document.getElementById('logEventos').innerHTML = ''; // Limpa logs anteriores
+
+            // Desenha os logs cronologicamente até o status atual
             for (let i = 0; i <= idxAtual; i++) {
-                adicionarLog(eventos[i].msg, eventos[i].tipo, hora);
+                adicionarLog(logsPossiveis[i].msg, logsPossiveis[i].tipo, new Date(pedidoData.criado_em).toLocaleTimeString('pt-BR'));
             }
 
-            ativarStep(idxAtual, pct, false);
+            ativarStep(idxAtual, porcentagens[idxAtual], false);
             mostrarCardsEAcoes();
         }
         // ── Nota Fiscal ────────────────────────────────────────────────
