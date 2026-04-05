@@ -333,71 +333,33 @@
 
         // ── MODO SIMULAÇÃO (vindo do checkout) ────────────────────────
         async function iniciarSimulacao(pedidoId) {
+            console.log("Iniciando...");
             await carregarPedido(pedidoId);
+            console.log("Pedido carregado");
 
-            // Step 0 — imediato
-            adicionarLog('Pedido recebido e registrado no sistema.', 'success');
             ativarStep(0, 0);
+            console.log("Step 0 ok");
 
-            // Step 1 — pagamento (10s + 8s)
-            await esperar(10000);
-            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-circle-notch fa-spin fa-4x text-warning"></i>';
-            document.getElementById('tituloPagamento').textContent = 'Confirmando pagamento...';
-            adicionarLog('Comunicando com a operadora do cartão...', 'info');
-
-            await esperar(8000);
-            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-check-circle fa-4x text-success"></i>';
-            document.getElementById('tituloPagamento').textContent = 'Pagamento Aprovado!';
-            document.getElementById('subtituloPagamento').textContent = 'Sua compra foi confirmada com sucesso.';
-            adicionarLog('✓ Pagamento aprovado pela operadora!', 'success');
-            adicionarLog('📧 Nota fiscal enviada para seu e-mail.', 'info');
+            await esperar(2000); // 2 segundos
             ativarStep(1, 20);
-            mostrarCardsEAcoes();
-            console.log("Passou pelo Step 1");
+            console.log("Step 1 ok");
 
-            // Step 2 — separação (5s)
-            await esperar(1000);
-            adicionarLog('Pedido encaminhado para o estoque — em separação.', 'info');
+            await esperar(2000);
             ativarStep(2, 40);
-            console.log("Passou pelo Step 2");
+            console.log("Step 2 ok");
 
-            // Step 3 — transportadora (5s)
-            await esperar(1000);
-            adicionarLog('📦 Pedido embalado e coletado pela transportadora.', 'info');
+            await esperar(2000);
             ativarStep(3, 60);
-            console.log("Passou pelo await do Step 3");
+            console.log("Step 3 ok");
 
-            // Step 4 — saiu para entrega (6s)
-            await esperar(1000);
-            adicionarLog('🚚 Saiu para entrega! O entregador está a caminho.', 'truck');
+            await esperar(2000);
             ativarStep(4, 80);
+            console.log("Step 4 ok");
 
-            // Step 5 — entregue (6s) — fim da simulação
-            await esperar(1000);
-
-            try {
-                const response = await fetch(`/api/pedidos/${pedidoId}/status`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: 'ENTREGUE' })
-                });
-
-                if (!response.ok) throw new Error('Falha ao atualizar status');
-                console.log("Status atualizado!");
-            } catch (err) {
-                // Se der erro, apenas loga no console, mas NÃO PARA A ANIMAÇÃO
-                console.error("Erro na atualização automática:", err);
-            }
-
-            // VISUAL (Isso SEMPRE vai rodar agora)
-            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-box-open fa-4x text-success"></i>';
-            document.getElementById('tituloPagamento').textContent = 'Pedido Entregue!';
-            document.getElementById('subtituloPagamento').textContent = 'Esperamos que você aproveite seus novos pneus!';
-            adicionarLog('🏠 Pedido entregue com sucesso!', 'home');
-            adicionarLog('⭐ Que tal avaliar sua experiência de compra?', 'warning');
+            await esperar(2000);
             ativarStep(5, 100, false);
+            console.log("Step 5 ok - FIM");
         }
-
         // ── MODO VISUALIZAÇÃO (vindo de Meus Pedidos) ─────────────────
         async function modoVisualizacao(pedidoId) {
             await carregarPedido(pedidoId); // Isso preenche a variável pedidoData
