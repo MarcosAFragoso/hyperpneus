@@ -1,22 +1,31 @@
 <script>
 let clienteId = null;
 
+// 🔥 variáveis globais (corrigido)
+let listaVeiculos;
+let listaCartoes;
+let listaEnderecos;
+let formDados;
+
+// ---------------- ABAS ----------------
 function mostrarAba(aba) {
     document.querySelectorAll('.list-group-item').forEach(a => a.classList.remove('active'));
     document.querySelectorAll('[id^="sec-"]').forEach(s => s.classList.add('d-none'));
+
     document.getElementById(`aba-${aba}`).classList.add('active');
     document.getElementById(`sec-${aba}`).classList.remove('d-none');
 
-    if(aba==='pedidos') carregarPedidos();
-    else if(aba==='garagem') carregarVeiculos();
-    else if(aba==='cartoes') carregarCartoes();
-    else if(aba==='enderecos') carregarEnderecos();
-    else if(aba==='dados') carregarDados();
+    if (aba === 'pedidos') carregarPedidos();
+    else if (aba === 'garagem') carregarVeiculos();
+    else if (aba === 'cartoes') carregarCartoes();
+    else if (aba === 'enderecos') carregarEnderecos();
+    else if (aba === 'dados') carregarDados();
 }
 
-// ---------------- PEDIDOS (NÃO MEXI) ----------------
+// ---------------- PEDIDOS ----------------
 async function carregarPedidos() {
     const lista = document.getElementById('listaPedidos');
+
     const res = await fetch('/api/pedidos', { credentials: 'include' });
     const p = await res.json();
 
@@ -114,11 +123,13 @@ async function addCartao(){
     const bandeira = prompt("Bandeira:");
     if(!numero || !bandeira) return;
 
+    const numero_final = numero.slice(-4);
+
     await fetch(`/api/clientes/${clienteId}/cartoes`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         credentials:'include',
-        body: JSON.stringify({numero,bandeira})
+        body: JSON.stringify({numero_final,bandeira})
     });
 
     carregarCartoes();
@@ -129,13 +140,13 @@ async function editCartao(id){
     const bandeira = prompt("Nova bandeira:");
     if(!numero || !bandeira) return;
 
-    await remover('cartoes', id);
+    const numero_final = numero.slice(-4);
 
-    await fetch(`/api/clientes/${clienteId}/cartoes`, {
-        method:'POST',
+    await fetch(`/api/clientes/${clienteId}/cartoes/${id}`, {
+        method:'PUT',
         headers:{'Content-Type':'application/json'},
         credentials:'include',
-        body: JSON.stringify({numero,bandeira})
+        body: JSON.stringify({numero_final,bandeira})
     });
 
     carregarCartoes();
@@ -221,10 +232,12 @@ async function editarDados(){
 // ---------------- GERAL ----------------
 async function remover(tipo, id) {
     if(!confirm('Tem certeza?')) return;
+
     await fetch(`/api/clientes/${clienteId}/${tipo}/${id}`, {
         method:'DELETE',
         credentials:'include'
     });
+
     mostrarAba(tipo === 'veiculos' ? 'garagem' : tipo);
 }
 
@@ -233,12 +246,21 @@ function sair() {
     window.location.href = 'login.html';
 }
 
+// 🔥 CORREÇÃO PRINCIPAL (DOM carregado)
 window.onload = () => {
     const c = JSON.parse(localStorage.getItem('cliente') || '{}');
     if(!c.id) window.location.href = 'login.html';
 
     clienteId = c.id;
+
+    // 🔥 agora funciona 100%
+    listaVeiculos = document.getElementById('listaVeiculos');
+    listaCartoes = document.getElementById('listaCartoes');
+    listaEnderecos = document.getElementById('listaEnderecos');
+    formDados = document.getElementById('formDados');
+
     document.getElementById('nomeNav').textContent = `Olá, ${c.nome}!`;
+
     mostrarAba('pedidos');
 };
 </script>
