@@ -44,12 +44,12 @@ module.exports = {
 
       const pedido = await Pedido.buscar(clienteId, req.params.id);
 
-      // AJUSTE: Join com a tabela cupons para trazer o 'codigo'
+      // Busca trocas vinculadas ao pedido
       const { rows: trocas } = await pool.query(
-        `SELECT t.pneu_id, c.codigo 
-         FROM trocas t 
-         LEFT JOIN cupons c ON t.cupom_id = c.id 
-         WHERE t.pedido_id = $1`,
+        `SELECT t.pneu_id, t.quantidade_trocada, t.status, c.codigo
+       FROM trocas t
+       LEFT JOIN cupons c ON t.cupom_id = c.id
+       WHERE t.pedido_id = $1`,
         [req.params.id]
       );
 
