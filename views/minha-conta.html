@@ -1,3 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Minha Conta</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+.order-card {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+</style>
+
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-4">
+    <h3 id="nomeNav">Minha Conta</h3>
+
+    <div class="row mt-3">
+        
+        <!-- MENU -->
+        <div class="col-md-3">
+            <div class="list-group">
+                <button id="aba-pedidos" class="list-group-item" onclick="mostrarAba('pedidos')">Pedidos</button>
+                <button id="aba-garagem" class="list-group-item" onclick="mostrarAba('garagem')">Veículos</button>
+                <button id="aba-cartoes" class="list-group-item" onclick="mostrarAba('cartoes')">Cartões</button>
+                <button id="aba-enderecos" class="list-group-item" onclick="mostrarAba('enderecos')">Endereços</button>
+                <button id="aba-dados" class="list-group-item" onclick="mostrarAba('dados')">Dados</button>
+                <button class="list-group-item text-danger" onclick="sair()">Sair</button>
+            </div>
+        </div>
+
+        <!-- CONTEÚDO -->
+        <div class="col-md-9">
+
+            <!-- PEDIDOS -->
+            <div id="sec-pedidos">
+                <h5>Pedidos</h5>
+                <div id="listaPedidos"></div>
+            </div>
+
+            <!-- VEICULOS -->
+            <div id="sec-garagem" class="d-none">
+                <h5>Veículos</h5>
+                <div id="listaVeiculos"></div>
+            </div>
+
+            <!-- CARTOES -->
+            <div id="sec-cartoes" class="d-none">
+                <h5>Cartões</h5>
+                <div id="listaCartoes"></div>
+            </div>
+
+            <!-- ENDERECOS -->
+            <div id="sec-enderecos" class="d-none">
+                <h5>Endereços</h5>
+                <div id="listaEnderecos"></div>
+            </div>
+
+            <!-- DADOS -->
+            <div id="sec-dados" class="d-none">
+                <h5>Dados</h5>
+                <div id="formDados"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 <script>
 let clienteId = null;
 
@@ -264,3 +339,6 @@ window.onload = () => {
     mostrarAba('pedidos');
 };
 </script>
+
+</body>
+</html>
