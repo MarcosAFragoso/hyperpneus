@@ -410,14 +410,21 @@
                 'ENTREGUE': 5
             };
 
-            const idxAtual = statusIndex[pedidoData.status] ?? 0;
+            // 🔥 CORREÇÃO 1: normaliza o status vindo do backend
+            const status = pedidoData.status?.trim().toUpperCase();
+            const idxAtual = statusIndex[status] ?? 0;
+
             const porcentagens = [0, 20, 40, 60, 80, 100];
 
-            document.getElementById('logEventos').innerHTML = ''; // Limpa logs anteriores
+            document.getElementById('logEventos').innerHTML = '';
 
-            // Desenha os logs cronologicamente até o status atual
+            // Logs até o status atual
             for (let i = 0; i <= idxAtual; i++) {
-                adicionarLog(logsPossiveis[i].msg, logsPossiveis[i].tipo, new Date(pedidoData.criado_em).toLocaleTimeString('pt-BR'));
+                adicionarLog(
+                    logsPossiveis[i].msg,
+                    logsPossiveis[i].tipo,
+                    new Date(pedidoData.criado_em).toLocaleTimeString('pt-BR')
+                );
             }
 
             function ativarStep(idx, progressPct, ehAtual = true) {
@@ -426,7 +433,6 @@
                     const icon = step.querySelector('.step-icon');
                     const label = step.querySelector('.step-label');
 
-                    // Remove classes de pulse antes de tudo
                     icon.classList.remove('atual');
                     label.classList.remove('atual');
 
@@ -434,14 +440,18 @@
                     label.classList.add('ativo');
                 }
 
-                // Só coloca a classe 'atual' (azul/pulsando) se for um pedido novo (ehAtual == true)
                 if (ehAtual && idx < 5) {
                     const atual = document.getElementById(`step${idx}`);
                     atual.querySelector('.step-icon').classList.replace('ativo', 'atual');
                     atual.querySelector('.step-label').classList.replace('ativo', 'atual');
                 }
+
                 document.getElementById('progressLine').style.width = progressPct + '%';
             }
+
+            // 🔥 CORREÇÃO 2: CHAMAR a função que atualiza os steps
+            ativarStep(idxAtual, porcentagens[idxAtual]);
+
             mostrarCardsEAcoes();
         }
         // ── Nota Fiscal ────────────────────────────────────────────────
