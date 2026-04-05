@@ -388,6 +388,10 @@
         async function modoVisualizacao(pedidoId) {
             await carregarPedido(pedidoId);
 
+            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-check-circle fa-4x text-success"></i>';
+            document.getElementById('tituloPagamento').textContent = 'Pedido Confirmado';
+            document.getElementById('subtituloPagamento').textContent = 'Resumo e acompanhamento do seu pedido.';
+
             const logsPossiveis = [
                 { msg: 'Pedido recebido e registrado no sistema.', tipo: 'success' },
                 { msg: '✓ Pagamento aprovado pela operadora.', tipo: 'success' },
@@ -416,7 +420,28 @@
                 adicionarLog(logsPossiveis[i].msg, logsPossiveis[i].tipo, new Date(pedidoData.criado_em).toLocaleTimeString('pt-BR'));
             }
 
-            ativarStep(idxAtual, porcentagens[idxAtual], false);
+            function ativarStep(idx, progressPct, ehAtual = true) {
+                for (let i = 0; i <= idx; i++) {
+                    const step = document.getElementById(`step${i}`);
+                    const icon = step.querySelector('.step-icon');
+                    const label = step.querySelector('.step-label');
+
+                    // Remove classes de pulse antes de tudo
+                    icon.classList.remove('atual');
+                    label.classList.remove('atual');
+
+                    icon.classList.add('ativo');
+                    label.classList.add('ativo');
+                }
+
+                // Só coloca a classe 'atual' (azul/pulsando) se for um pedido novo (ehAtual == true)
+                if (ehAtual && idx < 5) {
+                    const atual = document.getElementById(`step${idx}`);
+                    atual.querySelector('.step-icon').classList.replace('ativo', 'atual');
+                    atual.querySelector('.step-label').classList.replace('ativo', 'atual');
+                }
+                document.getElementById('progressLine').style.width = progressPct + '%';
+            }
             mostrarCardsEAcoes();
         }
         // ── Nota Fiscal ────────────────────────────────────────────────
