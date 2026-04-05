@@ -41,8 +41,17 @@ module.exports = {
     try {
       const clienteId = req.session.cliente?.id;
       if (!clienteId) return res.status(401).json({ erro: 'Não autenticado.' });
+
       const pedido = await Pedido.buscar(clienteId, req.params.id);
-      res.json(pedido);
+
+      // BUSCAR TROCAS JÁ FEITAS PARA ESSE PEDIDO
+      const { rows: trocas } = await pool.query(
+        'SELECT pneu_id, cupom_id FROM trocas WHERE pedido_id = $1',
+        [req.params.id]
+      );
+
+      // Inclui a lista de trocas no retorno do JSON
+      res.json({ ...pedido, trocasFeitas: trocas });
     } catch (err) {
       res.status(404).json({ erro: err.message });
     }
