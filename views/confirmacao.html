@@ -277,23 +277,23 @@
         }
 
         // ── Ativar step na trilha ──────────────────────────────────────
-        function ativarStep(idx, progressPct, ehAtual = true) {
-            for (let i = 0; i <= idx; i++) {
-                const step = document.getElementById(`step${i}`);
-                const icon = step.querySelector('.step-icon');
-                const label = step.querySelector('.step-label');
-                icon.classList.remove('atual');
-                icon.classList.add('ativo');
-                label.classList.remove('atual');
-                label.classList.add('ativo');
-            }
-            if (ehAtual && idx < 5) {
-                const atual = document.getElementById(`step${idx}`);
-                atual.querySelector('.step-icon').classList.replace('ativo', 'atual');
-                atual.querySelector('.step-label').classList.replace('ativo', 'atual');
-            }
-            document.getElementById('progressLine').style.width = progressPct + '%';
-        }
+        /* function ativarStep(idx, progressPct, ehAtual = true) {
+             for (let i = 0; i <= idx; i++) {
+                 const step = document.getElementById(`step${i}`);
+                 const icon = step.querySelector('.step-icon');
+                 const label = step.querySelector('.step-label');
+                 icon.classList.remove('atual');
+                 icon.classList.add('ativo');
+                 label.classList.remove('atual');
+                 label.classList.add('ativo');
+             }
+             if (ehAtual && idx < 5) {
+                 const atual = document.getElementById(`step${idx}`);
+                 atual.querySelector('.step-icon').classList.replace('ativo', 'atual');
+                 atual.querySelector('.step-label').classList.replace('ativo', 'atual');
+             }
+             document.getElementById('progressLine').style.width = progressPct + '%';
+         }*/
 
         // ── Carregar dados do pedido ───────────────────────────────────
         async function carregarPedido(pedidoId) {
@@ -473,7 +473,7 @@
                 progress.style.width = progressPct + '%';
             }
         }
-        }
+
 
         // ── Nota Fiscal ────────────────────────────────────────────────
         function verNF() {
