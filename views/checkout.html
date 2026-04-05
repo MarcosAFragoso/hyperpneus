@@ -716,30 +716,46 @@
         // ── Finalizar ──────────────────────────────────────────────────
         async function finalizarPedido() {
             if (!enderecoSelecionado) return mostrarAlerta('Selecione um endereço de entrega.');
-            if (!cartao1Selecionado) return mostrarAlerta('Selecione um cartão de pagamento.');
 
             const total = calcularTotal();
             let cartoes = [];
 
-            if (usandoDoisCartoes) {
-                if (!cartao2Selecionado) return mostrarAlerta('Selecione o segundo cartão.');
-                if (cartao1Selecionado.id === cartao2Selecionado.id)
-                    return mostrarAlerta('Selecione cartões diferentes.');
-                const v1 = parseFloat(document.getElementById('valorCartao1').dataset.valor) || 0;
-                const v2 = parseFloat(document.getElementById('valorCartao2').value.replace(',', '.')) || 0;
-                if (!v1 || v1 < 10) return mostrarAlerta('Valor mínimo por cartão é R$ 10,00.');
-                if (Math.abs(v1 + v2 - total) > 0.01)
-                    return mostrarAlerta(`A soma dos cartões (${fmt(v1 + v2)}) não corresponde ao total (${fmt(total)}).`);
-                cartoes = [
-                    { cartao_id: cartao1Selecionado.id, valor: v1, parcelas: parseInt(document.getElementById('parcelasCartao1').value) },
-                    { cartao_id: cartao2Selecionado.id, valor: v2, parcelas: parseInt(document.getElementById('parcelasCartao2').value) }
-                ];
+            // LÓGICA ALTERADA: Só exige cartão se o total for maior que zero
+            if (total > 0) {
+                if (!cartao1Selecionado) return mostrarAlerta('Selecione um cartão de pagamento.');
+
+                if (usandoDoisCartoes) {
+                    if (!cartao2Selecionado) return mostrarAlerta('Selecione o segundo cartão.');
+                    if (cartao1Selecionado.id === cartao2Selecionado.id)
+                        return mostrarAlerta('Selecione cartões diferentes.');
+
+                    const v1 = parseFloat(document.getElementById('valorCartao1').dataset.valor) || 0;
+                    const v2 = parseFloat(document.getElementById('valorCartao2').value.replace(',', '.')) || 0;
+
+                    // Só valida o mínimo de R$ 10 se o valor for maior que 0
+                    if (v1 < 10 || v2 < 10) return mostrarAlerta('Valor mínimo por cartão é R$ 10,00.');
+
+                    if (Math.abs(v1 + v2 - total) > 0.01)
+                        return mostrarAlerta(`A soma dos cartões (${fmt(v1 + v2)}) não corresponde ao total (${fmt(total)}).`);
+
+                    cartoes = [
+                        { cartao_id: cartao1Selecionado.id, valor: v1, parcelas: parseInt(document.getElementById('parcelasCartao1').value) },
+                        { cartao_id: cartao2Selecionado.id, valor: v2, parcelas: parseInt(document.getElementById('parcelasCartao2').value) }
+                    ];
+                } else {
+                    // Validação para cartão único
+                    if (total < 10) return mostrarAlerta('Valor mínimo para pagamento no cartão é R$ 10,00. Use um cupom ou adicione mais itens.');
+
+                    cartoes = [{
+                        cartao_id: cartao1Selecionado.id,
+                        valor: total,
+                        parcelas: parseInt(document.getElementById('parcelasCartao1').value)
+                    }];
+                }
             } else {
-                cartoes = [{
-                    cartao_id: cartao1Selecionado.id,
-                    valor: total,
-                    parcelas: parseInt(document.getElementById('parcelasCartao1').value)
-                }];
+                // Se o total é 0, cartoes continua como um array vazio []
+                // Isso permite finalizar apenas com o saldo do cupom de troca
+                cartoes = [];
             }
 
             const btn = document.getElementById('btnFinalizar');
@@ -773,7 +789,6 @@
                 mostrarAlerta(err.message);
             }
         }
-
         window.onload = init;
     </script>
 </body>
