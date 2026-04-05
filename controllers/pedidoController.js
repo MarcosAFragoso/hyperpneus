@@ -17,7 +17,7 @@ module.exports = {
       // 2. Lógica robusta para o frete: 
       // Se o tipo for 'RETIRADA', o valor é obrigatoriamente 0.
       // Caso contrário, usa o valor enviado ou o padrão de 15.00.
-      const valorFinalFrete = (tipo_frete === 'RETIRADA') ? 0.00 : (frete ?? 15.00);
+      const valorFinalFrete = (tipo_frete === 'RETIRADA') ? 0.00 : (frete ?? 0.00);
 
       const resultado = await Pedido.finalizar(clienteId, {
         enderecoId: endereco_id,
