@@ -8,29 +8,19 @@ module.exports = {
       const clienteId = req.session.cliente?.id;
       if (!clienteId) return res.status(401).json({ erro: 'Faça login para finalizar a compra.' });
 
-      const {
-        endereco_id,
-        cartoes,
-        cupom_codigo,
-        cupom_troca_codigo,
-        frete,
-        tipo_frete
-      } = req.body;
+      const { endereco_id, cartoes, cupom_codigo, cupom_troca_codigo, frete, tipo_frete } = req.body;
 
       if (!endereco_id) return res.status(400).json({ erro: 'Selecione um endereço de entrega.' });
 
-      // AJUSTE 1: Lógica do Frete
-      // Se for retirada, o valor é 0. Caso contrário, usa o valor enviado ou 0 como fallback (não 15.00)
-      const valorFinalFrete = (tipo_frete === 'RETIRADA') ? 0.00 : (frete ?? 0.00);
+      // CORREÇÃO DO FRETE: Se for retirada ou grátis, assume 0.00. Nunca 15.00.
+      const valorFinalFrete = (tipo_frete === 'RETIRADA' || tipo_frete === 'Grátis') ? 0.00 : (frete ?? 0.00);
 
-      // AJUSTE 2: Validação de Cartões Dinâmica
-      // Calculamos o total esperado para saber se o cartão é realmente obrigatório
-      // (Essa verificação também é feita no Model, mas aqui evitamos o erro 400 prematuro)
-      // Se não houver cartões E o total visual não for zero, o Model lançará o erro apropriado.
+      // REMOVIDO: if (!cartoes?.length) ... 
+      // Agora permitimos que o array de cartões seja vazio se o cupão cobrir o total.
 
       const resultado = await Pedido.finalizar(clienteId, {
         enderecoId: endereco_id,
-        cartoes: cartoes || [], // Envia array vazio se não houver cartões
+        cartoes: cartoes || [], // Se não vierem cartões, envia array vazio
         cupomCodigo: cupom_codigo || null,
         cupomTrocaCodigo: cupom_troca_codigo || null,
         freteValor: valorFinalFrete
@@ -38,7 +28,6 @@ module.exports = {
 
       res.status(201).json(resultado);
     } catch (err) {
-      // Aqui capturamos erros como "Valor mínimo por cartão" ou "Soma não cobre o total"
       res.status(400).json({ erro: err.message });
     }
   },
