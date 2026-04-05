@@ -55,14 +55,22 @@ module.exports = {
       // 6. Total
       const total = Math.max(0, subtotal + valorFrete - desconto);
 
-      // 7. Valida cartões
-      if (!cartoes || !cartoes.length) throw new Error('Informe ao menos um cartão.');
-      if (cartoes.length > 2) throw new Error('Máximo de 2 cartões por pedido.');
-      const somaCartoes = cartoes.reduce((s, c) => s + parseFloat(c.valor), 0);
-      if (Math.abs(somaCartoes - total) > 0.01)
-        throw new Error(`Soma dos cartões (R$${somaCartoes.toFixed(2)}) não cobre o total (R$${total.toFixed(2)}).`);
-      for (const c of cartoes) {
-        if (parseFloat(c.valor) < 10) throw new Error('Valor mínimo por cartão é R$10,00.');
+      // 7. Valida cartões (CORRIGIDO)
+      // Só exige cartão se o total final for maior que zero
+      if (total > 0) {
+        if (!cartoes || !cartoes.length) throw new Error('Informe ao menos um cartão para pagar o saldo restante.');
+        if (cartoes.length > 2) throw new Error('Máximo de 2 cartões por pedido.');
+
+        const somaCartoes = cartoes.reduce((s, c) => s + parseFloat(c.valor), 0);
+        if (Math.abs(somaCartoes - total) > 0.01)
+          throw new Error(`Soma dos cartões (R$${somaCartoes.toFixed(2)}) não cobre o total (R$${total.toFixed(2)}).`);
+
+        for (const c of cartoes) {
+          if (parseFloat(c.valor) < 10) throw new Error('Valor mínimo por cartão é R$10,00.');
+        }
+      } else {
+        // Se o total é 0, garantimos que não tentaremos processar cartões inexistentes
+        cartoes = [];
       }
 
       // 8. Cria o pedido — enderecoId
@@ -87,12 +95,15 @@ module.exports = {
       }
 
       // 10. Pagamentos
-      for (const c of cartoes) {
-        await client.query(
-          `INSERT INTO pagamentos_pedido (pedido_id, cartao_id, valor, status)
-           VALUES ($1, $2, $3, 'APROVADO')`,
-          [pedido.id, c.cartao_id, parseFloat(c.valor)]
-        );
+      // Só registra pagamentos se houver cartões utilizados
+      if (cartoes && cartoes.length > 0) {
+        for (const c of cartoes) {
+          await client.query(
+            `INSERT INTO pagamentos_pedido (pedido_id, cartao_id, valor, status)
+             VALUES ($1, $2, $3, 'APROVADO')`,
+            [pedido.id, c.cartao_id, parseFloat(c.valor)]
+          );
+        }
       }
 
       // 11. Atualiza status
