@@ -73,35 +73,52 @@ module.exports = {
   },
 
   async gerarCupomTroca(req, res) {
+    const client = await pool.connect();
     try {
+      await client.query('BEGIN');
       const clienteId = req.session.cliente?.id;
-      if (!clienteId) return res.status(401).json({ erro: 'Não autenticado.' });
+      if (!clienteId) throw new Error('Não autenticado.');
 
-      const { pedidoId, valor, acao } = req.body;
+      const { pedidoId, itensParaTroca, acao, valorTotal } = req.body;
 
-      // Verifica se já existe uma troca para este pedido
-      const { rows: jaExiste } = await pool.query(
-        'SELECT id FROM cupons WHERE pedido_origem_id = $1', [pedidoId]
-      );
-      if (jaExiste.length > 0) return res.status(400).json({ erro: 'Troca já solicitada para este pedido.' });
-
-      // Se for estorno, apenas valida e finaliza
-      if (acao === 'Estorno') {
-        return res.status(201).json({ mensagem: 'Solicitação de estorno enviada para análise.' });
+      // 1. Verifica se itens já foram trocados
+      for (let item of itensParaTroca) {
+        const { rows } = await client.query(
+          'SELECT id FROM trocas WHERE pedido_id = $1 AND pneu_id = $2',
+          [pedidoId, item.pneu_id]
+        );
+        if (rows.length > 0) throw new Error(`O item ${item.pneu_id} já foi trocado.`);
       }
 
+      // 2. Se for Estorno, apenas registra as trocas sem cupom
       // Se for Vale-Troca, gera o cupom
-      const codigo = 'TROCA-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+      let cupomId = null;
+      if (acao === 'Vale-Troca') {
+        const codigo = 'TROCA-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        const { rows: [cupom] } = await client.query(
+          `INSERT INTO cupons (codigo, cliente_id, valor, tipo, usado, validade)
+           VALUES ($1, $2, $3, 'troca', FALSE, NULL) RETURNING id`,
+          [codigo, clienteId, valorTotal]
+        );
+        cupomId = cupom.id;
+      }
 
-      await pool.query(
-        `INSERT INTO cupons (codigo, cliente_id, valor, tipo, usado, validade, pedido_origem_id)
-         VALUES ($1, $2, $3, 'troca', FALSE, NULL, $4)`,
-        [codigo, clienteId, valor, pedidoId]
-      );
+      // 3. Registra cada item na tabela 'trocas'
+      for (let item of itensParaTroca) {
+        await client.query(
+          `INSERT INTO trocas (pedido_id, pneu_id, quantidade_trocada, cupom_id) 
+           VALUES ($1, $2, $3, $4)`,
+          [pedidoId, item.pneu_id, item.qtd, cupomId]
+        );
+      }
 
-      res.status(201).json({ mensagem: 'Cupom gerado!', codigo: codigo });
+      await client.query('COMMIT');
+      res.status(201).json({ mensagem: 'Troca processada!', acao });
     } catch (err) {
+      await client.query('ROLLBACK');
       res.status(500).json({ erro: err.message });
+    } finally {
+      client.release();
     }
   }
 };

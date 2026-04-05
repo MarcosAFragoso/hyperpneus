@@ -77,28 +77,35 @@
         }
 
         async function finalizarTroca() {
-            const itens = document.querySelectorAll('.item-troca');
-            const acao = document.getElementById('acaoDesejada').value;
+            const linhas = document.querySelectorAll('.item-troca');
+            let itensParaTroca = [];
             let valorTotal = 0;
-            itens.forEach(item => {
-                if (item.querySelector('.check-item').checked) {
-                    valorTotal += (parseInt(item.querySelector('.qtd-devolver').value) * parseFloat(item.getAttribute('data-preco')));
+
+            linhas.forEach(linha => {
+                if (linha.querySelector('.check-item').checked) {
+                    const pneuId = linha.querySelector('.check-item').value;
+                    const qtd = parseInt(linha.querySelector('.qtd-devolver').value);
+                    const preco = parseFloat(linha.getAttribute('data-preco'));
+
+                    itensParaTroca.push({ pneu_id: pneuId, qtd: qtd });
+                    valorTotal += (qtd * preco);
                 }
             });
 
-            if (valorTotal <= 0) return alert("Selecione itens.");
+            if (itensParaTroca.length === 0) return alert("Selecione itens!");
 
+            const acao = document.getElementById('acaoDesejada').value;
             const res = await fetch('/api/pedidos/gerar-cupom-troca', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pedidoId, valor: valorTotal, acao })
+                body: JSON.stringify({ pedidoId, itensParaTroca, valorTotal, acao })
             });
 
-            const data = await res.json();
             if (res.ok) {
-                alert(acao === 'Estorno' ? "Estorno solicitado!" : "Cupom gerado: " + data.codigo);
+                alert("Troca solicitada com sucesso!");
                 window.location.href = "minha-conta.html";
             } else {
+                const data = await res.json();
                 alert("Erro: " + data.erro);
             }
         }
