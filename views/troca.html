@@ -1,164 +1,157 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <title>Solicitar Troca - HyperPneus</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --kabum-orange: #ff6500; }
-        body { background-color: #f4f7f9; font-family: 'Segoe UI', sans-serif; }
-        .product-img { width: 80px; height: 80px; object-fit: contain; border: 1px solid #eee; padding: 5px; border-radius: 4px; }
-        .card { border: none; border-radius: 8px; }
-        .btn-confirmar { background-color: var(--kabum-orange); color: white; font-weight: bold; border: none; }
-        .btn-confirmar:hover { background-color: #e55a00; color: white; }
+        :root {
+            --kabum-orange: #ff6500;
+        }
+
+        body {
+            background-color: #f4f7f9;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .product-img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border: 1px solid #eee;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 8px;
+        }
+
+        .btn-confirmar {
+            background-color: var(--kabum-orange);
+            color: white;
+            font-weight: bold;
+            border: none;
+        }
+
+        .btn-confirmar:hover {
+            background-color: #e55a00;
+            color: white;
+        }
     </style>
 </head>
+
 <body class="bg-light">
 
-<nav class="navbar navbar-dark bg-dark mb-4">
-  <div class="container">
-    <a class="navbar-brand fw-bold" href="index.html text-uppercase">HyperPneus</a>
-  </div>
-</nav>
-
-<div class="container my-5">
-    <a href="minha-conta.html" class="text-decoration-none mb-3 d-inline-block text-muted">
-        <i class="fas fa-arrow-left me-1"></i> Voltar para Minha Conta
-    </a>
-    
-    <h2 class="fw-bold mb-3">Troca ou Devolução</h2>
-    
-    <div id="alertaInformativo" class="alert alert-warning border-0 shadow-sm mb-4">
-        <i class="fas fa-exclamation-triangle me-2"></i>
-        <strong>Informação Importante:</strong> O produto deve estar com a etiqueta original e sem sinais de uso ou montagem.
-    </div>
-
-    <div class="card shadow-sm">
-        <div class="card-header bg-white py-3 border-bottom">
-            <h5 class="mb-0 fw-bold" id="tituloPedido">Carregando informações do pedido...</h5>
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">HyperPneus</a>
         </div>
-        <div class="card-body p-4">
-            
-            <p class="text-muted small mb-4">Selecione os itens que deseja trocar ou devolver:</p>
+    </nav>
 
-            <!-- Container dos itens do pedido real -->
-            <div id="containerItens">
-                <div class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
+    <div class="container my-5">
+        <a href="minha-conta.html" class="text-decoration-none mb-3 d-inline-block text-muted">
+            <i class="fas fa-arrow-left me-1"></i> Voltar para Minha Conta
+        </a>
+        <h2 class="fw-bold mb-3">Troca ou Devolução</h2>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="mb-0 fw-bold" id="tituloPedido">Carregando pedido...</h5>
             </div>
-
-            <hr class="my-4">
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Motivo da Solicitação</label>
-                    <select id="motivoTroca" class="form-select">
-                        <option value="" disabled selected>Selecione um motivo...</option>
-                        <option>Comprei a medida errada</option>
-                        <option>Produto com defeito</option>
-                        <option>Arrependimento / Desistência</option>
-                        <option>Veículo incompatível</option>
-                        <option>Outros</option>
-                    </select>
+            <div class="card-body p-4">
+                <p class="text-muted small mb-4">Selecione os itens que deseja trocar ou devolver:</p>
+                <div id="containerItens"></div>
+                <hr class="my-4">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Motivo da Solicitação</label>
+                        <select id="motivoTroca" class="form-select">
+                            <option value="" disabled selected>Selecione um motivo...</option>
+                            <option>Comprei a medida errada</option>
+                            <option>Produto com defeito</option>
+                            <option>Arrependimento / Desistência</option>
+                            <option>Outros</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">O que você deseja?</label>
-                    <select id="acaoDesejada" class="form-select">
-                        <option>Gerar Vale-Troca (Crédito na Loja)</option>
-                        <option>Estorno do valor no cartão</option>
-                    </select>
+                <div class="d-flex justify-content-end gap-3">
+                    <a href="minha-conta.html" class="btn btn-light px-4">Cancelar</a>
+                    <button class="btn btn-confirmar px-5" onclick="finalizarTroca()">SOLICITAR AGORA</button>
                 </div>
-                <div class="col-12 mb-4">
-                    <label class="form-label fw-bold">Observações adicionais (opcional)</label>
-                    <textarea id="obsTroca" class="form-control" rows="3" placeholder="Conte-nos um pouco mais sobre o motivo..."></textarea>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-end gap-3">
-                <a href="minha-conta.html" class="btn btn-light px-4">Cancelar</a>
-                <button class="btn btn-confirmar px-5" onclick="confirmarTroca()">SOLICITAR AGORA</button>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    let pedidoId = null;
-    let dadosPedido = null;
+    <script>
+        async function carregarPedidoReal() {
+            const params = new URLSearchParams(window.location.search);
+            const pedidoId = params.get('pedido');
+            if (!pedidoId) return window.location.href = 'minha-conta.html';
 
-    async function carregarPedidoReal() {
-        const params = new URLSearchParams(window.location.search);
-        pedidoId = params.get('pedido');
-
-        if (!pedidoId) {
-            window.location.href = 'minha-conta.html';
-            return;
-        }
-
-        try {
             const res = await fetch(`/api/pedidos/${pedidoId}`);
-            dadosPedido = await res.json();
-
-            document.getElementById('tituloPedido').textContent = `Pedido #${dadosPedido.id} - Realizado em ${new Date(dadosPedido.criado_em).toLocaleDateString('pt-BR')}`;
+            const dados = await res.json();
+            document.getElementById('tituloPedido').textContent = `Pedido #${dados.id}`;
 
             const container = document.getElementById('containerItens');
-            container.innerHTML = '';
+            container.innerHTML = dados.itens.map((item, index) => `
+                <div class="d-flex align-items-center mb-4 border-bottom pb-4 item-troca" data-preco="${item.preco_unitario}">
+                    <div class="form-check me-3">
+                        <input class="form-check-input check-item" type="checkbox" id="check_${index}">
+                    </div>
+                    <img src="${item.imagem_url || 'https://via.placeholder.com/100'}" class="product-img me-3">
+                    <div class="flex-grow-1">
+                        <label class="fw-bold d-block">${item.marca} ${item.modelo}</label>
+                        <small class="text-muted">Valor Unit: R$ ${item.preco_unitario}</small>
+                    </div>
+                    <div style="width: 130px;">
+                        <select class="form-select form-select-sm qtd-devolver">
+                            ${Array.from({ length: item.quantidade }, (_, i) => `<option value="${i + 1}">${i + 1} unidade(s)</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-            if (dadosPedido.itens && dadosPedido.itens.length > 0) {
-                dadosPedido.itens.forEach((item, index) => {
-                    const itemHtml = `
-                        <div class="d-flex align-items-center mb-4 border-bottom pb-4">
-                            <div class="form-check me-3">
-                                <input class="form-check-input check-item" type="checkbox" id="check_${index}" value="${item.pneu_id}" style="transform: scale(1.3);">
-                            </div>
-                            <img src="${item.imagem_url || 'https://via.placeholder.com/100'}" class="product-img me-3">
-                            <div class="flex-grow-1">
-                                <label class="fw-bold d-block mb-0" for="check_${index}">${item.marca} ${item.modelo}</label>
-                                <span class="text-muted small">Qtd no pedido: ${item.quantidade} | Valor: ${parseFloat(item.preco_unitario).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}</span>
-                            </div>
-                            <div style="width: 130px;">
-                                <label class="small text-muted d-block">Qtd a devolver:</label>
-                                <select class="form-select form-select-sm">
-                                    ${Array.from({length: item.quantidade}, (_, i) => `<option>${i + 1} unidade(s)</option>`).join('')}
-                                </select>
-                            </div>
-                        </div>
-                    `;
-                    container.innerHTML += itemHtml;
+        async function finalizarTroca() {
+            const itens = document.querySelectorAll('.item-troca');
+            let valorTotalTroca = 0;
+
+            itens.forEach(item => {
+                const checkbox = item.querySelector('.check-item');
+                if (checkbox.checked) {
+                    const qtd = parseInt(item.querySelector('.qtd-devolver').value);
+                    const precoUnit = parseFloat(item.getAttribute('data-preco'));
+                    valorTotalTroca += (qtd * precoUnit);
+                }
+            });
+
+            if (valorTotalTroca <= 0) return alert("Selecione itens válidos.");
+
+            try {
+                const res = await fetch('/api/pedidos/gerar-cupom-troca', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ valor: valorTotalTroca })
                 });
-            } else {
-                container.innerHTML = '<div class="alert alert-danger">Nenhum item encontrado para este pedido.</div>';
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert("Sucesso! Seu cupom de R$ " + valorTotalTroca.toFixed(2) + " é: " + data.codigo);
+                    window.location.href = "minha-conta.html";
+                } else {
+                    alert("Erro: " + data.erro);
+                }
+            } catch (err) {
+                alert("Erro de conexão.");
             }
-
-        } catch (error) {
-            console.error("Erro ao carregar pedido:", error);
-            alert("Erro ao carregar os dados do pedido.");
-        }
-    }
-
-    function confirmarTroca() {
-        const itensSelecionados = document.querySelectorAll('.check-item:checked');
-        const motivo = document.getElementById('motivoTroca').value;
-
-        if (itensSelecionados.length === 0) {
-            alert("Por favor, selecione ao menos um item para troca.");
-            return;
         }
 
-        if (!motivo) {
-            alert("Por favor, selecione o motivo da troca.");
-            return;
-        }
-
-        // Simulação de envio
-        alert(`Solicitação para o pedido #${pedidoId} enviada com sucesso!\n\nNossa equipe analisará as fotos e o motivo. Em breve você receberá as instruções de postagem por e-mail.`);
-        window.location.href = "minha-conta.html";
-    }
-
-    window.onload = carregarPedidoReal;
-</script>
-
+        window.onload = carregarPedidoReal;
+    </script>
 </body>
+
 </html>

@@ -1,4 +1,5 @@
 const Pedido = require('../models/pedidoModel');
+const pool = require('../config/database');
 
 module.exports = {
 
@@ -7,7 +8,6 @@ module.exports = {
       const clienteId = req.session.cliente?.id;
       if (!clienteId) return res.status(401).json({ erro: 'Faça login para finalizar a compra.' });
 
-      //Cupom_troca_codigo adicionado na desestruturação
       const { endereco_id, cartoes, cupom_codigo, cupom_troca_codigo, frete, tipo_frete } = req.body;
       if (!endereco_id) return res.status(400).json({ erro: 'Selecione um endereço de entrega.' });
       if (!cartoes?.length) return res.status(400).json({ erro: 'Informe ao menos um cartão.' });
@@ -71,4 +71,26 @@ module.exports = {
       res.status(500).json({ erro: err.message });
     }
   },
+
+  async gerarCupomTroca(req, res) {
+    try {
+      const clienteId = req.session.cliente?.id;
+      if (!clienteId) return res.status(401).json({ erro: 'Não autenticado.' });
+
+      const { valor } = req.body;
+      if (!valor || valor <= 0) return res.status(400).json({ erro: 'Valor inválido.' });
+
+      const codigo = 'TROCA-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+
+      await pool.query(
+        `INSERT INTO cupons (codigo, cliente_id, valor, tipo, usado, validade)
+         VALUES ($1, $2, $3, 'troca', FALSE, NULL)`,
+        [codigo, clienteId, valor]
+      );
+
+      res.status(201).json({ mensagem: 'Cupom gerado!', codigo: codigo });
+    } catch (err) {
+      res.status(500).json({ erro: err.message });
+    }
+  }
 };
