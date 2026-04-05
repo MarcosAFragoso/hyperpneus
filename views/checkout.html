@@ -721,7 +721,7 @@
             let cartoes = [];
 
             // LÓGICA ALTERADA: Só exige cartão se o total for maior que zero
-            if (total > 0) {
+            if (total > 0.01) {
                 if (!cartao1Selecionado) return mostrarAlerta('Selecione um cartão de pagamento.');
 
                 if (usandoDoisCartoes) {
