@@ -8,16 +8,23 @@ module.exports = {
       const clienteId = req.session.cliente?.id;
       if (!clienteId) return res.status(401).json({ erro: 'Faça login para finalizar a compra.' });
 
-      const { endereco_id, cartoes, cupom_codigo, cupom_troca_codigo, frete } = req.body;
+      // 1. Pegue também o 'tipo_frete' do corpo da requisição
+      const { endereco_id, cartoes, cupom_codigo, cupom_troca_codigo, frete, tipo_frete } = req.body;
+
       if (!endereco_id) return res.status(400).json({ erro: 'Selecione um endereço de entrega.' });
       if (!cartoes?.length) return res.status(400).json({ erro: 'Informe ao menos um cartão.' });
+
+      // 2. Lógica robusta para o frete: 
+      // Se o tipo for 'RETIRADA', o valor é obrigatoriamente 0.
+      // Caso contrário, usa o valor enviado ou o padrão de 15.00.
+      const valorFinalFrete = (tipo_frete === 'RETIRADA') ? 0.00 : (frete ?? 15.00);
 
       const resultado = await Pedido.finalizar(clienteId, {
         enderecoId: endereco_id,
         cartoes,
         cupomCodigo: cupom_codigo || null,
         cupomTrocaCodigo: cupom_troca_codigo || null,
-        freteValor: frete ?? 15.00
+        freteValor: valorFinalFrete // Usa o valor tratado
       });
 
       res.status(201).json(resultado);
