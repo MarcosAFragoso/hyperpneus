@@ -2,7 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 const pg = require('pg');
-const cors = require('cors'); 
+const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
@@ -15,7 +15,7 @@ app.set('trust proxy', 1);
 const pgPool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false 
+    rejectUnauthorized: false
   }
 });
 
@@ -36,13 +36,13 @@ app.use(express.static(path.join(__dirname, 'views')));
 // --- 4. CONFIGURAÇÃO DA SESSÃO ---
 app.use(session({
   store: new pgSession({
-    pool : pgPool,
-    tableName : 'session'
+    pool: pgPool,
+    tableName: 'session'
   }),
   secret: process.env.SESSION_SECRET || 'chave_mestra_123',
   resave: false,
   saveUninitialized: false,
-  cookie: { 
+  cookie: {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     secure: process.env.NODE_ENV === 'production', // true no Render
     httpOnly: true,
@@ -76,7 +76,10 @@ app.use('/api/pedidos', pedidoRoutes);
 
 // --- 6. INICIALIZAÇÃO DO SERVIDOR ---
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`\x1b[32m%s\x1b[0m`, `✔ Servidor rodando na porta ${PORT}`);
-    console.log(`\x1b[36m%s\x1b[0m`, `ℹ Modo: ${process.env.NODE_ENV || 'development'}`);
+
+// Adicionamos '0.0.0.0' para que o Render consiga rotear o tráfego externo para o seu app
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\x1b[32m%s\x1b[0m`, `✔ Servidor rodando na porta ${PORT}`);
+  console.log(`\x1b[36m%s\x1b[0m`, `ℹ Modo: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`\x1b[35m%s\x1b[0m`, `🔗 URL: http://0.0.0.0:${PORT}`);
 });
