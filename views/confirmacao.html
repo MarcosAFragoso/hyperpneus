@@ -333,38 +333,56 @@
 
         // ── MODO SIMULAÇÃO (vindo do checkout) ────────────────────────
         async function iniciarSimulacao(pedidoId) {
+            // Tenta carregar, mas se falhar, não trava a simulação
             try {
-                console.log("1. Iniciando carregamento");
                 await carregarPedido(pedidoId);
-
-                console.log("2. Iniciando passos");
-                ativarStep(0, 0);
-                await esperar(1000);
-
-                console.log("3. Step 1");
-                ativarStep(1, 20);
-                await esperar(1000);
-
-                console.log("4. Step 2");
-                ativarStep(2, 40);
-                await esperar(1000);
-
-                console.log("5. Step 3 (Onde costuma travar)");
-                ativarStep(3, 60);
-                await esperar(1000);
-
-                console.log("6. Step 4");
-                ativarStep(4, 80);
-                await esperar(1000);
-
-                console.log("7. Step 5");
-                ativarStep(5, 100, false);
-                console.log("FIM DA SIMULAÇÃO");
-
-            } catch (erro) {
-                console.error("ERRO DETECTADO:", erro);
-                alert("Erro no script: " + erro.message);
+            } catch (e) {
+                console.error("Erro ao carregar dados, mas continuando simulação...", e);
             }
+
+            // Step 0
+            adicionarLog('Pedido recebido.', 'success');
+            ativarStep(0, 0);
+
+            // Step 1
+            await esperar(2000);
+            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-check-circle fa-4x text-success"></i>';
+            document.getElementById('tituloPagamento').textContent = 'Pagamento Aprovado!';
+            ativarStep(1, 20);
+            mostrarCardsEAcoes();
+
+            // Step 2
+            await esperar(2000);
+            adicionarLog('Em separação.', 'info');
+            ativarStep(2, 40);
+
+            // Step 3
+            await esperar(2000);
+            adicionarLog('Na transportadora.', 'info');
+            ativarStep(3, 60);
+
+            // Step 4
+            await esperar(2000);
+            adicionarLog('Saiu para entrega.', 'truck');
+            ativarStep(4, 80);
+
+            // Step 5
+            await esperar(2000);
+            document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-box-open fa-4x text-success"></i>';
+            document.getElementById('tituloPagamento').textContent = 'Pedido Entregue!';
+            adicionarLog('Pedido entregue!', 'home');
+
+            // ATUALIZAÇÃO DO BANCO
+            try {
+                await fetch(`/api/pedidos/${pedidoId}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'ENTREGUE' })
+                });
+            } catch (err) { console.log("Erro ao salvar no banco, ignorando..."); }
+
+            ativarStep(5, 100, false);
+
         }
         // ── MODO VISUALIZAÇÃO (vindo de Meus Pedidos) ─────────────────
         async function modoVisualizacao(pedidoId) {
