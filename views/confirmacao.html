@@ -391,8 +391,45 @@
             console.log('STATUS ATUAL:', pedidoData.status); // DEBUG
 
             document.getElementById('iconePagamento').innerHTML = '<i class="fas fa-check-circle fa-4x text-success"></i>';
-            document.getElementById('tituloPagamento').textContent = 'Pedido Confirmado';
-            document.getElementById('subtituloPagamento').textContent = 'Resumo e acompanhamento do seu pedido.';
+            const statusTextos = {
+                'AGUARDANDO_PAGAMENTO': {
+                    titulo: 'Pedido Recebido',
+                    subtitulo: 'Aguardando confirmação do pagamento.',
+                    icone: '<i class="fas fa-clock fa-4x text-warning"></i>'
+                },
+                'PAGAMENTO_APROVADO': {
+                    titulo: 'Pagamento Confirmado',
+                    subtitulo: 'Seu pagamento foi aprovado.',
+                    icone: '<i class="fas fa-check-circle fa-4x text-success"></i>'
+                },
+                'EM_PROCESSAMENTO': {
+                    titulo: 'Em Separação',
+                    subtitulo: 'Seu pedido está sendo preparado.',
+                    icone: '<i class="fas fa-box fa-4x text-primary"></i>'
+                },
+                'ENVIADO': {
+                    titulo: 'Na Transportadora',
+                    subtitulo: 'Seu pedido está em trânsito.',
+                    icone: '<i class="fas fa-truck fa-4x text-info"></i>'
+                },
+                'SAIU_PARA_ENTREGA': {
+                    titulo: 'Saiu para Entrega',
+                    subtitulo: 'Seu pedido está a caminho.',
+                    icone: '<i class="fas fa-shipping-fast fa-4x text-primary"></i>'
+                },
+                'ENTREGUE': {
+                    titulo: 'Pedido Entregue',
+                    subtitulo: 'Seu pedido foi entregue com sucesso!',
+                    icone: '<i class="fas fa-home fa-4x text-success"></i>'
+                }
+            };
+
+            const statusNormalizado = pedidoData.status?.trim().toUpperCase();
+            const dadosStatus = statusTextos[statusNormalizado] || statusTextos['AGUARDANDO_PAGAMENTO'];
+
+            document.getElementById('iconePagamento').innerHTML = dadosStatus.icone;
+            document.getElementById('tituloPagamento').textContent = dadosStatus.titulo;
+            document.getElementById('subtituloPagamento').textContent = dadosStatus.subtitulo;
 
             const logsPossiveis = [
                 { msg: 'Pedido recebido e registrado no sistema.', tipo: 'success' },
@@ -412,7 +449,6 @@
                 'ENTREGUE': 5
             };
 
-            const statusNormalizado = pedidoData.status?.trim().toUpperCase();
             const idxAtual = statusIndex[statusNormalizado] ?? 0;
 
             console.log('IDX CALCULADO:', idxAtual); // DEBUG
