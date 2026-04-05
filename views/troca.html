@@ -60,20 +60,24 @@
             pedidoId = params.get('pedido');
             const res = await fetch(`/api/pedidos/${pedidoId}`);
             const dados = await res.json();
+
             document.getElementById('tituloPedido').textContent = `Pedido #${dados.id}`;
+
             document.getElementById('containerItens').innerHTML = dados.itens.map((item, index) => `
-                <div class="d-flex align-items-center mb-3 border-bottom pb-3 item-troca" data-preco="${item.preco_unitario}">
-                    <input class="form-check-input check-item me-3" type="checkbox">
-                    <img src="${item.imagem_url || ''}" class="product-img me-3">
-                    <div class="flex-grow-1">
-                        <label class="fw-bold">${item.marca} ${item.modelo}</label><br>
-                        <small>R$ ${item.preco_unitario}</small>
-                    </div>
-                    <select class="form-select w-auto qtd-devolver">
-                        ${Array.from({ length: item.quantidade }, (_, i) => `<option value="${i + 1}">${i + 1} und</option>`).join('')}
-                    </select>
+            <div class="d-flex align-items-center mb-3 border-bottom pb-3 item-troca" data-preco="${item.preco_unitario}">
+                <!-- AQUI ESTAVA FALTANDO O VALUE -->
+                <input class="form-check-input check-item me-3" type="checkbox" value="${item.pneu_id}">
+                
+                <img src="${item.imagem_url || ''}" class="product-img me-3">
+                <div class="flex-grow-1">
+                    <label class="fw-bold">${item.marca} ${item.modelo}</label><br>
+                    <small>R$ ${item.preco_unitario}</small>
                 </div>
-            `).join('');
+                <select class="form-select w-auto qtd-devolver">
+                    ${Array.from({ length: item.quantidade }, (_, i) => `<option value="${i + 1}">${i + 1} und</option>`).join('')}
+                </select>
+            </div>
+        `).join('');
         }
 
         async function finalizarTroca() {
@@ -82,8 +86,10 @@
             let valorTotal = 0;
 
             linhas.forEach(linha => {
-                if (linha.querySelector('.check-item').checked) {
-                    const pneuId = linha.querySelector('.check-item').value;
+                const checkbox = linha.querySelector('.check-item');
+                if (checkbox.checked) {
+                    // Agora o pneuId virá corretamente do value="${item.pneu_id}"
+                    const pneuId = parseInt(checkbox.value);
                     const qtd = parseInt(linha.querySelector('.qtd-devolver').value);
                     const preco = parseFloat(linha.getAttribute('data-preco'));
 
@@ -101,11 +107,11 @@
                 body: JSON.stringify({ pedidoId, itensParaTroca, valorTotal, acao })
             });
 
+            const data = await res.json();
             if (res.ok) {
-                alert("Troca solicitada com sucesso!");
+                alert(acao === 'Estorno' ? "Estorno solicitado!" : "Cupom gerado: " + data.codigo);
                 window.location.href = "minha-conta.html";
             } else {
-                const data = await res.json();
                 alert("Erro: " + data.erro);
             }
         }
