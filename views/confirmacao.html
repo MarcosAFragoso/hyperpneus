@@ -448,30 +448,26 @@
                 icon.classList.remove('atual', 'ativo');
                 label.classList.remove('atual', 'ativo');
 
+                // 🔥 TODOS OS ANTERIORES = VERDE
                 if (i < idx) {
                     icon.classList.add('ativo');
                     label.classList.add('ativo');
-                } else if (i === idx) {
-                    icon.classList.add('atual');
-                    label.classList.add('atual');
+                }
+
+                // 🔥 ATUAL = AZUL (MENOS SE FOR ENTREGUE)
+                else if (i === idx) {
+                    if (idx === 5) {
+                        // 🚨 ENTREGUE = VERDE
+                        icon.classList.add('ativo');
+                        label.classList.add('ativo');
+                    } else {
+                        icon.classList.add('atual');
+                        label.classList.add('atual');
+                    }
                 }
             }
 
-            // 🔥 SE FOR ENTREGUE, TUDO VERDE
-            if (idx === 5) {
-                for (let i = 0; i <= 5; i++) {
-                    const step = document.getElementById(`step${i}`);
-                    if (!step) continue;
-
-                    step.querySelector('.step-icon')?.classList.add('ativo');
-                    step.querySelector('.step-label')?.classList.add('ativo');
-                }
-            }
-
-            const progress = document.getElementById('progressLine');
-            if (progress) {
-                progress.style.width = progressPct + '%';
-            }
+            document.getElementById('progressLine').style.width = progressPct + '%';
         }
 
 
