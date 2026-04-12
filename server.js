@@ -44,27 +44,27 @@ app.use(session({
 }));
 
 // ── Rotas ──────────────────────────────────────────────────
-const clienteRoutes  = require('./routes/clienteRoutes');
-const pneuRoutes     = require('./routes/pneuRoutes');
-const authRoutes     = require('./routes/authRoutes');
-const veiculoRoutes  = require('./routes/veiculoRoutes');
-const cartaoRoutes   = require('./routes/cartaoRoutes');
+const clienteRoutes = require('./routes/clienteRoutes');
+const pneuRoutes = require('./routes/pneuRoutes');
+const authRoutes = require('./routes/authRoutes');
+const veiculoRoutes = require('./routes/veiculoRoutes');
+const cartaoRoutes = require('./routes/cartaoRoutes');
 const enderecoRoutes = require('./routes/enderecoRoutes');
 const carrinhoRoutes = require('./routes/carrinhoRoutes');
-const pedidoRoutes   = require('./routes/pedidoRoutes');
-const adminRoutes    = require('./routes/adminRoutes');    // ← NOVO
+const pedidoRoutes = require('./routes/pedidoRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
-app.use('/api/auth',    authRoutes);
-app.use('/api/pneus',   pneuRoutes);
-app.use('/api/admin',   adminRoutes);                     // ← NOVO
+app.use('/api/auth', authRoutes);
+app.use('/api/pneus', pneuRoutes);
+app.use('/api/admin', adminRoutes);
 
-app.use('/api/clientes/:clienteId/veiculos',   veiculoRoutes);
-app.use('/api/clientes/:clienteId/cartoes',    cartaoRoutes);
-app.use('/api/clientes/:clienteId/enderecos',  enderecoRoutes);
-app.use('/api/clientes',   clienteRoutes);
+app.use('/api/clientes/:clienteId/veiculos', veiculoRoutes);
+app.use('/api/clientes/:clienteId/cartoes', cartaoRoutes);
+app.use('/api/clientes/:clienteId/enderecos', enderecoRoutes);
+app.use('/api/clientes', clienteRoutes);
 
-app.use('/api/carrinho',   carrinhoRoutes);
-app.use('/api/pedidos',    pedidoRoutes);
+app.use('/api/carrinho', carrinhoRoutes);
+app.use('/api/pedidos', pedidoRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
