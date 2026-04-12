@@ -8,7 +8,7 @@ module.exports = defineConfig({
     },
     env: {
       clienteEmail: "teste@hyperpneus.com",
-      clienteSenha: "123" // adicione a senha se o teste pedir
+      clienteSenha: "teste1234" // adicione a senha se o teste pedir
     },
   },
 });
