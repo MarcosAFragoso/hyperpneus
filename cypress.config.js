@@ -3,7 +3,7 @@ const { defineConfig
 
 module.exports = defineConfig({
   e2e: {
-    baseUrl: 'http: //localhost:3000',
+    baseUrl: 'http://localhost:3000',
     specPattern: 'cypress/e2e /**/*.cy.js',
     supportFile: 'cypress/support/commands.js',
     viewportWidth: 1280,
@@ -17,6 +17,6 @@ module.exports = defineConfig({
     clienteEmail: 'teste@hyperpneus.com',
     clienteSenha: 'teste1234',
     adminUsuario: 'admin',
-    adminSenha:   'admin123'
+    adminSenha: 'admin123'
   }
 });
