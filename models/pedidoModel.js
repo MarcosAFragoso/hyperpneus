@@ -1,8 +1,20 @@
 const pool = require('../config/database');
 
+// ── Tabela de frete (espelhada do controller — fonte da verdade) ──
+const TABELA_FRETE = {
+  PAC:      { percentual: 0.07, minimo: 15.00 },
+  SEDEX:    { percentual: 0.10, minimo: 35.00 },
+  RETIRADA: { percentual: 0,    minimo: 0     }
+};
+
+function calcularFrete(tipoFrete, subtotal) {
+  const regra = TABELA_FRETE[tipoFrete?.toUpperCase()] || TABELA_FRETE['PAC'];
+  return parseFloat(Math.max(regra.minimo, subtotal * regra.percentual).toFixed(2));
+}
+
 module.exports = {
 
-  async finalizar(clienteId, { enderecoId, cartoes, cupomCodigo, cupomTrocaCodigo, freteValor }) {
+  async finalizar(clienteId, { enderecoId, cartoes, cupomCodigo, cupomTrocaCodigo, tipoFrete }) {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
@@ -24,12 +36,14 @@ module.exports = {
       }
 
       // 3. Subtotal
-      const subtotal = itens.reduce((s, i) => s + parseFloat(i.preco_unitario) * parseInt(i.quantidade), 0);
+      const subtotal = itens.reduce(
+        (s, i) => s + parseFloat(i.preco_unitario) * parseInt(i.quantidade), 0
+      );
 
-      // 4. Frete
-      const valorFrete = (freteValor ?? 0);
+      // 4. Frete calculado internamente — imune a manipulação do frontend
+      const valorFrete = calcularFrete(tipoFrete, subtotal);
 
-      // 5. Aplica cupons (promocional e/ou troca)
+      // 5. Aplica cupons
       let cupomId = null;
       let desconto = 0;
 
@@ -52,28 +66,31 @@ module.exports = {
       desconto += await aplicarCupom(cupomCodigo);
       desconto += await aplicarCupom(cupomTrocaCodigo);
 
-      // 6. Total
-      const total = Math.max(0, subtotal + valorFrete - desconto);
+      // 6. Total final (nunca negativo)
+      const total = parseFloat(Math.max(0, subtotal + valorFrete - desconto).toFixed(2));
 
-      // 7. Valida cartões (CORRIGIDO)
-      // Só exige cartão se o total final for maior que zero
+      // 7. Valida cartões — só exige se o total for maior que zero
       if (total > 0) {
-        if (!cartoes || !cartoes.length) throw new Error('Informe ao menos um cartão para pagar o saldo restante.');
-        if (cartoes.length > 2) throw new Error('Máximo de 2 cartões por pedido.');
+        if (!cartoes || !cartoes.length)
+          throw new Error('Informe ao menos um cartão para pagar o saldo restante.');
+        if (cartoes.length > 2)
+          throw new Error('Máximo de 2 cartões por pedido.');
 
         const somaCartoes = cartoes.reduce((s, c) => s + parseFloat(c.valor), 0);
         if (Math.abs(somaCartoes - total) > 0.01)
-          throw new Error(`Soma dos cartões (R$${somaCartoes.toFixed(2)}) não cobre o total (R$${total.toFixed(2)}).`);
+          throw new Error(
+            `Soma dos cartões (R$${somaCartoes.toFixed(2)}) não cobre o total (R$${total.toFixed(2)}).`
+          );
 
         for (const c of cartoes) {
-          if (parseFloat(c.valor) < 10) throw new Error('Valor mínimo por cartão é R$10,00.');
+          if (parseFloat(c.valor) < 10)
+            throw new Error('Valor mínimo por cartão é R$10,00.');
         }
       } else {
-        // Se o total é 0, garantimos que não tentaremos processar cartões inexistentes
         cartoes = [];
       }
 
-      // 8. Cria o pedido — enderecoId
+      // 8. Cria o pedido
       const { rows: [pedido] } = await client.query(
         `INSERT INTO pedidos (cliente_id, endereco_id, status, frete, total, cupom_id)
          VALUES ($1, $2, 'AGUARDANDO_PAGAMENTO', $3, $4, $5)
@@ -94,16 +111,13 @@ module.exports = {
         );
       }
 
-      // 10. Pagamentos
-      // Só registra pagamentos se houver cartões utilizados
-      if (cartoes && cartoes.length > 0) {
-        for (const c of cartoes) {
-          await client.query(
-            `INSERT INTO pagamentos_pedido (pedido_id, cartao_id, valor, status)
-             VALUES ($1, $2, $3, 'APROVADO')`,
-            [pedido.id, c.cartao_id, parseFloat(c.valor)]
-          );
-        }
+      // 10. Registra pagamentos (apenas se houver cartões)
+      for (const c of cartoes) {
+        await client.query(
+          `INSERT INTO pagamentos_pedido (pedido_id, cartao_id, valor, status)
+           VALUES ($1, $2, $3, 'APROVADO')`,
+          [pedido.id, c.cartao_id, parseFloat(c.valor)]
+        );
       }
 
       // 11. Atualiza status
@@ -122,12 +136,12 @@ module.exports = {
 
       return {
         pedido_id: pedido.id,
-        status: 'EM_PROCESSAMENTO',
-        subtotal: parseFloat(subtotal.toFixed(2)),
-        frete: valorFrete,
-        desconto: parseFloat(desconto.toFixed(2)),
-        total: parseFloat(total.toFixed(2)),
-        itens: itens.length
+        status:    'EM_PROCESSAMENTO',
+        subtotal:  parseFloat(subtotal.toFixed(2)),
+        frete:     valorFrete,
+        desconto:  parseFloat(desconto.toFixed(2)),
+        total,
+        itens:     itens.length
       };
 
     } catch (err) {
@@ -183,10 +197,8 @@ module.exports = {
     return { ...pedido, itens, pagamentos };
   },
 
-  /* Atualiza o status no banco */
   async atualizarStatus(id, status) {
-    const sql = 'UPDATE pedidos SET status = $1 WHERE id = $2';
-    return await pool.query(sql, [status, id]);
+    await pool.query('UPDATE pedidos SET status = $1 WHERE id = $2', [status, id]);
   },
 
   async migrarCarrinhoAnonimo(clienteId, itensLocais) {

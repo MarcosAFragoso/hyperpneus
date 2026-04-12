@@ -8,32 +8,25 @@ require('dotenv').config();
 
 const app = express();
 
-// --- 1. CONFIGURAÇÃO DO PROXY E BANCO DE DADOS ---
-// Necessário para o Render entender que está atrás de um balanceador de carga
 app.set('trust proxy', 1);
 
 const pgPool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: { rejectUnauthorized: false }
 });
 
-// --- 2. CONFIGURAÇÃO DO CORS (LIBERAL PARA RENDER) ---
 app.use(cors({
-  origin: true, // Permite qualquer origem para evitar bloqueios no Render
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// --- 3. MIDDLEWARES BÁSICOS ---
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'views')));
 
-// --- 4. CONFIGURAÇÃO DA SESSÃO ---
 app.use(session({
   store: new pgSession({
     pool: pgPool,
@@ -44,42 +37,37 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    secure: process.env.NODE_ENV === 'production', // true no Render
+    secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   }
 }));
 
-// --- 5. DEFINIÇÃO DAS ROTAS ---
-const clienteRoutes = require('./routes/clienteRoutes');
-const pneuRoutes = require('./routes/pneuRoutes');
-const authRoutes = require('./routes/authRoutes');
-const veiculoRoutes = require('./routes/veiculoRoutes');
-const cartaoRoutes = require('./routes/cartaoRoutes');
+// ── Rotas ──────────────────────────────────────────────────
+const clienteRoutes  = require('./routes/clienteRoutes');
+const pneuRoutes     = require('./routes/pneuRoutes');
+const authRoutes     = require('./routes/authRoutes');
+const veiculoRoutes  = require('./routes/veiculoRoutes');
+const cartaoRoutes   = require('./routes/cartaoRoutes');
 const enderecoRoutes = require('./routes/enderecoRoutes');
 const carrinhoRoutes = require('./routes/carrinhoRoutes');
-const pedidoRoutes = require('./routes/pedidoRoutes');
+const pedidoRoutes   = require('./routes/pedidoRoutes');
+const adminRoutes    = require('./routes/adminRoutes');    // ← NOVO
 
-// Rotas de Autenticação e Produtos
-app.use('/api/auth', authRoutes);
-app.use('/api/pneus', pneuRoutes);
+app.use('/api/auth',    authRoutes);
+app.use('/api/pneus',   pneuRoutes);
+app.use('/api/admin',   adminRoutes);                     // ← NOVO
 
-// Rotas vinculadas a Clientes (Endereços, Cartões, Veículos)
-app.use('/api/clientes/:clienteId/veiculos', veiculoRoutes);
-app.use('/api/clientes/:clienteId/cartoes', cartaoRoutes);
-app.use('/api/clientes/:clienteId/enderecos', enderecoRoutes);
-app.use('/api/clientes', clienteRoutes);
+app.use('/api/clientes/:clienteId/veiculos',   veiculoRoutes);
+app.use('/api/clientes/:clienteId/cartoes',    cartaoRoutes);
+app.use('/api/clientes/:clienteId/enderecos',  enderecoRoutes);
+app.use('/api/clientes',   clienteRoutes);
 
-// Rotas de Pedidos e Carrinho (Essas usam o ID da sessão automaticamente)
-app.use('/api/carrinho', carrinhoRoutes);
-app.use('/api/pedidos', pedidoRoutes);
+app.use('/api/carrinho',   carrinhoRoutes);
+app.use('/api/pedidos',    pedidoRoutes);
 
-// --- 6. INICIALIZAÇÃO DO SERVIDOR ---
 const PORT = process.env.PORT || 3000;
-
-// Adicionamos '0.0.0.0' para que o Render consiga rotear o tráfego externo para o seu app
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\x1b[32m%s\x1b[0m`, `✔ Servidor rodando na porta ${PORT}`);
-  console.log(`\x1b[36m%s\x1b[0m`, `ℹ Modo: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`\x1b[35m%s\x1b[0m`, `🔗 URL: http://0.0.0.0:${PORT}`);
+  console.log(`\x1b[32m✔ Servidor rodando na porta ${PORT}\x1b[0m`);
+  console.log(`\x1b[36mℹ Modo: ${process.env.NODE_ENV || 'development'}\x1b[0m`);
 });

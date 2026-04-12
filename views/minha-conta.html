@@ -424,7 +424,8 @@
                 const statusCor = {
                     'AGUARDANDO_PAGAMENTO': 'warning',
                     'EM_PROCESSAMENTO': 'primary',
-                    'ENVIADO': 'info',
+                    'PAGAMENTO_CONFIRMADO': 'info',
+                    'EM_TRANSPORTE': 'primary',
                     'ENTREGUE': 'success',
                     'CANCELADO': 'danger'
                 };
@@ -454,6 +455,11 @@
                             class="btn btn-warning btn-sm fw-bold">
                                 <i class="fas fa-exchange-alt me-1"></i>Troca/Dev.
                             </a>
+                            ${['AGUARDANDO_PAGAMENTO','EM_PROCESSAMENTO'].includes(p.status) ? `
+                            <button onclick="cancelarPedido(${p.id})"
+                                class="btn btn-outline-danger btn-sm" data-cy="btn-cancelar-${p.id}">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </button>` : ''}
                         </div>
                     </div>
                     <div class="p-3 d-flex justify-content-between align-items-center">
@@ -798,6 +804,21 @@
             fetch(`${API}/api/auth/logout`, { method: 'POST' }).catch(() => { });
             localStorage.removeItem('cliente');
             window.location.href = 'login.html';
+        }
+
+
+        // ── Cancelar Pedido ────────────────────────────────────────
+        async function cancelarPedido(id) {
+            if (!confirm(`Tem certeza que deseja cancelar o Pedido #${id}?\nEsta ação não pode ser desfeita.`)) return;
+            try {
+                const res = await fetch(`${API}/api/pedidos/${id}/cancelar`, { method: 'PATCH' });
+                const data = await res.json();
+                if (!res.ok) return alert(data.erro || 'Erro ao cancelar pedido.');
+                alert('Pedido cancelado com sucesso!');
+                carregarPedidos();
+            } catch (e) {
+                alert('Erro de conexão ao cancelar pedido.');
+            }
         }
 
         // ══════════════════════════════════════════

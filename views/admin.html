@@ -1,269 +1,735 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin - HyperPneus</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <title>Admin - HyperPneus</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { overflow-x: hidden; }
+    .sidebar { width: 240px; min-width: 240px; min-height: 100vh; background: #1a1a2e; }
+    .sidebar .nav-link { color: #adb5bd; border-radius: 6px; margin-bottom: 2px; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.ativo { background: #e8b84b; color: #1a1a2e !important; font-weight: bold; }
+    .status-badge { font-size: .75rem; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
+    .AGUARDANDO_PAGAMENTO { background: #fff3cd; color: #856404; }
+    .EM_PROCESSAMENTO     { background: #cfe2ff; color: #084298; }
+    .PAGAMENTO_CONFIRMADO { background: #d1ecf1; color: #0c5460; }
+    .EM_TRANSPORTE        { background: #d0f0fd; color: #055160; }
+    .ENTREGUE             { background: #d1e7dd; color: #0f5132; }
+    .CANCELADO            { background: #f8d7da; color: #842029; }
+    .PENDENTE             { background: #fff3cd; color: #856404; }
+    .APROVADO             { background: #d1e7dd; color: #0f5132; }
+    .NEGADO               { background: #f8d7da; color: #842029; }
+    .PRODUTO_RECEBIDO     { background: #d1ecf1; color: #0c5460; }
+    #telaLogin { position:fixed; inset:0; background:#1a1a2e; z-index:9999;
+                 display:flex; align-items:center; justify-content:center; }
+  </style>
 </head>
-<body style="overflow-x: hidden;">
+<body>
 
-<div class="d-flex">
-    <!-- Sidebar -->
-    <div class="bg-dark text-white p-3 min-vh-100 d-flex flex-column" style="width: 260px; min-width:260px;">
-        <h4 class="mb-4 text-center"><i class="fas fa-cogs"></i> HyperAdmin</h4>
-        <hr>
-        <ul class="nav flex-column gap-2">
-            <li><a href="#" onclick="mostrarSecao('dashboard')" class="nav-link text-white" id="menu-dashboard"><i class="fas fa-chart-line me-2"></i> Dashboard</a></li>
-            <li><a href="#" onclick="mostrarSecao('clientes')" class="nav-link text-white-50" id="menu-clientes"><i class="fas fa-users me-2"></i> Clientes</a></li>
-            <li><a href="#" class="nav-link text-white-50"><i class="fas fa-box me-2"></i> Produtos</a></li>
-            <li><a href="#" class="nav-link text-warning fw-bold"><i class="fas fa-exchange-alt me-2"></i> Trocas <span class="badge bg-danger ms-1">3</span></a></li>
-        </ul>
-        <div class="mt-auto">
-            <a href="index.html" class="btn btn-outline-light w-100 btn-sm">Ir para Loja</a>
-        </div>
+<!-- ── TELA DE LOGIN ──────────────────────────────────────── -->
+<div id="telaLogin">
+  <div class="card shadow-lg" style="width:360px">
+    <div class="card-body p-5">
+      <h4 class="fw-bold text-center mb-1">HyperPneus</h4>
+      <p class="text-muted text-center small mb-4">Painel Administrativo</p>
+      <div id="alertaLogin" class="alert d-none"></div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">Usuário</label>
+        <input type="text" id="loginUsuario" class="form-control" placeholder="admin"
+               data-cy="input-usuario">
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-bold">Senha</label>
+        <input type="password" id="loginSenha" class="form-control" placeholder="••••••••"
+               data-cy="input-senha" onkeydown="if(event.key==='Enter')fazerLoginAdmin()">
+      </div>
+      <button onclick="fazerLoginAdmin()" class="btn btn-warning w-100 fw-bold"
+              data-cy="btn-login-admin">ENTRAR</button>
     </div>
-
-    <!-- Conteúdo -->
-    <div class="p-4 w-100 bg-light">
-
-        <!-- DASHBOARD -->
-        <div id="sec-dashboard">
-            <h2 class="mb-4">Dashboard de Vendas</h2>
-            <div class="card mb-4 border-0 shadow-sm">
-                <div class="card-body d-flex gap-3 align-items-end">
-                    <div>
-                        <label class="form-label small fw-bold">Data Início</label>
-                        <input type="date" class="form-control">
-                    </div>
-                    <div>
-                        <label class="form-label small fw-bold">Data Fim</label>
-                        <input type="date" class="form-control">
-                    </div>
-                    <button class="btn btn-primary"><i class="fas fa-filter"></i> Filtrar</button>
-                </div>
-            </div>
-            <div class="row g-4">
-                <div class="col-md-8">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header bg-white fw-bold">Evolução de Faturamento (R$)</div>
-                        <div class="card-body">
-                            <canvas id="myChart" style="max-height: 300px;"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card text-white bg-success mb-3 shadow">
-                        <div class="card-body">
-                            <h5>Vendas Totais</h5>
-                            <h2 class="fw-bold">R$ 45.200,00</h2>
-                            <small><i class="fas fa-arrow-up"></i> 12% vs mês anterior</small>
-                        </div>
-                    </div>
-                    <div class="card text-white bg-warning mb-3 shadow">
-                        <div class="card-body">
-                            <h5>Solicitações de Troca</h5>
-                            <h2 class="fw-bold">3 Pendentes</h2>
-                            <small>Aguardando sua aprovação</small>
-                            <button class="btn btn-sm btn-light text-dark mt-2 w-100">Ver Solicitações</button>
-                        </div>
-                    </div>
-                    <div class="card text-white bg-info mb-3 shadow">
-                        <div class="card-body">
-                            <h5>Estoque Baixo</h5>
-                            <h2 class="fw-bold">15 Itens</h2>
-                            <small>Precisam de reposição</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- CLIENTES -->
-        <div id="sec-clientes" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Gerenciar Clientes</h2>
-            </div>
-            <div id="alertaAdmin" class="alert d-none"></div>
-            <div class="card shadow-sm">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <strong>Lista de Clientes</strong>
-                    <input type="text" id="buscaCliente" class="form-control w-25" placeholder="Buscar por nome..." oninput="filtrarClientes()">
-                </div>
-                <div class="card-body p-0">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>#</th>
-                                <th>Nome</th>
-                                <th>CPF</th>
-                                <th>E-mail</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaClientes">
-                            <tr><td colspan="6" class="text-center py-3">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-    </div>
+  </div>
 </div>
 
-<!-- Modal Editar Cliente -->
-<div class="modal fade" id="modalEditarCliente" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Editar Cliente</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="editId">
-                <div class="mb-2"><input type="text" id="editNomeAdmin" class="form-control" placeholder="Nome"></div>
-                <div class="mb-2"><input type="text" id="editSobrenomeAdmin" class="form-control" placeholder="Sobrenome"></div>
-                <div class="mb-2"><input type="email" id="editEmailAdmin" class="form-control" placeholder="E-mail"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn btn-primary" onclick="salvarEdicao()">Salvar</button>
-            </div>
-        </div>
+<!-- ── PAINEL PRINCIPAL ───────────────────────────────────── -->
+<div class="d-flex" id="painelPrincipal" style="display:none!important">
+
+  <!-- Sidebar -->
+  <div class="sidebar p-3 d-flex flex-column">
+    <div class="text-center mb-4">
+      <h5 class="text-warning fw-bold mb-0"><i class="fas fa-cogs me-2"></i>HyperAdmin</h5>
+      <small class="text-secondary" id="sidebarUsuario"></small>
     </div>
+    <hr class="border-secondary">
+    <ul class="nav flex-column gap-1 flex-grow-1">
+      <li><a href="#" onclick="mostrarSecao('dashboard')"  class="nav-link ativo" id="menu-dashboard"><i class="fas fa-chart-line me-2"></i>Dashboard</a></li>
+      <li><a href="#" onclick="mostrarSecao('pedidos')"    class="nav-link" id="menu-pedidos"><i class="fas fa-shopping-bag me-2"></i>Pedidos</a></li>
+      <li><a href="#" onclick="mostrarSecao('trocas')"     class="nav-link" id="menu-trocas"><i class="fas fa-exchange-alt me-2"></i>Trocas <span class="badge bg-danger ms-1" id="badgeTrocas" style="display:none">0</span></a></li>
+      <li><a href="#" onclick="mostrarSecao('clientes')"   class="nav-link" id="menu-clientes"><i class="fas fa-users me-2"></i>Clientes</a></li>
+    </ul>
+    <hr class="border-secondary">
+    <button onclick="fazerLogoutAdmin()" class="btn btn-outline-secondary btn-sm w-100">
+      <i class="fas fa-sign-out-alt me-1"></i>Sair
+    </button>
+    <a href="index.html" class="btn btn-outline-light btn-sm w-100 mt-2">
+      <i class="fas fa-store me-1"></i>Ver Loja
+    </a>
+  </div>
+
+  <!-- Conteúdo -->
+  <div class="flex-grow-1 p-4 bg-light" style="min-height:100vh">
+    <div id="alerta" class="alert d-none mb-3"></div>
+
+    <!-- ── DASHBOARD ──────────────────────────────────────── -->
+    <div id="sec-dashboard">
+      <h3 class="fw-bold mb-4">Dashboard</h3>
+      <div class="row g-3 mb-4" id="cards-dashboard">
+        <div class="col-md-3">
+          <div class="card border-0 shadow-sm text-center p-3">
+            <div class="text-muted small">Total de Pedidos</div>
+            <div class="fs-3 fw-bold text-primary" id="dash-total">—</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card border-0 shadow-sm text-center p-3">
+            <div class="text-muted small">Aguard. Pagamento</div>
+            <div class="fs-3 fw-bold text-warning" id="dash-aguardando">—</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card border-0 shadow-sm text-center p-3">
+            <div class="text-muted small">Em Transporte</div>
+            <div class="fs-3 fw-bold text-info" id="dash-transporte">—</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card border-0 shadow-sm text-center p-3">
+            <div class="text-muted small">Trocas Pendentes</div>
+            <div class="fs-3 fw-bold text-danger" id="dash-trocas">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="card shadow-sm">
+        <div class="card-header fw-bold bg-white">Pedidos Recentes</div>
+        <div class="card-body p-0" id="dash-pedidos-recentes">
+          <p class="text-muted p-3">Carregando...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PEDIDOS ────────────────────────────────────────── -->
+    <div id="sec-pedidos" class="d-none">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold mb-0">Gerenciar Pedidos</h3>
+        <div class="d-flex gap-2">
+          <select id="filtroPedidoStatus" class="form-select form-select-sm" onchange="carregarPedidos()" style="width:200px">
+            <option value="">Todos os status</option>
+            <option value="AGUARDANDO_PAGAMENTO">Aguardando Pagamento</option>
+            <option value="EM_PROCESSAMENTO">Em Processamento</option>
+            <option value="PAGAMENTO_CONFIRMADO">Pagamento Confirmado</option>
+            <option value="EM_TRANSPORTE">Em Transporte</option>
+            <option value="ENTREGUE">Entregue</option>
+            <option value="CANCELADO">Cancelado</option>
+          </select>
+          <button onclick="carregarPedidos()" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-sync"></i>
+          </button>
+        </div>
+      </div>
+      <div class="card shadow-sm">
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>#</th><th>Cliente</th><th>Status</th>
+                <th>Total</th><th>Data</th><th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaPedidos">
+              <tr><td colspan="6" class="text-center py-3">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TROCAS ─────────────────────────────────────────── -->
+    <div id="sec-trocas" class="d-none">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold mb-0">Gerenciar Trocas</h3>
+        <select id="filtroTrocaStatus" class="form-select form-select-sm" onchange="carregarTrocas()" style="width:180px">
+          <option value="PENDENTE">Pendentes</option>
+          <option value="APROVADO">Aprovadas</option>
+          <option value="NEGADO">Negadas</option>
+          <option value="PRODUTO_RECEBIDO">Produto Recebido</option>
+        </select>
+      </div>
+      <div class="card shadow-sm">
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>#</th><th>Cliente</th><th>Pedido</th><th>Pneu</th>
+                <th>Qtd</th><th>Status</th><th>Cupom</th><th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaTrocas">
+              <tr><td colspan="8" class="text-center py-3">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CLIENTES ───────────────────────────────────────── -->
+    <div id="sec-clientes" class="d-none">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold mb-0">Clientes</h3>
+        <input type="text" id="buscaCliente" class="form-control w-25" placeholder="Buscar..."
+               oninput="filtrarClientes()">
+      </div>
+      <div id="alertaAdmin" class="alert d-none mb-2"></div>
+      <div class="card shadow-sm">
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+              <tr><th>#</th><th>Nome</th><th>CPF</th><th>E-mail</th><th>Status</th><th>Ações</th></tr>
+            </thead>
+            <tbody id="tabelaClientes">
+              <tr><td colspan="6" class="text-center py-3">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /conteúdo -->
+</div><!-- /painel -->
+
+<!-- ── MODAL DETALHE PEDIDO ───────────────────────────────── -->
+<div class="modal fade" id="modalPedido" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalPedidoTitulo">Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalPedidoCorpo"></div>
+      <div class="modal-footer" id="modalPedidoFooter"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL CONFIRMAR AÇÃO ───────────────────────────────── -->
+<div class="modal fade" id="modalAcao" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalAcaoTitulo">Confirmar</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="modalAcaoMsg"></p>
+        <div class="mb-2">
+          <label class="form-label small">Observação (opcional)</label>
+          <input type="text" id="modalAcaoObs" class="form-control" placeholder="Justificativa...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" id="modalAcaoBtn" data-cy="btn-confirmar-acao">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL EDITAR CLIENTE ───────────────────────────────── -->
+<div class="modal fade" id="modalEditarCliente" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Editar Cliente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editId">
+        <div class="mb-2"><input type="text"  id="editNomeAdmin"      class="form-control mb-2" placeholder="Nome"></div>
+        <div class="mb-2"><input type="text"  id="editSobrenomeAdmin" class="form-control mb-2" placeholder="Sobrenome"></div>
+        <div class="mb-2"><input type="email" id="editEmailAdmin"     class="form-control"      placeholder="E-mail"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarEdicaoCliente()">Salvar</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const API = '';
 let todosClientes = [];
+let adminLogado = null;
 
-function mostrarAlertaAdmin(msg, tipo = 'danger') {
-    const el = document.getElementById('alertaAdmin');
-    el.className = `alert alert-${tipo}`;
-    el.textContent = msg;
-    el.classList.remove('d-none');
-    setTimeout(() => el.classList.add('d-none'), 4000);
+// ── Helpers ───────────────────────────────────────────────
+function fmt(v) {
+  return parseFloat(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+function fmtData(d) {
+  return d ? new Date(d).toLocaleString('pt-BR') : '—';
+}
+function mostrarAlerta(msg, tipo = 'danger') {
+  const el = document.getElementById('alerta');
+  el.className = `alert alert-${tipo}`;
+  el.textContent = msg;
+  el.classList.remove('d-none');
+  setTimeout(() => el.classList.add('d-none'), 5000);
+}
+function badgeStatus(s) {
+  return `<span class="status-badge ${s}">${(s || '').replace(/_/g, ' ')}</span>`;
 }
 
+// ── Login / Logout ────────────────────────────────────────
+async function fazerLoginAdmin() {
+  const usuario = document.getElementById('loginUsuario').value.trim();
+  const senha   = document.getElementById('loginSenha').value;
+  const alerta  = document.getElementById('alertaLogin');
+
+  if (!usuario || !senha) {
+    alerta.className = 'alert alert-danger';
+    alerta.textContent = 'Preencha usuário e senha.';
+    alerta.classList.remove('d-none');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/api/admin/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usuario, senha })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alerta.className = 'alert alert-danger';
+      alerta.textContent = data.erro || 'Credenciais inválidas.';
+      alerta.classList.remove('d-none');
+      return;
+    }
+    adminLogado = data.admin;
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('painelPrincipal').style.display = 'flex';
+    document.getElementById('sidebarUsuario').textContent = adminLogado.usuario;
+    iniciarPainel();
+  } catch (e) {
+    alerta.className = 'alert alert-danger';
+    alerta.textContent = 'Erro de conexão.';
+    alerta.classList.remove('d-none');
+  }
+}
+
+async function fazerLogoutAdmin() {
+  await fetch(`${API}/api/admin/logout`, { method: 'POST' });
+  location.reload();
+}
+
+// ── Navegação ─────────────────────────────────────────────
 function mostrarSecao(secao) {
-    document.getElementById('sec-dashboard').classList.add('d-none');
-    document.getElementById('sec-clientes').classList.add('d-none');
-    document.getElementById('menu-dashboard').classList.remove('text-white');
-    document.getElementById('menu-clientes').classList.remove('text-white');
-    document.getElementById('menu-dashboard').classList.add('text-white-50');
-    document.getElementById('menu-clientes').classList.add('text-white-50');
+  ['dashboard','pedidos','trocas','clientes'].forEach(s => {
+    document.getElementById(`sec-${s}`).classList.add('d-none');
+    document.getElementById(`menu-${s}`).classList.remove('ativo');
+  });
+  document.getElementById(`sec-${secao}`).classList.remove('d-none');
+  document.getElementById(`menu-${secao}`).classList.add('ativo');
 
-    document.getElementById(`sec-${secao}`).classList.remove('d-none');
-    document.getElementById(`menu-${secao}`).classList.remove('text-white-50');
-    document.getElementById(`menu-${secao}`).classList.add('text-white');
-
-    if (secao === 'clientes') carregarClientes();
+  if (secao === 'pedidos')   carregarPedidos();
+  if (secao === 'trocas')    carregarTrocas();
+  if (secao === 'clientes')  carregarClientes();
+  if (secao === 'dashboard') carregarDashboard();
 }
 
+// ── Dashboard ─────────────────────────────────────────────
+async function carregarDashboard() {
+  try {
+    const [resPedidos, resTrocas] = await Promise.all([
+      fetch(`${API}/api/admin/pedidos`),
+      fetch(`${API}/api/admin/trocas?status=PENDENTE`)
+    ]);
+    const pedidos = await resPedidos.json();
+    const trocas  = await resTrocas.json();
+
+    document.getElementById('dash-total').textContent = pedidos.length;
+    document.getElementById('dash-aguardando').textContent =
+      pedidos.filter(p => p.status === 'AGUARDANDO_PAGAMENTO').length;
+    document.getElementById('dash-transporte').textContent =
+      pedidos.filter(p => p.status === 'EM_TRANSPORTE').length;
+    document.getElementById('dash-trocas').textContent = trocas.length;
+
+    // Badge sidebar
+    if (trocas.length > 0) {
+      document.getElementById('badgeTrocas').textContent = trocas.length;
+      document.getElementById('badgeTrocas').style.display = 'inline';
+    }
+
+    const recentes = pedidos.slice(0, 8);
+    document.getElementById('dash-pedidos-recentes').innerHTML =
+      recentes.length ? `
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr><th>#</th><th>Cliente</th><th>Status</th><th>Total</th><th>Data</th><th></th></tr>
+        </thead>
+        <tbody>
+          ${recentes.map(p => `
+          <tr>
+            <td><strong>#${p.id}</strong></td>
+            <td>${p.cliente_nome}</td>
+            <td>${badgeStatus(p.status)}</td>
+            <td>${fmt(p.total)}</td>
+            <td>${fmtData(p.criado_em)}</td>
+            <td><button onclick="abrirPedido(${p.id})" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-eye"></i></button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` : '<p class="text-muted p-3">Nenhum pedido encontrado.</p>';
+
+  } catch (e) {
+    document.getElementById('dash-pedidos-recentes').innerHTML =
+      '<p class="text-danger p-3">Erro ao carregar dashboard.</p>';
+  }
+}
+
+// ── Pedidos ───────────────────────────────────────────────
+async function carregarPedidos() {
+  const status = document.getElementById('filtroPedidoStatus')?.value || '';
+  const url = `${API}/api/admin/pedidos${status ? `?status=${status}` : ''}`;
+  try {
+    const res = await fetch(url);
+    const pedidos = await res.json();
+    const tbody = document.getElementById('tabelaPedidos');
+
+    if (!pedidos.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-muted">Nenhum pedido encontrado.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = pedidos.map(p => `
+      <tr data-cy="pedido-row-${p.id}">
+        <td><strong>#${p.id}</strong></td>
+        <td>
+          <div>${p.cliente_nome}</div>
+          <small class="text-muted">${p.email}</small>
+        </td>
+        <td>${badgeStatus(p.status)}</td>
+        <td>${fmt(p.total)}</td>
+        <td><small>${fmtData(p.criado_em)}</small></td>
+        <td>
+          <div class="d-flex gap-1">
+            <button onclick="abrirPedido(${p.id})" class="btn btn-sm btn-outline-primary"
+                    data-cy="btn-ver-pedido-${p.id}" title="Ver detalhes">
+              <i class="fas fa-eye"></i>
+            </button>
+            ${p.status === 'EM_PROCESSAMENTO' ? `
+            <button onclick="confirmarPagamento(${p.id})" class="btn btn-sm btn-success"
+                    data-cy="btn-confirmar-pgto-${p.id}" title="Confirmar pagamento">
+              <i class="fas fa-check"></i> Pgto
+            </button>` : ''}
+            ${p.status === 'PAGAMENTO_CONFIRMADO' ? `
+            <button onclick="avancarStatus(${p.id},'EM_TRANSPORTE')" class="btn btn-sm btn-info text-white"
+                    data-cy="btn-em-transporte-${p.id}" title="Colocar em transporte">
+              <i class="fas fa-truck"></i>
+            </button>` : ''}
+            ${p.status === 'EM_TRANSPORTE' ? `
+            <button onclick="avancarStatus(${p.id},'ENTREGUE')" class="btn btn-sm btn-success"
+                    data-cy="btn-entregue-${p.id}" title="Confirmar entrega">
+              <i class="fas fa-box-open"></i> Entregue
+            </button>` : ''}
+            ${['AGUARDANDO_PAGAMENTO','EM_PROCESSAMENTO'].includes(p.status) ? `
+            <button onclick="avancarStatus(${p.id},'CANCELADO')" class="btn btn-sm btn-outline-danger"
+                    data-cy="btn-cancelar-admin-${p.id}" title="Cancelar pedido">
+              <i class="fas fa-ban"></i>
+            </button>` : ''}
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    document.getElementById('tabelaPedidos').innerHTML =
+      '<tr><td colspan="6" class="text-danger p-3">Erro ao carregar pedidos.</td></tr>';
+  }
+}
+
+async function abrirPedido(id) {
+  const res = await fetch(`${API}/api/admin/pedidos/${id}`);
+  const p = await res.json();
+
+  document.getElementById('modalPedidoTitulo').textContent = `Pedido #${p.id} — ${p.cliente_nome}`;
+
+  const itensHtml = (p.itens || []).map(i => `
+    <tr>
+      <td>${i.marca} ${i.modelo} ${i.largura}/${i.perfil} R${i.aro}</td>
+      <td class="text-center">${i.quantidade}</td>
+      <td>${fmt(i.preco_unitario)}</td>
+      <td><strong>${fmt(i.preco_unitario * i.quantidade)}</strong></td>
+    </tr>`).join('');
+
+  const pgtoHtml = (p.pagamentos || []).map(pg => `
+    <div class="d-flex justify-content-between">
+      <span>${pg.bandeira} **** ${pg.numero_final}</span>
+      <strong>${fmt(pg.valor)}</strong>
+    </div>`).join('') || '<span class="text-muted">Sem pagamentos (cupom integral)</span>';
+
+  document.getElementById('modalPedidoCorpo').innerHTML = `
+    <div class="row g-3">
+      <div class="col-md-6">
+        <strong>Status:</strong> ${badgeStatus(p.status)}<br>
+        <strong>Data:</strong> ${fmtData(p.criado_em)}<br>
+        <strong>Endereço:</strong> ${p.logradouro || ''}, ${p.numero || ''} — ${p.cidade || ''}/${p.estado || ''}
+      </div>
+      <div class="col-md-6">
+        <strong>Subtotal:</strong> —<br>
+        <strong>Frete:</strong> ${fmt(p.frete)}<br>
+        <strong>Total:</strong> <span class="text-primary fw-bold">${fmt(p.total)}</span>
+      </div>
+    </div>
+    <hr>
+    <h6>Itens</h6>
+    <table class="table table-sm">
+      <thead><tr><th>Pneu</th><th>Qtd</th><th>Unit.</th><th>Total</th></tr></thead>
+      <tbody>${itensHtml}</tbody>
+    </table>
+    <hr>
+    <h6>Pagamentos</h6>
+    ${pgtoHtml}
+  `;
+
+  // Botões de ação no footer
+  let botoesHtml = '';
+  if (p.status === 'EM_PROCESSAMENTO')
+    botoesHtml += `<button onclick="confirmarPagamento(${p.id},true)" class="btn btn-success" data-cy="btn-modal-confirmar-pgto">
+      <i class="fas fa-check me-1"></i>Confirmar Pagamento</button>`;
+  if (p.status === 'PAGAMENTO_CONFIRMADO')
+    botoesHtml += `<button onclick="avancarStatus(${p.id},'EM_TRANSPORTE',true)" class="btn btn-info text-white" data-cy="btn-modal-em-transporte">
+      <i class="fas fa-truck me-1"></i>Em Transporte</button>`;
+  if (p.status === 'EM_TRANSPORTE')
+    botoesHtml += `<button onclick="avancarStatus(${p.id},'ENTREGUE',true)" class="btn btn-success" data-cy="btn-modal-entregue">
+      <i class="fas fa-box-open me-1"></i>Confirmar Entrega</button>`;
+
+  document.getElementById('modalPedidoFooter').innerHTML =
+    botoesHtml + '<button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>';
+
+  new bootstrap.Modal(document.getElementById('modalPedido')).show();
+}
+
+async function confirmarPagamento(id, fecharModal = false) {
+  if (!confirm(`Confirmar pagamento do Pedido #${id}?`)) return;
+  try {
+    const res = await fetch(`${API}/api/admin/pedidos/${id}/confirmar-pagamento`, { method: 'PATCH' });
+    const data = await res.json();
+    if (!res.ok) return mostrarAlerta(data.erro);
+    mostrarAlerta('Pagamento confirmado!', 'success');
+    if (fecharModal) bootstrap.Modal.getInstance(document.getElementById('modalPedido')).hide();
+    carregarPedidos();
+    carregarDashboard();
+  } catch (e) { mostrarAlerta('Erro ao confirmar pagamento.'); }
+}
+
+async function avancarStatus(id, novoStatus, fecharModal = false) {
+  const labels = {
+    'EM_TRANSPORTE': 'colocar em transporte',
+    'ENTREGUE': 'confirmar entrega',
+    'CANCELADO': 'cancelar'
+  };
+  if (!confirm(`Deseja ${labels[novoStatus] || novoStatus} o Pedido #${id}?`)) return;
+  try {
+    const res = await fetch(`${API}/api/admin/pedidos/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: novoStatus })
+    });
+    const data = await res.json();
+    if (!res.ok) return mostrarAlerta(data.erro);
+    mostrarAlerta(`Status atualizado para ${novoStatus}.`, 'success');
+    if (fecharModal) bootstrap.Modal.getInstance(document.getElementById('modalPedido')).hide();
+    carregarPedidos();
+    carregarDashboard();
+  } catch (e) { mostrarAlerta('Erro ao atualizar status.'); }
+}
+
+// ── Trocas ────────────────────────────────────────────────
+async function carregarTrocas() {
+  const status = document.getElementById('filtroTrocaStatus')?.value || 'PENDENTE';
+  try {
+    const res = await fetch(`${API}/api/admin/trocas?status=${status}`);
+    const trocas = await res.json();
+    const tbody = document.getElementById('tabelaTrocas');
+
+    if (!trocas.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-3 text-muted">Nenhuma troca encontrada.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = trocas.map(t => `
+      <tr data-cy="troca-row-${t.id}">
+        <td><strong>#${t.id}</strong></td>
+        <td>${t.cliente_nome}</td>
+        <td><a href="#" onclick="abrirPedido(${t.pedido_id})">#${t.pedido_id}</a></td>
+        <td><small>${t.marca} ${t.modelo} ${t.largura}/${t.perfil} R${t.aro}</small></td>
+        <td class="text-center">${t.quantidade_trocada}</td>
+        <td>${badgeStatus(t.status)}</td>
+        <td><small class="text-success">${t.cupom_codigo || '—'}</small></td>
+        <td>
+          <div class="d-flex gap-1">
+            ${t.status === 'PENDENTE' ? `
+            <button onclick="acaoTroca(${t.id},'aceitar')" class="btn btn-sm btn-success"
+                    data-cy="btn-aceitar-troca-${t.id}" title="Aceitar troca">
+              <i class="fas fa-check"></i>
+            </button>
+            <button onclick="acaoTroca(${t.id},'negar')" class="btn btn-sm btn-danger"
+                    data-cy="btn-negar-troca-${t.id}" title="Negar troca">
+              <i class="fas fa-times"></i>
+            </button>` : ''}
+            ${t.status === 'APROVADO' ? `
+            <button onclick="acaoTroca(${t.id},'recebimento')" class="btn btn-sm btn-info text-white"
+                    data-cy="btn-recebimento-troca-${t.id}" title="Confirmar recebimento">
+              <i class="fas fa-box"></i> Recebido
+            </button>` : ''}
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    document.getElementById('tabelaTrocas').innerHTML =
+      '<tr><td colspan="8" class="text-danger p-3">Erro ao carregar trocas.</td></tr>';
+  }
+}
+
+function acaoTroca(id, acao) {
+  const textos = {
+    aceitar:      { titulo: 'Aceitar Troca', msg: `Aceitar a troca #${id}? O estoque será reposto e o cupom gerado.`, btn: 'success' },
+    negar:        { titulo: 'Negar Troca',   msg: `Negar a troca #${id}?`, btn: 'danger' },
+    recebimento:  { titulo: 'Confirmar Recebimento', msg: `Confirmar recebimento do produto da troca #${id}?`, btn: 'info' }
+  };
+  const t = textos[acao];
+  document.getElementById('modalAcaoTitulo').textContent = t.titulo;
+  document.getElementById('modalAcaoMsg').textContent = t.msg;
+  document.getElementById('modalAcaoObs').value = '';
+  document.getElementById('modalAcaoBtn').className = `btn btn-${t.btn}`;
+  document.getElementById('modalAcaoBtn').onclick = () => executarAcaoTroca(id, acao);
+  new bootstrap.Modal(document.getElementById('modalAcao')).show();
+}
+
+async function executarAcaoTroca(id, acao) {
+  const obs = document.getElementById('modalAcaoObs').value;
+  bootstrap.Modal.getInstance(document.getElementById('modalAcao')).hide();
+  try {
+    const res = await fetch(`${API}/api/admin/trocas/${id}/${acao}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ obs })
+    });
+    const data = await res.json();
+    if (!res.ok) return mostrarAlerta(data.erro);
+    mostrarAlerta(data.mensagem, 'success');
+    carregarTrocas();
+    carregarDashboard();
+  } catch (e) { mostrarAlerta('Erro ao processar ação.'); }
+}
+
+// ── Clientes ──────────────────────────────────────────────
 async function carregarClientes() {
-    const res = await fetch(`${API}/api/clientes`);
-    todosClientes = await res.json();
-    renderizarClientes(todosClientes);
+  const res = await fetch(`${API}/api/clientes`);
+  todosClientes = await res.json();
+  renderizarClientes(todosClientes);
 }
 
 function renderizarClientes(clientes) {
-    const tbody = document.getElementById('tabelaClientes');
-    if (!clientes.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum cliente encontrado.</td></tr>';
-        return;
-    }
-    tbody.innerHTML = clientes.map(c => `
-        <tr class="${!c.ativo ? 'table-secondary text-muted' : ''}">
-            <td>${c.id}</td>
-            <td>${c.nome} ${c.sobrenome}</td>
-            <td>${c.cpf}</td>
-            <td>${c.email}</td>
-            <td><span class="badge ${c.ativo ? 'bg-success' : 'bg-secondary'}">${c.ativo ? 'Ativo' : 'Inativo'}</span></td>
-            <td>
-                <button class="btn btn-sm btn-outline-primary me-1" onclick="abrirEdicao(${c.id}, '${c.nome}', '${c.sobrenome}', '${c.email}')">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-sm ${c.ativo ? 'btn-outline-danger' : 'btn-outline-success'}" onclick="${c.ativo ? `inativarCliente(${c.id})` : `ativarCliente(${c.id})`}">
-                    <i class="fas fa-${c.ativo ? 'ban' : 'check'}"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
+  const tbody = document.getElementById('tabelaClientes');
+  if (!clientes.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum cliente.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = clientes.map(c => `
+    <tr class="${!c.ativo ? 'table-secondary text-muted' : ''}">
+      <td>${c.id}</td>
+      <td>${c.nome} ${c.sobrenome}</td>
+      <td><small>${c.cpf}</small></td>
+      <td><small>${c.email}</small></td>
+      <td><span class="badge ${c.ativo ? 'bg-success' : 'bg-secondary'}">${c.ativo ? 'Ativo' : 'Inativo'}</span></td>
+      <td>
+        <button class="btn btn-sm btn-outline-primary me-1"
+                onclick="abrirEdicaoCliente(${c.id},'${c.nome}','${c.sobrenome}','${c.email}')">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn btn-sm ${c.ativo ? 'btn-outline-danger' : 'btn-outline-success'}"
+                onclick="${c.ativo ? `inativarCliente(${c.id})` : `ativarCliente(${c.id})`}">
+          <i class="fas fa-${c.ativo ? 'ban' : 'check'}"></i>
+        </button>
+      </td>
+    </tr>`).join('');
 }
 
 function filtrarClientes() {
-    const busca = document.getElementById('buscaCliente').value.toLowerCase();
-    const filtrados = todosClientes.filter(c =>
-        `${c.nome} ${c.sobrenome}`.toLowerCase().includes(busca) || c.email.toLowerCase().includes(busca)
-    );
-    renderizarClientes(filtrados);
+  const q = document.getElementById('buscaCliente').value.toLowerCase();
+  renderizarClientes(todosClientes.filter(c =>
+    `${c.nome} ${c.sobrenome}`.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)
+  ));
 }
 
-function abrirEdicao(id, nome, sobrenome, email) {
-    document.getElementById('editId').value = id;
-    document.getElementById('editNomeAdmin').value = nome;
-    document.getElementById('editSobrenomeAdmin').value = sobrenome;
-    document.getElementById('editEmailAdmin').value = email;
-    new bootstrap.Modal(document.getElementById('modalEditarCliente')).show();
+function abrirEdicaoCliente(id, nome, sobrenome, email) {
+  document.getElementById('editId').value = id;
+  document.getElementById('editNomeAdmin').value = nome;
+  document.getElementById('editSobrenomeAdmin').value = sobrenome;
+  document.getElementById('editEmailAdmin').value = email;
+  new bootstrap.Modal(document.getElementById('modalEditarCliente')).show();
 }
 
-async function salvarEdicao() {
-    const id = document.getElementById('editId').value;
-    const dados = {
-        nome: document.getElementById('editNomeAdmin').value,
-        sobrenome: document.getElementById('editSobrenomeAdmin').value,
-        email: document.getElementById('editEmailAdmin').value
-    };
-    const res = await fetch(`${API}/api/clientes/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dados)
-    });
-    if (res.ok) {
-        bootstrap.Modal.getInstance(document.getElementById('modalEditarCliente')).hide();
-        carregarClientes();
-        mostrarAlertaAdmin('Cliente atualizado!', 'success');
-    }
+async function salvarEdicaoCliente() {
+  const id = document.getElementById('editId').value;
+  const res = await fetch(`${API}/api/clientes/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      nome:      document.getElementById('editNomeAdmin').value,
+      sobrenome: document.getElementById('editSobrenomeAdmin').value,
+      email:     document.getElementById('editEmailAdmin').value
+    })
+  });
+  if (res.ok) {
+    bootstrap.Modal.getInstance(document.getElementById('modalEditarCliente')).hide();
+    mostrarAlerta('Cliente atualizado!', 'success');
+    carregarClientes();
+  }
 }
 
 async function inativarCliente(id) {
-    if (!confirm('Inativar este cliente?')) return;
-    await fetch(`${API}/api/clientes/${id}/inativar`, { method: 'PATCH' });
-    carregarClientes();
-    mostrarAlertaAdmin('Cliente inativado.', 'warning');
+  if (!confirm('Inativar este cliente?')) return;
+  await fetch(`${API}/api/clientes/${id}/inativar`, { method: 'PATCH' });
+  mostrarAlerta('Cliente inativado.', 'warning');
+  carregarClientes();
 }
-
 async function ativarCliente(id) {
-    await fetch(`${API}/api/clientes/${id}/ativar`, { method: 'PATCH' });
-    carregarClientes();
-    mostrarAlertaAdmin('Cliente ativado!', 'success');
+  await fetch(`${API}/api/clientes/${id}/ativar`, { method: 'PATCH' });
+  mostrarAlerta('Cliente ativado!', 'success');
+  carregarClientes();
 }
 
-// Gráfico
-window.onload = () => {
-    mostrarSecao('dashboard');
-    const ctx = document.getElementById('myChart');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['01/Fev', '05/Fev', '10/Fev', '15/Fev', '20/Fev', '25/Fev'],
-            datasets: [{
-                label: 'Vendas (R$)',
-                data: [1200, 1900, 300, 5000, 2300, 4500],
-                borderColor: '#0d6efd',
-                backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
+// ── Init ──────────────────────────────────────────────────
+function iniciarPainel() {
+  mostrarSecao('dashboard');
+}
+
+// Verifica sessão ativa ao carregar
+window.onload = async () => {
+  try {
+    const res = await fetch(`${API}/api/admin/perfil`);
+    if (res.ok) {
+      adminLogado = await res.json();
+      document.getElementById('telaLogin').style.display = 'none';
+      document.getElementById('painelPrincipal').style.display = 'flex';
+      document.getElementById('sidebarUsuario').textContent = adminLogado.usuario;
+      iniciarPainel();
+    }
+  } catch (e) { /* sessão expirada, fica no login */ }
 };
 </script>
-
 </body>
 </html>
