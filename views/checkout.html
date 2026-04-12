@@ -149,6 +149,14 @@
                     </div>
                 </div>
 
+
+                <!-- Botão adicionar novo cartão -->
+                <div class="mb-4">
+                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#modalCartao" data-cy="btn-novo-cartao">
+                        <i class="fas fa-plus me-1"></i> Adicionar novo cartão
+                    </button>
+                </div>
                 <!-- STEP 4: PAGAMENTO -->
                 <div class="step-header"><span class="step-num">4</span> Forma de Pagamento</div>
                 <div class="mb-3">
@@ -229,7 +237,7 @@
                                 <span class="fs-5 fw-bold text-primary" id="resumoTotal">R$ 0,00</span>
                             </div>
                             <button onclick="finalizarPedido()" class="btn btn-success w-100 btn-lg shadow"
-                                id="btnFinalizar">
+                                id="btnFinalizar" data-cy="btn-finalizar">
                                 <i class="fas fa-lock me-2"></i>CONFIRMAR PEDIDO
                             </button>
                             <p class="text-center text-muted small mt-2">
@@ -281,6 +289,60 @@
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button class="btn btn-primary" onclick="salvarEndereco()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal Cartão -->
+    <div class="modal fade" id="modalCartao" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Novo Cartão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nome impresso no cartão</label>
+                        <input type="text" id="cartaoNome" class="form-control" placeholder="NOME SOBRENOME"
+                               data-cy="input-cartao-nome" style="text-transform:uppercase">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Número do cartão</label>
+                        <input type="text" id="cartaoNumero" class="form-control" placeholder="0000 0000 0000 0000"
+                               maxlength="19" oninput="formatarCartaoNumero(this)" data-cy="input-cartao-numero">
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Validade</label>
+                            <input type="text" id="cartaoValidade" class="form-control" placeholder="MM/AA"
+                                   maxlength="5" oninput="formatarValidade(this)">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">CVV</label>
+                            <input type="text" id="cartaoCvv" class="form-control" placeholder="000" maxlength="4">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bandeira</label>
+                        <select id="cartaoBandeira" class="form-select" data-cy="select-cartao-bandeira">
+                            <option value="Visa">Visa</option>
+                            <option value="Mastercard">Mastercard</option>
+                            <option value="Elo">Elo</option>
+                            <option value="American Express">American Express</option>
+                            <option value="Hipercard">Hipercard</option>
+                        </select>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="cartaoPrincipal">
+                        <label class="form-check-label">Definir como cartão principal</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-primary" onclick="salvarCartao()" data-cy="btn-salvar-cartao">Salvar Cartão</button>
                 </div>
             </div>
         </div>
@@ -500,7 +562,12 @@
                 const selecionado = n === '1' ? cartao1Selecionado : cartao2Selecionado;
 
                 if (!todosCartoes.length) {
-                    lista.innerHTML = '<div class="col-12"><p class="text-muted small">Nenhum cartão. Adicione em <a href="minha-conta.html">Minha Conta</a>.</p></div>';
+                    lista.innerHTML = `<div class="col-12">
+                    <p class="text-muted small mb-2">Nenhum cartão cadastrado.</p>
+                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCartao">
+                        <i class="fas fa-plus me-1"></i>Adicionar Cartão
+                    </button>
+                </div>`;
                     return;
                 }
 
@@ -789,6 +856,58 @@
                 mostrarAlerta(err.message);
             }
         }
+
+        // ── Novo Cartão inline ─────────────────────────────────────
+        function formatarCartaoNumero(input) {
+            let v = input.value.replace(/\D/g, '').slice(0, 16);
+            v = v.replace(/(\d{4})(?=\d)/g, '$1 ');
+            input.value = v;
+        }
+        function formatarValidade(input) {
+            let v = input.value.replace(/\D/g, '').slice(0, 4);
+            if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
+            input.value = v;
+        }
+
+        async function salvarCartao() {
+            const nome     = document.getElementById('cartaoNome').value.trim().toUpperCase();
+            const numero   = document.getElementById('cartaoNumero').value.replace(/\s/g,'');
+            const bandeira = document.getElementById('cartaoBandeira').value;
+            const principal = document.getElementById('cartaoPrincipal').checked;
+
+            if (!nome || numero.length < 16)
+                return alert('Preencha o nome e o número completo do cartão.');
+
+            const numeroFinal = numero.slice(-4);
+            // Token simulado para fins acadêmicos
+            const token = 'tok_' + Math.random().toString(36).substr(2, 12);
+
+            try {
+                const res = await fetch(`/api/clientes/${cliente.id}/cartoes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bandeira, nome_impresso: nome,
+                        numero_final: numeroFinal, token, principal
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) return alert(data.erro || 'Erro ao salvar cartão.');
+
+                bootstrap.Modal.getInstance(document.getElementById('modalCartao')).hide();
+                // Limpa campos
+                ['cartaoNome','cartaoNumero','cartaoValidade','cartaoCvv'].forEach(id => {
+                    document.getElementById(id).value = '';
+                });
+                document.getElementById('cartaoPrincipal').checked = false;
+
+                await carregarCartoes();
+                mostrarAlerta('Cartão adicionado com sucesso!', 'success');
+            } catch (e) {
+                alert('Erro ao salvar cartão.');
+            }
+        }
+
         window.onload = init;
     </script>
 </body>

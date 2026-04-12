@@ -1,7 +1,6 @@
 const Pedido = require('../models/pedidoModel');
 const pool = require('../config/database');
 
-// ── Tabela de frete por tipo (backend é a fonte da verdade) ───
 const TABELA_FRETE = {
   PAC:      { percentual: 0.07, minimo: 15.00 },
   SEDEX:    { percentual: 0.10, minimo: 35.00 },
@@ -21,15 +20,12 @@ module.exports = {
       if (!clienteId) return res.status(401).json({ erro: 'Faça login para finalizar a compra.' });
 
       const { endereco_id, cartoes, cupom_codigo, cupom_troca_codigo, tipo_frete } = req.body;
-
       if (!endereco_id) return res.status(400).json({ erro: 'Selecione um endereço de entrega.' });
 
-      // Frete calculado no backend — valor do frontend é ignorado
-      // O frontend envia tipo_frete, o backend calcula o valor correto
       const resultado = await Pedido.finalizar(clienteId, {
         enderecoId:       endereco_id,
         cartoes:          cartoes || [],
-        cupomCodigo:      cupom_codigo      || null,
+        cupomCodigo:      cupom_codigo       || null,
         cupomTrocaCodigo: cupom_troca_codigo || null,
         tipoFrete:        tipo_frete         || 'PAC'
       });
@@ -72,6 +68,54 @@ module.exports = {
     }
   },
 
+  // ── CANCELAR PEDIDO (cliente) ──────────────────────────────
+  async cancelar(req, res) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const clienteId = req.session.cliente?.id;
+      if (!clienteId) return res.status(401).json({ erro: 'Não autenticado.' });
+
+      const { rows: [pedido] } = await client.query(
+        'SELECT id, status, cliente_id FROM pedidos WHERE id = $1 FOR UPDATE',
+        [req.params.id]
+      );
+
+      if (!pedido) throw new Error('Pedido não encontrado.');
+      if (pedido.cliente_id !== clienteId)
+        throw new Error('Você não tem permissão para cancelar este pedido.');
+
+      const cancelaveis = ['AGUARDANDO_PAGAMENTO', 'EM_PROCESSAMENTO'];
+      if (!cancelaveis.includes(pedido.status))
+        throw new Error(`Não é possível cancelar um pedido com status "${pedido.status}".`);
+
+      // Devolve estoque
+      const { rows: itens } = await client.query(
+        'SELECT pneu_id, quantidade FROM itens_pedido WHERE pedido_id = $1',
+        [pedido.id]
+      );
+      for (const item of itens) {
+        await client.query(
+          'UPDATE pneus SET estoque = estoque + $1 WHERE id = $2',
+          [item.quantidade, item.pneu_id]
+        );
+      }
+
+      await client.query(
+        `UPDATE pedidos SET status = 'CANCELADO', atualizado_em = now() WHERE id = $1`,
+        [pedido.id]
+      );
+
+      await client.query('COMMIT');
+      res.json({ mensagem: 'Pedido cancelado com sucesso.' });
+    } catch (err) {
+      await client.query('ROLLBACK');
+      res.status(400).json({ erro: err.message });
+    } finally {
+      client.release();
+    }
+  },
+
   async migrarCarrinho(req, res) {
     try {
       const clienteId = req.session.cliente?.id;
@@ -85,6 +129,7 @@ module.exports = {
     }
   },
 
+  // Mantido para compatibilidade (admin usa adminPedidoController)
   async atualizarStatus(req, res) {
     try {
       const { id } = req.params;
@@ -129,8 +174,8 @@ module.exports = {
 
       for (const item of itensParaTroca) {
         await client.query(
-          `INSERT INTO trocas (pedido_id, pneu_id, quantidade_trocada, cupom_id)
-           VALUES ($1, $2, $3, $4)`,
+          `INSERT INTO trocas (pedido_id, pneu_id, quantidade_trocada, cupom_id, status)
+           VALUES ($1, $2, $3, $4, 'PENDENTE')`,
           [pedidoId, item.pneu_id, item.qtd, cupomId]
         );
       }
