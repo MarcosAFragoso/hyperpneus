@@ -3,19 +3,27 @@ describe('UC03 — Registro de Pedido com Sucesso', () => {
   beforeEach(() => {
     cy.loginCliente();
 
-    // Restaura localStorage com dados do cliente
+    // Visita uma página para o cookie de sessão ser enviado ao servidor
     cy.visit('/index.html');
+
+    // Confirma sessão ativa e seta localStorage
     cy.request('/api/auth/perfil').then(res => {
+      expect(res.status).to.eq(200);
       cy.window().then(win => {
         win.localStorage.setItem('cliente', JSON.stringify(res.body));
       });
     });
 
-    // Limpa e adiciona item ao carrinho COM espera
+    // Limpa carrinho
     cy.limparCarrinho();
+
+    // Adiciona item — agora com sessão garantida
     cy.adicionarAoCarrinho(1, 1);
 
-    // Espera o item estar no banco antes de continuar
+    // Pequena espera para o banco processar
+    cy.wait(500);
+
+    // Confirma que o item está no carrinho
     cy.request('/api/carrinho').then(res => {
       expect(res.body.itens.length).to.be.greaterThan(0);
     });
