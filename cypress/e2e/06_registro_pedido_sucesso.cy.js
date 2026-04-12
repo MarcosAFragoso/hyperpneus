@@ -3,22 +3,6 @@
 
 describe('UC03 — Registro de Pedido com Sucesso', () => {
 
-  before(() => {
-    // Garante que o cliente existe — cria via API se necessário
-    cy.request({
-      method: 'POST',
-      url: '/api/clientes',
-      failOnStatusCode: false,
-      body: {
-        nome: 'Cliente',
-        sobrenome: 'Teste',
-        cpf: '529.982.247-25',  // CPF válido de teste
-        email: Cypress.env('clienteEmail'),
-        senha: Cypress.env('clienteSenha')
-      }
-    });
-  });
-
   beforeEach(() => {
     cy.loginCliente();
     cy.limparCarrinho();
@@ -51,7 +35,7 @@ describe('UC03 — Registro de Pedido com Sucesso', () => {
       .first()
       .should('be.visible');
 
-    // 6. Seleciona PAC (já vem selecionado por padrão)
+    // 6. PAC já vem selecionado por padrão
     cy.get('#btnPAC').should('have.class', 'selecionado');
 
     // 7. Verifica cartão disponível
@@ -66,10 +50,10 @@ describe('UC03 — Registro de Pedido com Sucesso', () => {
     cy.url({ timeout: 10000 }).should('include', 'confirmacao.html');
     cy.url().should('include', 'pedido=');
 
-    // 10. Verifica que a animação de processamento aparece
+    // 10. Verifica animação de processamento
     cy.get('#animacaoProcessando', { timeout: 8000 }).should('be.visible');
 
-    // 11. Confirma via API que o pedido foi criado com status correto
+    // 11. Confirma via API que o pedido foi criado
     cy.ultimoPedido().then(pedido => {
       expect(pedido.status).to.eq('EM_PROCESSAMENTO');
       expect(parseFloat(pedido.total)).to.be.greaterThan(0);

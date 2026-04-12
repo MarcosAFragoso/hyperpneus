@@ -1,17 +1,15 @@
-const { defineConfig
-} = require('cypress');
+const { defineConfig } = require('cypress');
 
 module.exports = defineConfig({
   e2e: {
     baseUrl: 'http://localhost:3000',
-    specPattern: 'cypress/e2e /**/*.cy.js',
-    supportFile: 'cypress/support/commands.js',
+    specPattern: 'cypress/e2e/**/*.cy.js',
+    supportFile: 'cypress/support/e2e.js',  // ← era commands.js, mas o seu tem e2e.js
     viewportWidth: 1280,
     viewportHeight: 800,
     defaultCommandTimeout: 8000,
     requestTimeout: 10000,
     video: false,
-    screenshotOnRunFailure: true,
   },
   env: {
     clienteEmail: 'teste@hyperpneus.com',
