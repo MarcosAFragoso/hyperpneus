@@ -455,7 +455,7 @@
                             class="btn btn-warning btn-sm fw-bold">
                                 <i class="fas fa-exchange-alt me-1"></i>Troca/Dev.
                             </a>
-                            ${['AGUARDANDO_PAGAMENTO','EM_PROCESSAMENTO'].includes(p.status) ? `
+                            ${['AGUARDANDO_PAGAMENTO', 'EM_PROCESSAMENTO'].includes(p.status) ? `
                             <button onclick="cancelarPedido(${p.id})"
                                 class="btn btn-outline-danger btn-sm" data-cy="btn-cancelar-${p.id}">
                                 <i class="fas fa-times me-1"></i>Cancelar
@@ -642,8 +642,22 @@
         }
 
         async function removerCartao(id) {
+            if (!clienteId) return mostrarAlerta('Erro: cliente não identificado. Recarregue a página.');
             if (!confirm('Remover este cartão?')) return;
-            await fetch(`${API}/api/clientes/${clienteId}/cartoes/${id}`, { method: 'DELETE' });
+            try {
+                const res = await fetch(`${API}/api/clientes/${clienteId}/cartoes/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                if (res.ok) {
+                    mostrarAlerta('Cartão removido.', 'success');
+                } else {
+                    const data = await res.json();
+                    mostrarAlerta(data.erro || 'Erro ao remover cartão.');
+                }
+            } catch (e) {
+                mostrarAlerta('Erro de conexão ao remover cartão.');
+            }
             carregarCartoes();
         }
 
