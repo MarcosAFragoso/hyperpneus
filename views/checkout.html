@@ -551,7 +551,7 @@
                 credentials: 'include'
             });
             if (res.ok) {
-                bootstrap.Modal.getInstance(document.getElementById('modalEndereco')).hide();
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEndereco')).hide();
                 await carregarEnderecos();
             }
         }
@@ -906,7 +906,7 @@
                 const data = await res.json();
                 if (!res.ok) return alert(data.erro || 'Erro ao salvar cartão.');
 
-                bootstrap.Modal.getInstance(document.getElementById('modalCartao')).hide();
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCartao')).hide();
                 // Limpa campos
                 ['cartaoNome', 'cartaoNumero', 'cartaoValidade', 'cartaoCvv'].forEach(id => {
                     document.getElementById(id).value = '';

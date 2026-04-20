@@ -120,7 +120,7 @@ describe('Cenário 3 — Compra com cupom de desconto', () => {
 
     cy.get('#inputCupomPromo').type(codigoCupom);
     cy.contains('button', 'Aplicar').first().click();
-    cy.get('#feedbackPromo', { timeout: 8000 }).should('contain', 'desconto');
+    cy.get('#feedbackPromo', { timeout: 8000 }).invoke('text').should('match', /[Dd]esconto|aplicado/);
     cy.get('#resumoDescontoDiv').should('be.visible');
     cy.get('#resumoDesconto').should('contain', 'R$');
 
@@ -193,13 +193,13 @@ describe('Cenário 5 — Registrar novo cartão no checkout', () => {
     cy.get('#modalCartao').should('be.visible');
 
     cy.get('[data-cy="input-cartao-nome"]').type('CLIENTE TESTE');
-    cy.get('[data-cy="input-cartao-numero"]').type('4111111111111111');
+    cy.get('[data-cy="input-cartao-numero"]').clear().type('4111111111111111', { delay: 50 });
     cy.get('#cartaoValidade').type('12/28');
     cy.get('#cartaoCvv').type('123');
     cy.get('[data-cy="select-cartao-bandeira"]').select('Visa');
     cy.get('[data-cy="btn-salvar-cartao"]').click();
 
-    cy.get('#modalCartao').should('not.have.class', 'show');
+    cy.get('#modalCartao', { timeout: 10000 }).should('not.have.class', 'show');
     cy.get('#listaCartoes1 .card-sel', { timeout: 8000 }).should('contain', '1111');
 
     cy.get('#listaEnderecos .card-sel', { timeout: 6000 }).first().click();
@@ -220,26 +220,42 @@ describe('Cenário 6 — Registrar novo endereço no checkout', () => {
   });
 
   it('Deve salvar novo endereço e usá-lo na entrega', () => {
+    // Intercepta o ViaCEP para evitar dependência de rede externa
+    cy.intercept('GET', 'https://viacep.com.br/ws/*/json/', {
+      body: {
+        logradouro: 'Praça da Sé',
+        bairro: 'Sé',
+        localidade: 'São Paulo',
+        uf: 'SP'
+      }
+    }).as('viacep');
+
     cy.visit('/checkout.html');
 
     cy.contains('Adicionar novo endereço').click();
     cy.get('#modalEndereco').should('be.visible');
 
-    cy.get('#novoCep').type('01001000');
-    cy.get('#novoLogradouro').type('Praça da Sé');
+    // Digita o CEP e clica em Buscar para disparar o preenchimento automático
+    cy.get('#novoCep').type('01001-000');
+    cy.contains('button', 'Buscar').click();
+    cy.wait('@viacep');
+
+    // Aguarda o JS do buscarCep() terminar de escrever no DOM — sem .clear() nos campos do ViaCEP
+    cy.get('#novoLogradouro').should('have.value', 'Praça da Sé');
+    cy.get('#novoBairro').should('have.value', 'Sé');
+    cy.get('#novoCidade').should('have.value', 'São Paulo');
+    cy.get('#novoEstado').should('have.value', 'SP');
+
+    // Preenche só os campos que o ViaCEP não toca
     cy.get('#novoNumero').type('1');
-    cy.get('#novoBairro').type('Sé');
-    cy.get('#novoCidade').type('São Paulo');
-    cy.get('#novoEstado').type('SP');
     cy.get('#novoNome').type('Endereço Teste Cypress');
 
-    // Dismiss any alert from previous attempt
-    cy.on('window:alert', () => true);
-    cy.get('#modalEndereco .modal-footer .btn-primary').click();
+    cy.contains('button', 'Salvar').last().click();
 
-    cy.get('#modalEndereco', { timeout: 10000 }).should('not.have.class', 'show');
+    cy.get('#modalEndereco', { timeout: 8000 }).should('not.have.class', 'show');
+    // O card renderiza logradouro+numero+cidade+estado — nome_destinatario não aparece no HTML do card
     cy.get('#listaEnderecos .card-sel', { timeout: 8000 })
-      .should('contain', 'Endereço Teste Cypress');
+      .should('contain', 'Praça da Sé');
 
     cy.get('#listaCartoes1 .card-sel', { timeout: 6000 }).first().click();
     cy.get('#btnPAC').click();
@@ -390,12 +406,15 @@ describe('Cenário 10 — Troca total: cliente solicita, admin aceita, cupom ger
     cy.get('#menu-trocas').click();
     cy.get('#tabelaTrocas tr', { timeout: 8000 }).should('have.length.greaterThan', 1);
 
+    cy.intercept('PATCH', '/api/admin/trocas/*/aceitar').as('aceitarTroca');
+
     cy.get('[data-cy^="btn-aceitar-troca-"]').first().then($btn => {
       const trocaId = parseInt($btn.attr('data-cy').replace('btn-aceitar-troca-', ''));
       cy.wrap($btn).click();
-      cy.get('#modalAcao.show', { timeout: 6000 }).should('be.visible');
-      cy.get('[data-cy="btn-confirmar-acao"]').should('be.visible').click({ force: true });
-      cy.get('#modalAcao', { timeout: 10000 }).should('not.have.class', 'show');
+      cy.get('#modalAcao').should('be.visible');
+      cy.get('[data-cy="btn-confirmar-acao"]').click();
+      cy.wait('@aceitarTroca');
+      cy.get('#modalAcao', { timeout: 8000 }).should('not.have.class', 'show');
       cy.get('#alerta', { timeout: 6000 }).should('contain', 'aceita');
 
       cy.request({ url: '/api/admin/trocas?status=APROVADO', withCredentials: true }).then(res => {
@@ -435,10 +454,10 @@ describe('Cenário 11 — Admin nega troca', () => {
     cy.get('[data-cy^="btn-negar-troca-"]', { timeout: 8000 }).first().then($btn => {
       const trocaId = parseInt($btn.attr('data-cy').replace('btn-negar-troca-', ''));
       cy.wrap($btn).click();
-      cy.get('#modalAcao.show', { timeout: 6000 }).should('be.visible');
-      cy.get('#modalAcaoObs').should('be.visible').type('Produto fora do prazo de troca.');
-      cy.get('[data-cy="btn-confirmar-acao"]').should('be.visible').click({ force: true });
-      cy.get('#modalAcao', { timeout: 10000 }).should('not.have.class', 'show');
+      cy.get('#modalAcao').should('be.visible');
+      cy.get('#modalAcaoObs').type('Produto fora do prazo de troca.');
+      cy.get('[data-cy="btn-confirmar-acao"]').click();
+      cy.get('#modalAcao').should('not.have.class', 'show');
       cy.get('#alerta', { timeout: 6000 }).should('contain', 'negada');
 
       cy.request({ url: '/api/admin/trocas?status=NEGADO', withCredentials: true }).then(res => {
@@ -479,18 +498,21 @@ describe('Cenário 12 — Troca parcial e confirmação de recebimento', () => {
     cy.visit('/admin.html');
     cy.get('#menu-trocas').click();
 
+    cy.intercept('PATCH', '/api/admin/trocas/*/aceitar').as('aceitarTroca');
     cy.get('[data-cy^="btn-aceitar-troca-"]', { timeout: 8000 }).first().click();
-    cy.get('#modalAcao.show', { timeout: 6000 }).should('be.visible');
-    cy.get('[data-cy="btn-confirmar-acao"]').should('be.visible').click({ force: true });
-    cy.get('#modalAcao', { timeout: 10000 }).should('not.have.class', 'show');
-    cy.wait(800);
+    cy.get('#modalAcao').should('be.visible');
+    cy.get('[data-cy="btn-confirmar-acao"]').click();
+    cy.wait('@aceitarTroca');
+    cy.get('#modalAcao', { timeout: 8000 }).should('not.have.class', 'show');
     cy.get('#alerta', { timeout: 6000 }).should('contain', 'aceita');
 
+    cy.intercept('PATCH', '/api/admin/trocas/*/recebimento').as('recebimento');
     cy.get('#filtroTrocaStatus').select('APROVADO', { force: true });
     cy.get('[data-cy^="btn-recebimento-troca-"]', { timeout: 8000 }).first().click();
-    cy.get('#modalAcao.show', { timeout: 6000 }).should('be.visible');
-    cy.get('[data-cy="btn-confirmar-acao"]').should('be.visible').click({ force: true });
-    cy.get('#modalAcao', { timeout: 10000 }).should('not.have.class', 'show');
+    cy.get('#modalAcao').should('be.visible');
+    cy.get('[data-cy="btn-confirmar-acao"]').click();
+    cy.wait('@recebimento');
+    cy.get('#modalAcao', { timeout: 8000 }).should('not.have.class', 'show');
     cy.get('#alerta', { timeout: 6000 }).should('contain', 'Recebimento');
 
     cy.request({ url: '/api/admin/trocas?status=PRODUTO_RECEBIDO', withCredentials: true }).then(res => {

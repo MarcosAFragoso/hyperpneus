@@ -619,7 +619,6 @@ function acaoTroca(id, acao) {
 
 async function executarAcaoTroca(id, acao) {
   const obs = document.getElementById('modalAcaoObs').value;
-  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAcao')).hide();
   try {
     const res = await fetch(`${API}/api/admin/trocas/${id}/${acao}`, {
       method: 'PATCH',
@@ -627,7 +626,11 @@ async function executarAcaoTroca(id, acao) {
       body: JSON.stringify({ obs })
     });
     const data = await res.json();
-    if (!res.ok) return mostrarAlerta(data.erro);
+    if (!res.ok) {
+      mostrarAlerta(data.erro);
+      return;
+    }
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAcao')).hide();
     mostrarAlerta(data.mensagem, 'success');
     carregarTrocas();
     carregarDashboard();
