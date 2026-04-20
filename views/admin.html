@@ -516,7 +516,7 @@ async function abrirPedido(id) {
   document.getElementById('modalPedidoFooter').innerHTML =
     botoesHtml + '<button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>';
 
-  new bootstrap.Modal(document.getElementById('modalPedido')).show();
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPedido')).show();
 }
 
 async function confirmarPagamento(id, fecharModal = false) {
@@ -526,7 +526,7 @@ async function confirmarPagamento(id, fecharModal = false) {
     const data = await res.json();
     if (!res.ok) return mostrarAlerta(data.erro);
     mostrarAlerta('Pagamento confirmado!', 'success');
-    if (fecharModal) bootstrap.Modal.getInstance(document.getElementById('modalPedido')).hide();
+    if (fecharModal) bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPedido')).hide();
     carregarPedidos();
     carregarDashboard();
   } catch (e) { mostrarAlerta('Erro ao confirmar pagamento.'); }
@@ -548,7 +548,7 @@ async function avancarStatus(id, novoStatus, fecharModal = false) {
     const data = await res.json();
     if (!res.ok) return mostrarAlerta(data.erro);
     mostrarAlerta(`Status atualizado para ${novoStatus}.`, 'success');
-    if (fecharModal) bootstrap.Modal.getInstance(document.getElementById('modalPedido')).hide();
+    if (fecharModal) bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPedido')).hide();
     carregarPedidos();
     carregarDashboard();
   } catch (e) { mostrarAlerta('Erro ao atualizar status.'); }
@@ -614,12 +614,12 @@ function acaoTroca(id, acao) {
   document.getElementById('modalAcaoObs').value = '';
   document.getElementById('modalAcaoBtn').className = `btn btn-${t.btn}`;
   document.getElementById('modalAcaoBtn').onclick = () => executarAcaoTroca(id, acao);
-  new bootstrap.Modal(document.getElementById('modalAcao')).show();
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAcao')).show();
 }
 
 async function executarAcaoTroca(id, acao) {
   const obs = document.getElementById('modalAcaoObs').value;
-  bootstrap.Modal.getInstance(document.getElementById('modalAcao')).hide();
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAcao')).hide();
   try {
     const res = await fetch(`${API}/api/admin/trocas/${id}/${acao}`, {
       method: 'PATCH',
@@ -679,7 +679,7 @@ function abrirEdicaoCliente(id, nome, sobrenome, email) {
   document.getElementById('editNomeAdmin').value = nome;
   document.getElementById('editSobrenomeAdmin').value = sobrenome;
   document.getElementById('editEmailAdmin').value = email;
-  new bootstrap.Modal(document.getElementById('modalEditarCliente')).show();
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarCliente')).show();
 }
 
 async function salvarEdicaoCliente() {
@@ -694,7 +694,7 @@ async function salvarEdicaoCliente() {
     })
   });
   if (res.ok) {
-    bootstrap.Modal.getInstance(document.getElementById('modalEditarCliente')).hide();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarCliente')).hide();
     mostrarAlerta('Cliente atualizado!', 'success');
     carregarClientes();
   }

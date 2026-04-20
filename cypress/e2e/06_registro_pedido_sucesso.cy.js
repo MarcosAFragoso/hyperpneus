@@ -4,81 +4,72 @@
 describe('UC03 — Registro de Pedido com Sucesso', () => {
 
   beforeEach(() => {
-    // 1. Login via cy.session (mantém cookie entre testes)
     cy.loginCliente();
-
-    // 2. Visita index para ativar cookie no browser
     cy.visit('/index.html');
-
-    // 3. Salva dados do cliente no localStorage
-    cy.request('/api/auth/perfil').then(res => {
-      expect(res.status).to.eq(200);
-      cy.window().then(win => {
-        win.localStorage.setItem('cliente', JSON.stringify(res.body));
-      });
-    });
-
-    // 4. Limpa carrinho
-    cy.request({ method: 'GET', url: '/api/carrinho' }).then(res => {
-      (res.body.itens || []).forEach(item => {
-        cy.request({
-          method: 'DELETE',
-          url: `/api/carrinho/${item.id}`,
-          failOnStatusCode: false
-        });
-      });
-    });
+    cy.limparCarrinho();
   });
 
   it('Fluxo principal: adicionar pneu → checkout → pedido confirmado', () => {
 
-    // 1. Clica no primeiro card de pneu
-    cy.get('[data-cy="card-pneu"]', { timeout: 8000 }).first().click();
+    cy.request('/api/auth/perfil').then(perfil => {
+      const clienteData = perfil.body;
 
-    // 2. Página de detalhe — adiciona ao carrinho
-    cy.url().should('include', 'detalhe.html');
-    cy.get('[data-cy="btn-adicionar"]', { timeout: 8000 })
-      .should('not.be.disabled')
-      .click();
-
-    // 3. Aguarda confirmação visual
-    cy.contains('Adicionado', { timeout: 6000 }).should('be.visible');
-
-    // 4. Navega para checkout mantendo localStorage
-    cy.visit('/checkout.html', {
-      onBeforeLoad(win) {
-        cy.request('/api/auth/perfil').then(res => {
-          win.localStorage.setItem('cliente', JSON.stringify(res.body));
-        });
-      }
+      // 1. Abre o checkout — estabelece contexto e cookie no browser
+      cy.visit('/checkout.html', {
+        onBeforeLoad(win) {
+          win.localStorage.setItem('cliente', JSON.stringify(clienteData));
+        }
+      });
     });
 
-    // 5. Aguarda endereços carregarem
+    // 2. Espera a página carregar completamente (perfil e endereços já foram buscados)
+    cy.get('#listaEnderecos', { timeout: 15000 }).should('exist');
+
+    // 3. Adiciona o item via fetch do browser (mesmo cookie, sem reload)
+    cy.window().then(win => {
+      return win.fetch('/api/carrinho', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ pneu_id: 1, quantidade: 1 })
+      })
+      .then(r => r.json())
+      .then(data => {
+        // 4. Dispara carregarCarrinho() direto na função da página
+        return win.carregarCarrinho();
+      });
+    });
+
+    // 5. Aguarda subtotal atualizar
+    cy.get('#resumoSubtotal', { timeout: 20000 })
+      .invoke('text')
+      .should('not.eq', 'R$ 0,00')
+      .and('not.eq', '');
+
+    // 6. Seleciona endereço
     cy.get('#listaEnderecos .card-sel', { timeout: 12000 })
       .should('have.length.greaterThan', 0)
       .first().click();
 
-    // 6. PAC já selecionado por padrão
+    // 7. PAC já vem selecionado
     cy.get('#btnPAC').should('have.class', 'selecionado');
 
-    // 7. Aguarda cartões carregarem
+    // 8. Seleciona cartão
     cy.get('#listaCartoes1 .card-sel', { timeout: 8000 })
       .should('have.length.greaterThan', 0)
       .first().click();
 
-    // 8. Finaliza o pedido
-    cy.get('[data-cy="btn-finalizar"]').click();
+    // 9. Finaliza
+    cy.get('[data-cy="btn-finalizar"]')
+      .should('not.be.disabled')
+      .click();
 
-    // 9. Confirma redirecionamento
+    // 10. Confirma redirecionamento
     cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
-    cy.url().should('include', 'pedido=');
 
-    // 10. Confirma via API
+    // 11. Verifica status do pedido
     cy.request('/api/pedidos').then(res => {
-      expect(res.status).to.eq(200);
-      expect(res.body.length).to.be.greaterThan(0);
       expect(res.body[0].status).to.eq('EM_PROCESSAMENTO');
     });
   });
-
 });

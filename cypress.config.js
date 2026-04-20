@@ -10,6 +10,8 @@ module.exports = defineConfig({
     defaultCommandTimeout: 8000,
     requestTimeout: 10000,
     video: false,
+    chromeWebSecurity: false,
+    experimentalModifyObstructiveThirdPartyCode: true,
   },
   env: {
     clienteEmail: 'teste@hyperpneus.com',

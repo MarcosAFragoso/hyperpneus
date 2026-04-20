@@ -17,25 +17,23 @@ module.exports = {
       [clienteId, pneuId]
     );
 
-    const expiraEm = new Date(Date.now() + 30 * 60 * 1000); // 30 minutos
-
     if (existente) {
-      // Atualiza quantidade e renova expiração
+      // Atualiza quantidade e renova expiração usando NOW() do banco (evita conflito de fuso)
       const novaQtd = existente.quantidade + quantidade;
       if (pneu.estoque < novaQtd) throw new Error('Estoque insuficiente para a quantidade total.');
       const { rows: [atualizado] } = await pool.query(
-        `UPDATE itens_carrinho SET quantidade = $1, expira_em = $2
-         WHERE id = $3 RETURNING *`,
-        [novaQtd, expiraEm, existente.id]
+        `UPDATE itens_carrinho SET quantidade = $1, expira_em = NOW() + INTERVAL '30 minutes'
+         WHERE id = $2 RETURNING *`,
+        [novaQtd, existente.id]
       );
       return atualizado;
     }
 
-    // Insere novo item
+    // Insere novo item — expira_em calculado pelo banco para evitar diferença de fuso
     const { rows: [item] } = await pool.query(
       `INSERT INTO itens_carrinho (cliente_id, pneu_id, quantidade, preco_unitario, expira_em)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [clienteId, pneuId, quantidade, pneu.preco_venda, expiraEm]
+       VALUES ($1, $2, $3, $4, NOW() + INTERVAL '30 minutes') RETURNING *`,
+      [clienteId, pneuId, quantidade, pneu.preco_venda]
     );
     return item;
   },
@@ -82,9 +80,9 @@ module.exports = {
     if (item.estoque < quantidade) throw new Error('Estoque insuficiente.');
 
     const { rows: [atualizado] } = await pool.query(
-      `UPDATE itens_carrinho SET quantidade = $1, expira_em = $2
-       WHERE id = $3 AND cliente_id = $4 RETURNING *`,
-      [quantidade, new Date(Date.now() + 30 * 60 * 1000), itemId, clienteId]
+      `UPDATE itens_carrinho SET quantidade = $1, expira_em = NOW() + INTERVAL '30 minutes'
+       WHERE id = $2 AND cliente_id = $3 RETURNING *`,
+      [quantidade, itemId, clienteId]
     );
     return atualizado;
   },
