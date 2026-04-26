@@ -42,7 +42,4 @@ INSERT INTO admins (usuario, senha)
 VALUES ('admin', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi')
 ON CONFLICT (usuario) DO NOTHING;
 
--- Nota: a senha acima é 'password' (hash de exemplo do bcrypt)
--- Troque por um hash real rodando:
---   node -e "const b=require('bcryptjs');b.hash('admin123',10).then(console.log)"
--- e atualize com: UPDATE admins SET senha='<novo_hash>' WHERE usuario='admin';
+

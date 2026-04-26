@@ -128,7 +128,6 @@
                         <i class="fas fa-check-circle"></i> ${acao === 'Estorno' ? 'Solicitação enviada com sucesso!' : 'Troca realizada! Cupom: <strong>' + data.codigo + '</strong>'}
                     </div>`;
             } else {
-                // AQUI ESTÁ A MUDANÇA: Mensagem amigável sem mostrar IDs técnicos
                 divResultado.innerHTML = `
                     <div class="alert alert-warning mt-3">
                         <i class="fas fa-exclamation-circle"></i> Atenção: Alguns itens selecionados já possuem uma solicitação de troca ativa.

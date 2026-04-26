@@ -409,7 +409,7 @@
         // ── Init ───────────────────────────────────────────────────────
         async function init() {
             try {
-                // Adicionado credentials para reconhecer o login
+                //Credentials para reconhecer o login
                 const res = await fetch('/api/auth/perfil', { credentials: 'include' });
                 if (!res.ok) { window.location.href = 'login.html?next=checkout'; return; }
                 cliente = await res.json();
@@ -460,16 +460,12 @@
             }
         }
 
-
-
-
-
         // ── Endereços ──────────────────────────────────────────────────
         async function carregarEnderecos() {
             try {
                 const res = await fetch(`/api/clientes/${cliente.id}/enderecos`, {
                     method: 'GET',
-                    credentials: 'include' // <--- ISSO É OBRIGATÓRIO PARA SESSÃO
+                    credentials: 'include'
                 });
 
                 if (res.status === 401) {
@@ -642,11 +638,9 @@
         }
 
         function onValorCartao1(input) {
-            // Aceita vírgula e ponto
             const v = input.value.replace(',', '.');
             input.dataset.valor = v;
             calcularCartao2();
-            // Parcelas do cartão 1 baseadas no valor digitado
             const val = parseFloat(v) || 0;
             if (val >= 10) {
                 const opcoes = [];
@@ -658,7 +652,7 @@
                 }
                 document.getElementById('parcelasCartao1').innerHTML = opcoes.join('');
             } else {
-                document.getElementById('parcelasCartao1').innerHTML = '<option>Digite o valor acima</option>';
+                document.getElementById('parcelasCartao1').innerHTML = '<option>Digite o valor acima de R$ 10,00</option>';
             }
         }
 
@@ -695,7 +689,6 @@
                 document.getElementById('valorCartao2').value = '';
                 document.getElementById('parcelasCartao1').innerHTML = '<option>Digite o valor acima</option>';
             } else {
-                // 3. Se for 1 cartão só, regeramos as parcelas com o novo total (ex: 965)
                 gerarParcelas();
             }
         }
@@ -798,7 +791,7 @@
             const total = calcularTotal();
             let cartoes = [];
 
-            // LÓGICA ALTERADA: Só exige cartão se o total for maior que zero
+            // Só exige cartão se o total for maior que zero
             if (total > 0.01) {
                 if (!cartao1Selecionado) return mostrarAlerta('Selecione um cartão de pagamento.');
 
@@ -891,7 +884,7 @@
                 return alert('Preencha o nome e o número completo do cartão.');
 
             const numeroFinal = numero.slice(-4);
-            // Token simulado para fins acadêmicos
+            // Token simulado (na prática, isso seria gerado pelo gateway de pagamento, nunca no frontend)
             const token = 'tok_' + Math.random().toString(36).substr(2, 12);
 
             try {

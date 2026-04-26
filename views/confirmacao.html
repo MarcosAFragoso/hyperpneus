@@ -512,7 +512,7 @@ Chave NF-e: ${Math.random().toString(36).substr(2, 44).toUpperCase()}
         window.onload = () => {
             const params = new URLSearchParams(window.location.search);
             const pedidoId = params.get('pedido');
-            const modo = params.get('modo'); // 'visualizar' = vem de Meus Pedidos
+            const modo = params.get('modo');
 
             if (!pedidoId) { window.location.href = 'index.html'; return; }
 
