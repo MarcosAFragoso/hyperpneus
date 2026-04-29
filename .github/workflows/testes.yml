@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar o código
+      - name: Baixar o codigo
         uses: actions/checkout@v4
 
       - name: Configurar Node
@@ -17,8 +17,15 @@ jobs:
         with:
           node-version: 24
 
-      - name: Instalar dependências
+      - name: Instalar dependencias
         run: npm ci
 
-      - name: Rodar testes
+      - name: Subir aplicacao
+        run: npm start &
+      
+      - name: Esperar servidor
+        run: npx wait-on http://localhost:3000
+
+      - name: Rodar Cypress
         run: npx cypress run
+``
