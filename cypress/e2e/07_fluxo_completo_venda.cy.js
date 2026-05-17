@@ -51,11 +51,8 @@ function esperarConfirmacaoEntregue() {
 }
 
 // Busca o valor total real do pedido na API e gera o cupom de troca com esse valor.
-// Usar o valor real evita cupons com valores arbitrários (9999, 500, 150) que não
-// refletem o pedido real do cliente e podem mascarar bugs de cálculo.
 function gerarCupomTrocaComValorReal(pedidoId, pneuId, qtd, callback) {
   cy.request({ url: `/api/pedidos/${pedidoId}`, withCredentials: true }).then(pedido => {
-    // Tenta os campos possíveis de valor total conforme a versão da API
     // parseFloat converte string ('492.09') ou number para float — cobre ambos os casos
     const raw = pedido.body.total ?? pedido.body.valor_total ?? pedido.body.subtotal;
     const valorReal = parseFloat(raw);
@@ -115,7 +112,7 @@ describe('Cenário 2 — Compra com 2 cartões', () => {
 
     cy.get('#resumoTotal').invoke('text').then(totalTxt => {
       const total = parseFloat(
-        totalTxt.replace('R$','').replace(/\./g,'').replace(',','.').trim()
+        totalTxt.replace('R$', '').replace(/\./g, '').replace(',', '.').trim()
       );
       const v1 = (Math.floor(total / 2 * 100) / 100).toFixed(2).replace('.', ',');
       cy.get('#valorCartao1').clear().type(v1);
@@ -194,7 +191,7 @@ describe('Cenário 4 — Compra com cupom de troca cobrindo 100%', () => {
     cy.get('#feedbackTroca', { timeout: 8000 }).should('contain', 'crédito');
 
     cy.get('#resumoTotal').invoke('text').then(txt => {
-      const total = parseFloat(txt.replace('R$','').replace(/\./g,'').replace(',','.').trim());
+      const total = parseFloat(txt.replace('R$', '').replace(/\./g, '').replace(',', '.').trim());
       if (total <= 0) {
         cy.get('[data-cy="btn-finalizar"]').should('not.be.disabled').click();
         cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
@@ -294,7 +291,6 @@ describe('Cenário 6 — Registrar novo endereço no checkout', () => {
     cy.get('#novoCidade').should('have.value', 'São Paulo');
     cy.get('#novoEstado').should('have.value', 'SP');
 
-    // Preenche só os campos que o ViaCEP não toca
     cy.get('#novoNumero').type(numeroEndereco);
     cy.get('#novoNome').type(`Endereço Teste Cypress ${numeroEndereco}`);
 
@@ -572,7 +568,6 @@ describe('Cenário 13 — Sistema gera cupom de troca', () => {
     criarPedidoPeloCheckout(1, 1);
     cy.ultimoPedido().then(p => {
       avancarPedidoAteEntregue(p.id);
-      // Usa o valor real do pedido para gerar o cupom com o montante correto
       gerarCupomTrocaComValorReal(p.id, 1, 1, res => {
         expect(res.status).to.eq(201);
         expect(res.body.codigo).to.match(/^TROCA-[A-Z0-9]{6}$/);
