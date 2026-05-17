@@ -853,7 +853,14 @@
 
                 localStorage.removeItem('cupomCarrinho');
                 localStorage.removeItem('carrinho');
-                window.location.href = `confirmacao.html?pedido=${data.pedido_id}`;
+
+                const paramsConfirmacao = new URLSearchParams({ pedido: data.pedido_id });
+                if (cupomTroca?.codigo) {
+                    paramsConfirmacao.set('cupom_troca', cupomTroca.codigo);
+                    paramsConfirmacao.set('valor_cupom_troca', cupomTroca.valor);
+                }
+
+                window.location.href = `confirmacao.html?${paramsConfirmacao.toString()}`;
 
             } catch (err) {
                 btn.disabled = false;

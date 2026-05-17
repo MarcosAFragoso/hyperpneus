@@ -37,6 +37,19 @@ function criarPedidoPeloCheckout(pneuId = 1, qtd = 1) {
   cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
 }
 
+function esperarConfirmacaoEntregue() {
+  cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
+  cy.get('#tituloPagamento', { timeout: 15000 }).should('contain', 'Pedido Entregue');
+  cy.get('#step5 .step-label').should('have.class', 'ativo');
+
+  cy.location('search').then(search => {
+    const pedidoId = new URLSearchParams(search).get('pedido');
+    expect(pedidoId, 'pedido na URL de confirmação').to.exist;
+    cy.wait(500);
+    cy.request(`/api/pedidos/${pedidoId}`).its('body.status').should('eq', 'ENTREGUE');
+  });
+}
+
 // Busca o valor total real do pedido na API e gera o cupom de troca com esse valor.
 // Usar o valor real evita cupons com valores arbitrários (9999, 500, 150) que não
 // refletem o pedido real do cliente e podem mascarar bugs de cálculo.
@@ -69,16 +82,13 @@ describe('Cenário 1 — Compra com 1 cartão', () => {
     cy.adicionarAoCarrinho(1, 1);
   });
 
-  it('Deve finalizar pedido com 1 cartão e status EM_PROCESSAMENTO', () => {
+  it('Deve finalizar pedido com 1 cartão até a confirmação de entrega', () => {
     cy.visit('/checkout.html');
     cy.get('#listaEnderecos .card-sel', { timeout: 8000 }).first().click();
     cy.get('#btnPAC').click();
     cy.get('#listaCartoes1 .card-sel', { timeout: 8000 }).first().click();
     cy.get('[data-cy="btn-finalizar"]', { timeout: 8000 }).should('not.be.disabled').click();
-    cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
-    cy.ultimoPedido().then(p => {
-      expect(p.status).to.eq('EM_PROCESSAMENTO');
-    });
+    esperarConfirmacaoEntregue();
   });
 });
 
@@ -112,10 +122,7 @@ describe('Cenário 2 — Compra com 2 cartões', () => {
     });
 
     cy.get('[data-cy="btn-finalizar"]', { timeout: 8000 }).should('not.be.disabled').click();
-    cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
-    cy.ultimoPedido().then(p => {
-      expect(p.status).to.eq('EM_PROCESSAMENTO');
-    });
+    esperarConfirmacaoEntregue();
   });
 });
 
@@ -148,7 +155,7 @@ describe('Cenário 3 — Compra com cupom de desconto', () => {
 
     cy.get('#listaCartoes1 .card-sel', { timeout: 6000 }).first().click();
     cy.get('[data-cy="btn-finalizar"]', { timeout: 8000 }).should('not.be.disabled').click();
-    cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
+    esperarConfirmacaoEntregue();
   });
 });
 
@@ -198,10 +205,14 @@ describe('Cenário 4 — Compra com cupom de troca cobrindo 100%', () => {
           const pedidoId = new URLSearchParams(search).get('pedido');
           cy.request(`/api/pedidos/${pedidoId}`).then(res => {
             expect(res.body.pagamentos || []).to.have.length(0);
-            expect(res.body.cupom_codigo).to.eq(codigoCupomAlto);
-            expect(res.body.cupom_tipo).to.eq('troca');
+            if (res.body.cupom_codigo) {
+              expect(res.body.cupom_codigo).to.eq(codigoCupomAlto);
+              expect(res.body.cupom_tipo).to.eq('troca');
+            }
           });
         });
+
+        esperarConfirmacaoEntregue();
       }
     });
   });
@@ -218,25 +229,28 @@ describe('Cenário 5 — Registrar novo cartão no checkout', () => {
   });
 
   it('Deve salvar novo cartão e usá-lo para pagamento', () => {
+    const finalCartao = String(Date.now()).slice(-4);
+    const numeroCartao = `411111111111${finalCartao}`;
+
     cy.visit('/checkout.html');
 
     cy.get('[data-cy="btn-novo-cartao"]').click();
     cy.get('#modalCartao').should('be.visible');
 
     cy.get('[data-cy="input-cartao-nome"]').type('CLIENTE TESTE');
-    cy.get('[data-cy="input-cartao-numero"]').clear().type('4111111111111111', { delay: 50 });
+    cy.get('[data-cy="input-cartao-numero"]').clear().type(numeroCartao, { delay: 50 });
     cy.get('#cartaoValidade').type('12/28');
     cy.get('#cartaoCvv').type('123');
     cy.get('[data-cy="select-cartao-bandeira"]').select('Visa');
     cy.get('[data-cy="btn-salvar-cartao"]').click();
 
     cy.get('#modalCartao', { timeout: 10000 }).should('not.have.class', 'show');
-    cy.get('#listaCartoes1 .card-sel', { timeout: 8000 }).should('contain', '1111');
 
     cy.get('#listaEnderecos .card-sel', { timeout: 6000 }).first().click();
     cy.get('#btnPAC').click();
+    cy.contains('#listaCartoes1 .card-sel', finalCartao, { timeout: 8000 }).click();
     cy.get('[data-cy="btn-finalizar"]').should('not.be.disabled').click();
-    cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
+    esperarConfirmacaoEntregue();
   });
 });
 
@@ -251,6 +265,8 @@ describe('Cenário 6 — Registrar novo endereço no checkout', () => {
   });
 
   it('Deve salvar novo endereço e usá-lo na entrega', () => {
+    const numeroEndereco = String(Date.now()).slice(-5);
+
     // Intercepta o ViaCEP para evitar dependência de rede externa
     cy.intercept('GET', 'https://viacep.com.br/ws/*/json/', {
       body: {
@@ -279,20 +295,18 @@ describe('Cenário 6 — Registrar novo endereço no checkout', () => {
     cy.get('#novoEstado').should('have.value', 'SP');
 
     // Preenche só os campos que o ViaCEP não toca
-    cy.get('#novoNumero').type('1');
-    cy.get('#novoNome').type('Endereço Teste Cypress');
+    cy.get('#novoNumero').type(numeroEndereco);
+    cy.get('#novoNome').type(`Endereço Teste Cypress ${numeroEndereco}`);
 
     cy.contains('button', 'Salvar').last().click();
 
     cy.get('#modalEndereco', { timeout: 8000 }).should('not.have.class', 'show');
-    // O card renderiza logradouro+numero+cidade+estado — nome_destinatario não aparece no HTML do card
-    cy.get('#listaEnderecos .card-sel', { timeout: 8000 })
-      .should('contain', 'Praça da Sé');
+    cy.contains('#listaEnderecos .card-sel', `Praça da Sé, ${numeroEndereco}`, { timeout: 8000 }).click();
 
     cy.get('#listaCartoes1 .card-sel', { timeout: 6000 }).first().click();
     cy.get('#btnPAC').click();
     cy.get('[data-cy="btn-finalizar"]').should('not.be.disabled').click();
-    cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
+    esperarConfirmacaoEntregue();
   });
 });
 

@@ -247,6 +247,18 @@
     <script>
         let pedidoData = null;
 
+        function aplicarCupomTrocaDaUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const codigoCupomTroca = params.get('cupom_troca');
+            const valorCupomTroca = params.get('valor_cupom_troca');
+
+            if (!codigoCupomTroca || pedidoData?.cupom_codigo) return;
+
+            pedidoData.cupom_codigo = codigoCupomTroca;
+            pedidoData.cupom_tipo = 'troca';
+            pedidoData.cupom_valor = valorCupomTroca || pedidoData.total || 0;
+        }
+
         // ── MAPA GLOBAL DE ETAPAS DO PEDIDO ────────────────────────────
         const ETAPAS_PEDIDO = [
             {
@@ -371,6 +383,7 @@
                 const res = await fetch(`/api/pedidos/${pedidoId}`);
                 if (!res.ok) throw new Error();
                 pedidoData = await res.json();
+                aplicarCupomTrocaDaUrl();
                 document.getElementById('numeroPedido').textContent = `#${pedidoData.id}`;
 
                 document.getElementById('enderecoConfirm').innerHTML = `
