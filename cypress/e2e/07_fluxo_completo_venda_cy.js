@@ -240,7 +240,7 @@ describe('Cenário 6 — Registrar novo endereço no checkout', () => {
     cy.contains('button', 'Buscar').click();
     cy.wait('@viacep');
 
-    // Aguarda o JS do buscarCep() terminar de escrever no DOM — sem .clear() nos campos do ViaCEP
+    // Aguarda o JS do buscarCep() escrever no DOM — sem .clear() nos campos do ViaCEP
     cy.get('#novoLogradouro').should('have.value', 'Praça da Sé');
     cy.get('#novoBairro').should('have.value', 'Sé');
     cy.get('#novoCidade').should('have.value', 'São Paulo');
