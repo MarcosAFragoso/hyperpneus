@@ -37,6 +37,28 @@ function criarPedidoPeloCheckout(pneuId = 1, qtd = 1) {
   cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
 }
 
+// Busca o valor total real do pedido na API e gera o cupom de troca com esse valor.
+// Usar o valor real evita cupons com valores arbitrários (9999, 500, 150) que não
+// refletem o pedido real do cliente e podem mascarar bugs de cálculo.
+function gerarCupomTrocaComValorReal(pedidoId, pneuId, qtd, callback) {
+  cy.request({ url: `/api/pedidos/${pedidoId}`, withCredentials: true }).then(pedido => {
+    // Tenta os campos possíveis de valor total conforme a versão da API
+    // parseFloat converte string ('492.09') ou number para float — cobre ambos os casos
+    const raw = pedido.body.total ?? pedido.body.valor_total ?? pedido.body.subtotal;
+    const valorReal = parseFloat(raw);
+    expect(isFinite(valorReal), `Valor total do pedido deve ser numérico (recebido: ${raw})`).to.be.true;
+    cy.request({
+      method: 'POST',
+      url: '/api/pedidos/gerar-cupom-troca',
+      body: { pedidoId, itensParaTroca: [{ pneu_id: pneuId, qtd }], valorTotal: valorReal, acao: 'Vale-Troca' },
+      failOnStatusCode: false,
+      withCredentials: true
+    }).then(res => {
+      if (callback) callback(res);
+    });
+  });
+}
+
 // ─────────────────────────────────────────────────────────────────
 // CENÁRIO 1 — Compra com 1 cartão
 // ─────────────────────────────────────────────────────────────────
@@ -140,11 +162,9 @@ describe('Cenário 4 — Compra com cupom de troca cobrindo 100%', () => {
     criarPedidoPeloCheckout(1, 1);
     cy.ultimoPedido().then(p => {
       avancarPedidoAteEntregue(p.id);
-      cy.request({
-        method: 'POST', url: '/api/pedidos/gerar-cupom-troca',
-        body: { pedidoId: p.id, itensParaTroca: [{ pneu_id: 1, qtd: 1 }], valorTotal: 9999, acao: 'Vale-Troca' },
-        failOnStatusCode: false, withCredentials: true
-      }).then(res => {
+      // Usa o valor real do pedido — o cupom cobre exatamente o total do cliente,
+      // sem valores arbitrários que mascarariam bugs de cálculo no checkout
+      gerarCupomTrocaComValorReal(p.id, 1, 1, res => {
         if (res.status === 201) codigoCupomAlto = res.body.codigo;
       });
     });
@@ -171,6 +191,17 @@ describe('Cenário 4 — Compra com cupom de troca cobrindo 100%', () => {
       if (total <= 0) {
         cy.get('[data-cy="btn-finalizar"]').should('not.be.disabled').click();
         cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
+        cy.get('#pagamentoConfirm', { timeout: 8000 }).should('contain', 'Cupom de troca');
+        cy.get('#pagamentoConfirm').should('contain', codigoCupomAlto);
+
+        cy.location('search').then(search => {
+          const pedidoId = new URLSearchParams(search).get('pedido');
+          cy.request(`/api/pedidos/${pedidoId}`).then(res => {
+            expect(res.body.pagamentos || []).to.have.length(0);
+            expect(res.body.cupom_codigo).to.eq(codigoCupomAlto);
+            expect(res.body.cupom_tipo).to.eq('troca');
+          });
+        });
       }
     });
   });
@@ -241,6 +272,7 @@ describe('Cenário 6 — Registrar novo endereço no checkout', () => {
     cy.wait('@viacep');
 
     // Aguarda o JS do buscarCep() escrever no DOM — sem .clear() nos campos do ViaCEP
+    // para evitar race condition entre o fetch e o Cypress
     cy.get('#novoLogradouro').should('have.value', 'Praça da Sé');
     cy.get('#novoBairro').should('have.value', 'Sé');
     cy.get('#novoCidade').should('have.value', 'São Paulo');
@@ -438,11 +470,8 @@ describe('Cenário 11 — Admin nega troca', () => {
     cy.ultimoPedido().then(p => {
       pedidoId = p.id;
       avancarPedidoAteEntregue(pedidoId);
-      cy.request({
-        method: 'POST', url: '/api/pedidos/gerar-cupom-troca',
-        body: { pedidoId, itensParaTroca: [{ pneu_id: 2, qtd: 1 }], valorTotal: 500, acao: 'Vale-Troca' },
-        failOnStatusCode: false, withCredentials: true
-      });
+      // Usa o valor real do pedido para gerar o cupom de troca
+      gerarCupomTrocaComValorReal(pedidoId, 2, 1, null);
     });
   });
 
@@ -529,11 +558,8 @@ describe('Cenário 13 — Sistema gera cupom de troca', () => {
     criarPedidoPeloCheckout(1, 1);
     cy.ultimoPedido().then(p => {
       avancarPedidoAteEntregue(p.id);
-      cy.request({
-        method: 'POST', url: '/api/pedidos/gerar-cupom-troca',
-        body: { pedidoId: p.id, itensParaTroca: [{ pneu_id: 1, qtd: 1 }], valorTotal: 150, acao: 'Vale-Troca' },
-        failOnStatusCode: false, withCredentials: true
-      }).then(res => {
+      // Usa o valor real do pedido para gerar o cupom com o montante correto
+      gerarCupomTrocaComValorReal(p.id, 1, 1, res => {
         expect(res.status).to.eq(201);
         expect(res.body.codigo).to.match(/^TROCA-[A-Z0-9]{6}$/);
         cy.loginCliente();

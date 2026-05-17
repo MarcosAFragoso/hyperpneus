@@ -303,6 +303,48 @@
             return parseFloat(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
+        function obterLinhasPagamento() {
+            const pagamentos = pedidoData?.pagamentos || [];
+            const linhas = pagamentos.map(p => ({
+                html: `<div>${p.bandeira} **** ${p.numero_final}<br>
+                 <small class="text-muted">${fmt(p.valor)}</small></div>`,
+                nf: `${p.bandeira} **** ${p.numero_final}: ${fmt(p.valor)}`
+            }));
+
+            if (pedidoData?.cupom_codigo) {
+                const tipoCupom = pedidoData.cupom_tipo === 'troca'
+                    ? 'Cupom de troca'
+                    : 'Cupom promocional';
+                linhas.push({
+                    html: `<div>${tipoCupom}<br>
+                 <small class="text-muted">${pedidoData.cupom_codigo} - ${fmt(pedidoData.cupom_valor || 0)}</small></div>`,
+                    nf: `${tipoCupom} ${pedidoData.cupom_codigo}: ${fmt(pedidoData.cupom_valor || 0)}`
+                });
+            }
+
+            return linhas;
+        }
+
+        function renderizarPagamento() {
+            const linhas = obterLinhasPagamento();
+
+            if (!linhas.length) {
+                return 'Pagamento processado';
+            }
+
+            return linhas.map(l => l.html).join('<hr class="my-1">');
+        }
+
+        function renderizarPagamentoNF() {
+            const linhas = obterLinhasPagamento();
+
+            if (!linhas.length) {
+                return 'Pagamento processado';
+            }
+
+            return linhas.map(l => l.nf).join('\n');
+        }
+
         // ── Log de eventos ─────────────────────────────────────────────
         function adicionarLog(msg, tipo = 'success', hora = null) {
             const icons = {
@@ -341,11 +383,7 @@
             Frete: ${fmt(pedidoData.frete)}<br>
             <strong class="text-primary fs-5">${fmt(pedidoData.total)}</strong>`;
 
-                document.getElementById('pagamentoConfirm').innerHTML =
-                    (pedidoData.pagamentos || []).map(p =>
-                        `<div>${p.bandeira} **** ${p.numero_final}<br>
-                 <small class="text-muted">${fmt(p.valor)}</small></div>`
-                    ).join('<hr class="my-1">') || 'Pagamento processado';
+                document.getElementById('pagamentoConfirm').innerHTML = renderizarPagamento();
 
             } catch (e) { console.warn('Erro ao carregar pedido', e); }
         }
@@ -491,9 +529,7 @@ Frete            : ${fmt(pedidoData.frete)}
 TOTAL            : ${fmt(pedidoData.total)}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FORMA DE PAGAMENTO
-${(pedidoData.pagamentos || []).map(p =>
-                `${p.bandeira} **** ${p.numero_final}: ${fmt(p.valor)}`
-            ).join('\n')}
+${renderizarPagamentoNF()}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Chave NF-e: ${Math.random().toString(36).substr(2, 44).toUpperCase()}
     `;

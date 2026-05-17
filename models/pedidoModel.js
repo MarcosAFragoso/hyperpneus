@@ -47,7 +47,7 @@ module.exports = {
       let cupomId = null;
       let desconto = 0;
 
-      const aplicarCupom = async (codigo) => {
+      const aplicarCupom = async (codigo, definirComoPrincipal = false) => {
         if (!codigo) return 0;
         const { rows: [cupom] } = await client.query(
           `SELECT * FROM cupons
@@ -59,12 +59,12 @@ module.exports = {
         );
         if (!cupom) throw new Error(`Cupom "${codigo}" inválido ou expirado.`);
         await client.query(`UPDATE cupons SET usado = TRUE WHERE id = $1`, [cupom.id]);
-        if (!cupomId) cupomId = cupom.id;
+        if (!cupomId || definirComoPrincipal) cupomId = cupom.id;
         return parseFloat(cupom.valor);
       };
 
       desconto += await aplicarCupom(cupomCodigo);
-      desconto += await aplicarCupom(cupomTrocaCodigo);
+      desconto += await aplicarCupom(cupomTrocaCodigo, true);
 
       // 6. Total final (nunca negativo)
       const total = parseFloat(Math.max(0, subtotal + valorFrete - desconto).toFixed(2));
@@ -170,9 +170,13 @@ module.exports = {
 
   async buscar(clienteId, pedidoId) {
     const { rows: [pedido] } = await pool.query(
-      `SELECT p.*, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep
+      `SELECT p.*, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep,
+              cp.codigo AS cupom_codigo,
+              cp.tipo AS cupom_tipo,
+              cp.valor AS cupom_valor
        FROM pedidos p
        LEFT JOIN enderecos e ON e.id = p.endereco_id
+       LEFT JOIN cupons cp ON cp.id = p.cupom_id
        WHERE p.id = $1 AND p.cliente_id = $2`,
       [pedidoId, clienteId]
     );
