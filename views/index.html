@@ -384,7 +384,7 @@ window.onload = () => {
         display: flex; flex-direction: column; gap: 10px;
         font-size: 14px; background: #f8f9fa;
       }
-      .hb-msg { max-width: 82%; padding: 9px 13px; border-radius: 12px; line-height: 1.45; }
+      .hb-msg { max-width: 82%; padding: 9px 13px; border-radius: 12px; line-height: 1.45; white-space: pre-line; }
       .hb-bot  { background: #fff; border: 1px solid #e0e0e0; align-self: flex-start; border-bottom-left-radius: 3px; }
       .hb-user { background: #1a1a2e; color: #fff; align-self: flex-end; border-bottom-right-radius: 3px; }
       .hb-digitando { font-style: italic; color: #999; font-size: 13px; }
@@ -436,8 +436,7 @@ window.onload = () => {
         const div = document.getElementById('hyperbot-msgs');
         const msg = document.createElement('div');
         msg.className = `hb-msg hb-${tipo}`;
-        msg.innerHTML = texto.replace(/
-/g, '<br>');
+        msg.textContent = texto;
         div.appendChild(msg);
         div.scrollTop = div.scrollHeight;
         return msg;
