@@ -53,10 +53,12 @@ const enderecoRoutes = require('./routes/enderecoRoutes');
 const carrinhoRoutes = require('./routes/carrinhoRoutes');
 const pedidoRoutes = require('./routes/pedidoRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const chatbotRoutes = require('./routes/chatbotRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/pneus', pneuRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 app.use('/api/clientes/:clienteId/veiculos', veiculoRoutes);
 app.use('/api/clientes/:clienteId/cartoes', cartaoRoutes);

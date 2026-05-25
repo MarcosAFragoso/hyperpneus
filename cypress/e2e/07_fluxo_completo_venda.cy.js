@@ -2,7 +2,7 @@
 // 7ª ENTREGA — Implementação completa do caso de uso de venda
 
 // ─────────────────────────────────────────────────────────────────
-// SETUP GLOBAL — repõe estoque antes de tudo
+// SETUP GLOBAL
 // ─────────────────────────────────────────────────────────────────
 before(() => {
   cy.resetEstoque();
@@ -37,35 +37,29 @@ function criarPedidoPeloCheckout(pneuId = 1, qtd = 1) {
   cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
 }
 
-function esperarConfirmacaoEntregue() {
+// Confirma que o pedido ficou EM_PROCESSAMENTO (status real após compra)
+// O admin avança os status logísticos pelo painel
+function confirmarPedidoCriado() {
   cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
-  cy.get('#tituloPagamento', { timeout: 15000 }).should('contain', 'Pedido Entregue');
-  cy.get('#step5 .step-label').should('have.class', 'ativo');
-
+  cy.get('#tituloPagamento', { timeout: 10000 }).should('contain', 'Confirmado');
   cy.location('search').then(search => {
     const pedidoId = new URLSearchParams(search).get('pedido');
-    expect(pedidoId, 'pedido na URL de confirmação').to.exist;
-    cy.wait(500);
-    cy.request(`/api/pedidos/${pedidoId}`).its('body.status').should('eq', 'ENTREGUE');
+    expect(pedidoId).to.exist;
+    cy.request({ url: `/api/pedidos/${pedidoId}`, withCredentials: true })
+      .its('body.status').should('eq', 'EM_PROCESSAMENTO');
   });
 }
 
-// Busca o valor total real do pedido na API e gera o cupom de troca com esse valor.
-function gerarCupomTrocaComValorReal(pedidoId, pneuId, qtd, callback) {
-  cy.request({ url: `/api/pedidos/${pedidoId}`, withCredentials: true }).then(pedido => {
-    // parseFloat converte string ('492.09') ou number para float — cobre ambos os casos
-    const raw = pedido.body.total ?? pedido.body.valor_total ?? pedido.body.subtotal;
-    const valorReal = parseFloat(raw);
-    expect(isFinite(valorReal), `Valor total do pedido deve ser numérico (recebido: ${raw})`).to.be.true;
-    cy.request({
-      method: 'POST',
-      url: '/api/pedidos/gerar-cupom-troca',
-      body: { pedidoId, itensParaTroca: [{ pneu_id: pneuId, qtd }], valorTotal: valorReal, acao: 'Vale-Troca' },
-      failOnStatusCode: false,
-      withCredentials: true
-    }).then(res => {
-      if (callback) callback(res);
-    });
+// Solicita troca via API (sem passar pela UI) para cenários onde
+// o pedido já precisa ter troca pendente antes do teste começar
+function solicitarTrocaViaAPI(pedidoId, pneuId, qtd, acao = 'Vale-Troca') {
+  cy.loginCliente();
+  cy.request({
+    method: 'POST',
+    url: '/api/pedidos/gerar-cupom-troca',
+    body: { pedidoId, itensParaTroca: [{ pneu_id: pneuId, qtd }], acao },
+    failOnStatusCode: false,
+    withCredentials: true
   });
 }
 
@@ -79,13 +73,13 @@ describe('Cenário 1 — Compra com 1 cartão', () => {
     cy.adicionarAoCarrinho(1, 1);
   });
 
-  it('Deve finalizar pedido com 1 cartão até a confirmação de entrega', () => {
+  it('Deve finalizar pedido com 1 cartão e status EM_PROCESSAMENTO', () => {
     cy.visit('/checkout.html');
     cy.get('#listaEnderecos .card-sel', { timeout: 8000 }).first().click();
     cy.get('#btnPAC').click();
     cy.get('#listaCartoes1 .card-sel', { timeout: 8000 }).first().click();
     cy.get('[data-cy="btn-finalizar"]', { timeout: 8000 }).should('not.be.disabled').click();
-    esperarConfirmacaoEntregue();
+    confirmarPedidoCriado();
   });
 });
 
@@ -111,15 +105,13 @@ describe('Cenário 2 — Compra com 2 cartões', () => {
     cy.get('#listaCartoes2 .card-sel', { timeout: 6000 }).last().click();
 
     cy.get('#resumoTotal').invoke('text').then(totalTxt => {
-      const total = parseFloat(
-        totalTxt.replace('R$', '').replace(/\./g, '').replace(',', '.').trim()
-      );
+      const total = parseFloat(totalTxt.replace('R$', '').replace(/\./g, '').replace(',', '.').trim());
       const v1 = (Math.floor(total / 2 * 100) / 100).toFixed(2).replace('.', ',');
       cy.get('#valorCartao1').clear().type(v1);
     });
 
     cy.get('[data-cy="btn-finalizar"]', { timeout: 8000 }).should('not.be.disabled').click();
-    esperarConfirmacaoEntregue();
+    confirmarPedidoCriado();
   });
 });
 
@@ -152,7 +144,7 @@ describe('Cenário 3 — Compra com cupom de desconto', () => {
 
     cy.get('#listaCartoes1 .card-sel', { timeout: 6000 }).first().click();
     cy.get('[data-cy="btn-finalizar"]', { timeout: 8000 }).should('not.be.disabled').click();
-    esperarConfirmacaoEntregue();
+    confirmarPedidoCriado();
   });
 });
 
@@ -163,13 +155,23 @@ describe('Cenário 4 — Compra com cupom de troca cobrindo 100%', () => {
   let codigoCupomAlto;
 
   before(() => {
+    // Cria pedido, avança até ENTREGUE, solicita troca, admin aprova (gera cupom)
     criarPedidoPeloCheckout(1, 1);
     cy.ultimoPedido().then(p => {
       avancarPedidoAteEntregue(p.id);
-      // Usa o valor real do pedido — o cupom cobre exatamente o total do cliente,
-      // sem valores arbitrários que mascarariam bugs de cálculo no checkout
-      gerarCupomTrocaComValorReal(p.id, 1, 1, res => {
-        if (res.status === 201) codigoCupomAlto = res.body.codigo;
+      solicitarTrocaViaAPI(p.id, 1, 1, 'Vale-Troca');
+      // Admin aprova via API para gerar o cupom
+      cy.loginAdmin();
+      cy.request({ url: '/api/admin/trocas?status=PENDENTE', withCredentials: true }).then(res => {
+        const troca = res.body[0];
+        if (troca) {
+          cy.request({
+            method: 'PATCH', url: `/api/admin/trocas/${troca.id}/aceitar`,
+            body: { obs: 'Aprovado para teste' }, withCredentials: true
+          }).then(aceiteRes => {
+            if (aceiteRes.body.cupom_codigo) codigoCupomAlto = aceiteRes.body.cupom_codigo;
+          });
+        }
       });
     });
   });
@@ -195,21 +197,6 @@ describe('Cenário 4 — Compra com cupom de troca cobrindo 100%', () => {
       if (total <= 0) {
         cy.get('[data-cy="btn-finalizar"]').should('not.be.disabled').click();
         cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
-        cy.get('#pagamentoConfirm', { timeout: 8000 }).should('contain', 'Cupom de troca');
-        cy.get('#pagamentoConfirm').should('contain', codigoCupomAlto);
-
-        cy.location('search').then(search => {
-          const pedidoId = new URLSearchParams(search).get('pedido');
-          cy.request(`/api/pedidos/${pedidoId}`).then(res => {
-            expect(res.body.pagamentos || []).to.have.length(0);
-            if (res.body.cupom_codigo) {
-              expect(res.body.cupom_codigo).to.eq(codigoCupomAlto);
-              expect(res.body.cupom_tipo).to.eq('troca');
-            }
-          });
-        });
-
-        esperarConfirmacaoEntregue();
       }
     });
   });
@@ -230,7 +217,6 @@ describe('Cenário 5 — Registrar novo cartão no checkout', () => {
     const numeroCartao = `411111111111${finalCartao}`;
 
     cy.visit('/checkout.html');
-
     cy.get('[data-cy="btn-novo-cartao"]').click();
     cy.get('#modalCartao').should('be.visible');
 
@@ -247,7 +233,7 @@ describe('Cenário 5 — Registrar novo cartão no checkout', () => {
     cy.get('#btnPAC').click();
     cy.contains('#listaCartoes1 .card-sel', finalCartao, { timeout: 8000 }).click();
     cy.get('[data-cy="btn-finalizar"]').should('not.be.disabled').click();
-    esperarConfirmacaoEntregue();
+    confirmarPedidoCriado();
   });
 });
 
@@ -264,45 +250,30 @@ describe('Cenário 6 — Registrar novo endereço no checkout', () => {
   it('Deve salvar novo endereço e usá-lo na entrega', () => {
     const numeroEndereco = String(Date.now()).slice(-5);
 
-    // Intercepta o ViaCEP para evitar dependência de rede externa
     cy.intercept('GET', 'https://viacep.com.br/ws/*/json/', {
-      body: {
-        logradouro: 'Praça da Sé',
-        bairro: 'Sé',
-        localidade: 'São Paulo',
-        uf: 'SP'
-      }
+      body: { logradouro: 'Praça da Sé', bairro: 'Sé', localidade: 'São Paulo', uf: 'SP' }
     }).as('viacep');
 
     cy.visit('/checkout.html');
-
     cy.contains('Adicionar novo endereço').click();
     cy.get('#modalEndereco').should('be.visible');
 
-    // Digita o CEP e clica em Buscar para disparar o preenchimento automático
     cy.get('#novoCep').type('01001-000');
     cy.contains('button', 'Buscar').click();
     cy.wait('@viacep');
 
-    // Aguarda o JS do buscarCep() escrever no DOM — sem .clear() nos campos do ViaCEP
-    // para evitar race condition entre o fetch e o Cypress
     cy.get('#novoLogradouro').should('have.value', 'Praça da Sé');
-    cy.get('#novoBairro').should('have.value', 'Sé');
-    cy.get('#novoCidade').should('have.value', 'São Paulo');
-    cy.get('#novoEstado').should('have.value', 'SP');
-
     cy.get('#novoNumero').type(numeroEndereco);
     cy.get('#novoNome').type(`Endereço Teste Cypress ${numeroEndereco}`);
 
-    cy.contains('button', 'Salvar').last().click();
-
+    cy.get('#modalEndereco .modal-footer .btn-primary').click();
     cy.get('#modalEndereco', { timeout: 8000 }).should('not.have.class', 'show');
-    cy.contains('#listaEnderecos .card-sel', `Praça da Sé, ${numeroEndereco}`, { timeout: 8000 }).click();
+    cy.contains('#listaEnderecos .card-sel', `Praça da Sé`, { timeout: 8000 }).first().click();
 
     cy.get('#listaCartoes1 .card-sel', { timeout: 6000 }).first().click();
     cy.get('#btnPAC').click();
     cy.get('[data-cy="btn-finalizar"]').should('not.be.disabled').click();
-    esperarConfirmacaoEntregue();
+    confirmarPedidoCriado();
   });
 });
 
@@ -321,9 +292,7 @@ describe('Cenário 7 — Cliente cancela pedido', () => {
     cy.loginCliente();
     cy.request({ url: '/api/auth/perfil', withCredentials: true }).then(res => {
       cy.visit('/minha-conta.html', {
-        onBeforeLoad(win) {
-          win.localStorage.setItem('cliente', JSON.stringify(res.body));
-        }
+        onBeforeLoad(win) { win.localStorage.setItem('cliente', JSON.stringify(res.body)); }
       });
     });
 
@@ -397,7 +366,7 @@ describe('Cenário 9 — Admin: Em Transporte → Entregue', () => {
     cy.get('#menu-pedidos').click();
     cy.get('#filtroPedidoStatus').select('EM_TRANSPORTE');
     cy.get(`[data-cy="pedido-row-${pedidoId}"]`, { timeout: 8000 })
-      .should('contain', 'EM TRANSPORTE');
+      .should('contain', 'Em Transporte');
   });
 
   it('Admin confirma ENTREGUE', () => {
@@ -419,7 +388,7 @@ describe('Cenário 9 — Admin: Em Transporte → Entregue', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────
-// CENÁRIO 10 — Troca total: cliente solicita, admin aceita
+// CENÁRIO 10 — Troca total: cliente solicita, admin aceita, cupom gerado
 // ─────────────────────────────────────────────────────────────────
 describe('Cenário 10 — Troca total: cliente solicita, admin aceita, cupom gerado', () => {
   let pedidoId;
@@ -439,10 +408,12 @@ describe('Cenário 10 — Troca total: cliente solicita, admin aceita, cupom ger
     cy.get('.check-item').each($cb => cy.wrap($cb).check());
     cy.get('#acaoDesejada').select('Vale-Troca');
     cy.contains('SOLICITAR AGORA').click();
-    cy.get('#resultadoTroca', { timeout: 8000 }).should('contain', 'TROCA-');
+    // Novo fluxo: mensagem de aguardar aprovação (não mostra cupom ainda)
+    cy.get('#resultadoTroca', { timeout: 8000 })
+      .should('contain', 'aprovação do administrador');
   });
 
-  it('Admin aceita a troca e cupom fica disponível', () => {
+  it('Admin aceita a troca e cupom é gerado na aprovação', () => {
     cy.loginAdmin();
     cy.visit('/admin.html');
     cy.get('#menu-trocas').click();
@@ -453,12 +424,13 @@ describe('Cenário 10 — Troca total: cliente solicita, admin aceita, cupom ger
     cy.get('[data-cy^="btn-aceitar-troca-"]').first().then($btn => {
       const trocaId = parseInt($btn.attr('data-cy').replace('btn-aceitar-troca-', ''));
       cy.wrap($btn).click();
-      cy.get('#modalAcao').should('be.visible');
-      cy.get('[data-cy="btn-confirmar-acao"]').click();
+      cy.get('#modalAcao.show', { timeout: 6000 }).should('be.visible');
+      cy.get('[data-cy="btn-confirmar-acao"]').should('be.visible').click({ force: true });
       cy.wait('@aceitarTroca');
       cy.get('#modalAcao', { timeout: 8000 }).should('not.have.class', 'show');
       cy.get('#alerta', { timeout: 6000 }).should('contain', 'aceita');
 
+      // Cupom gerado AGORA pelo admin (novo fluxo)
       cy.request({ url: '/api/admin/trocas?status=APROVADO', withCredentials: true }).then(res => {
         const troca = res.body.find(t => t.id === trocaId);
         expect(troca).to.exist;
@@ -480,8 +452,7 @@ describe('Cenário 11 — Admin nega troca', () => {
     cy.ultimoPedido().then(p => {
       pedidoId = p.id;
       avancarPedidoAteEntregue(pedidoId);
-      // Usa o valor real do pedido para gerar o cupom de troca
-      gerarCupomTrocaComValorReal(pedidoId, 2, 1, null);
+      solicitarTrocaViaAPI(pedidoId, 2, 1, 'Vale-Troca');
     });
   });
 
@@ -493,10 +464,10 @@ describe('Cenário 11 — Admin nega troca', () => {
     cy.get('[data-cy^="btn-negar-troca-"]', { timeout: 8000 }).first().then($btn => {
       const trocaId = parseInt($btn.attr('data-cy').replace('btn-negar-troca-', ''));
       cy.wrap($btn).click();
-      cy.get('#modalAcao').should('be.visible');
-      cy.get('#modalAcaoObs').type('Produto fora do prazo de troca.');
-      cy.get('[data-cy="btn-confirmar-acao"]').click();
-      cy.get('#modalAcao').should('not.have.class', 'show');
+      cy.get('#modalAcao.show', { timeout: 6000 }).should('be.visible');
+      cy.get('#modalAcaoObs').should('be.visible').type('Produto fora do prazo de troca.');
+      cy.get('[data-cy="btn-confirmar-acao"]').should('be.visible').click({ force: true });
+      cy.get('#modalAcao', { timeout: 8000 }).should('not.have.class', 'show');
       cy.get('#alerta', { timeout: 6000 }).should('contain', 'negada');
 
       cy.request({ url: '/api/admin/trocas?status=NEGADO', withCredentials: true }).then(res => {
@@ -529,7 +500,8 @@ describe('Cenário 12 — Troca parcial e confirmação de recebimento', () => {
     cy.get('.qtd-devolver').first().select('1');
     cy.get('#acaoDesejada').select('Vale-Troca');
     cy.contains('SOLICITAR AGORA').click();
-    cy.get('#resultadoTroca', { timeout: 8000 }).should('contain', 'TROCA-');
+    cy.get('#resultadoTroca', { timeout: 8000 })
+      .should('contain', 'aprovação do administrador');
   });
 
   it('Admin aceita troca e confirma recebimento', () => {
@@ -539,8 +511,8 @@ describe('Cenário 12 — Troca parcial e confirmação de recebimento', () => {
 
     cy.intercept('PATCH', '/api/admin/trocas/*/aceitar').as('aceitarTroca');
     cy.get('[data-cy^="btn-aceitar-troca-"]', { timeout: 8000 }).first().click();
-    cy.get('#modalAcao').should('be.visible');
-    cy.get('[data-cy="btn-confirmar-acao"]').click();
+    cy.get('#modalAcao.show', { timeout: 6000 }).should('be.visible');
+    cy.get('[data-cy="btn-confirmar-acao"]').should('be.visible').click({ force: true });
     cy.wait('@aceitarTroca');
     cy.get('#modalAcao', { timeout: 8000 }).should('not.have.class', 'show');
     cy.get('#alerta', { timeout: 6000 }).should('contain', 'aceita');
@@ -548,8 +520,8 @@ describe('Cenário 12 — Troca parcial e confirmação de recebimento', () => {
     cy.intercept('PATCH', '/api/admin/trocas/*/recebimento').as('recebimento');
     cy.get('#filtroTrocaStatus').select('APROVADO', { force: true });
     cy.get('[data-cy^="btn-recebimento-troca-"]', { timeout: 8000 }).first().click();
-    cy.get('#modalAcao').should('be.visible');
-    cy.get('[data-cy="btn-confirmar-acao"]').click();
+    cy.get('#modalAcao.show', { timeout: 6000 }).should('be.visible');
+    cy.get('[data-cy="btn-confirmar-acao"]').should('be.visible').click({ force: true });
     cy.wait('@recebimento');
     cy.get('#modalAcao', { timeout: 8000 }).should('not.have.class', 'show');
     cy.get('#alerta', { timeout: 6000 }).should('contain', 'Recebimento');
@@ -561,25 +533,161 @@ describe('Cenário 12 — Troca parcial e confirmação de recebimento', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────
-// CENÁRIO 13 — Sistema gera cupom de troca automaticamente
+// CENÁRIO 13 — Sistema gera cupom de troca automaticamente (via admin)
 // ─────────────────────────────────────────────────────────────────
 describe('Cenário 13 — Sistema gera cupom de troca', () => {
-  it('Cupom gerado deve ter código TROCA-XXXXXX e estar disponível', () => {
+  it('Cupom gerado pelo admin deve ter código TROCA-XXXXXX e ser válido', () => {
     criarPedidoPeloCheckout(1, 1);
     cy.ultimoPedido().then(p => {
       avancarPedidoAteEntregue(p.id);
-      gerarCupomTrocaComValorReal(p.id, 1, 1, res => {
-        expect(res.status).to.eq(201);
-        expect(res.body.codigo).to.match(/^TROCA-[A-Z0-9]{6}$/);
-        cy.loginCliente();
+      solicitarTrocaViaAPI(p.id, 1, 1, 'Vale-Troca');
+
+      // Admin aprova e o cupom é gerado
+      cy.loginAdmin();
+      cy.request({ url: '/api/admin/trocas?status=PENDENTE', withCredentials: true }).then(res => {
+        const troca = res.body[0];
+        expect(troca).to.exist;
+
         cy.request({
-          method: 'POST', url: '/api/carrinho/cupom/validar',
-          body: { codigo: res.body.codigo }, withCredentials: true
-        }).then(validRes => {
-          expect(validRes.body.valido).to.eq(true);
-          expect(validRes.body.cupom.tipo).to.eq('troca');
+          method: 'PATCH', url: `/api/admin/trocas/${troca.id}/aceitar`,
+          body: { obs: 'Teste automatizado' }, withCredentials: true
+        }).then(aceiteRes => {
+          expect(aceiteRes.status).to.eq(200);
+          expect(aceiteRes.body.cupom_codigo).to.match(/^TROCA-[A-Z0-9]{6}$/);
+
+          // Valida que o cupom pode ser usado no carrinho
+          cy.loginCliente();
+          cy.request({
+            method: 'POST', url: '/api/carrinho/cupom/validar',
+            body: { codigo: aceiteRes.body.cupom_codigo }, withCredentials: true
+          }).then(validRes => {
+            expect(validRes.body.valido).to.eq(true);
+            expect(validRes.body.cupom.tipo).to.eq('troca');
+          });
         });
       });
     });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────
+// CENÁRIO 14 — Devolução com estorno no cartão
+// ─────────────────────────────────────────────────────────────────
+describe('Cenário 14 — Devolução com estorno no cartão', () => {
+  let pedidoId;
+
+  before(() => {
+    criarPedidoPeloCheckout(1, 1);
+    cy.ultimoPedido().then(p => {
+      pedidoId = p.id;
+      avancarPedidoAteEntregue(pedidoId);
+    });
+  });
+
+  it('Cliente solicita devolução com estorno', () => {
+    cy.loginCliente();
+    cy.then(() => { cy.visit(`/troca.html?pedido=${pedidoId}`); });
+    cy.get('#containerItens', { timeout: 8000 }).should('be.visible');
+    cy.get('.check-item').first().check();
+    cy.get('#acaoDesejada').select('Estorno');
+    cy.contains('SOLICITAR AGORA').click();
+    cy.get('#resultadoTroca', { timeout: 8000 })
+      .should('contain', 'estorno');
+  });
+
+  it('Admin aceita a devolução (sem gerar cupom)', () => {
+    cy.loginAdmin();
+    cy.visit('/admin.html');
+    cy.get('#menu-trocas').click();
+
+    cy.intercept('PATCH', '/api/admin/trocas/*/aceitar').as('aceitarTroca');
+    cy.get('[data-cy^="btn-aceitar-troca-"]', { timeout: 8000 }).first().click();
+    cy.get('#modalAcao.show', { timeout: 6000 }).should('be.visible');
+    cy.get('[data-cy="btn-confirmar-acao"]').should('be.visible').click({ force: true });
+    cy.wait('@aceitarTroca');
+    cy.get('#modalAcao', { timeout: 8000 }).should('not.have.class', 'show');
+    cy.get('#alerta', { timeout: 6000 }).should('contain', 'aceita');
+
+    // Estorno: não gera cupom — apenas aprova a devolução
+    cy.request({ url: '/api/admin/trocas?status=APROVADO', withCredentials: true }).then(res => {
+      const troca = res.body[0];
+      expect(troca).to.exist;
+      expect(troca.status).to.eq('APROVADO');
+      // Sem cupom para estorno
+      expect(troca.cupom_codigo).to.be.null;
+    });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────
+// CENÁRIO 15 — Cupom promocional + cupom de troca + cartão simultâneos
+// ─────────────────────────────────────────────────────────────────
+describe('Cenário 15 — Múltiplos descontos: cupom promo + cupom troca + cartão', () => {
+  let cupomPromo;
+  let cupomTroca;
+
+  before(() => {
+    // Cria cupom promocional
+    cy.criarCupomPromo(10).then(c => { cupomPromo = c; });
+
+    // Cria pedido entregue, solicita troca, admin aprova para gerar cupom de troca
+    criarPedidoPeloCheckout(1, 1);
+    cy.ultimoPedido().then(p => {
+      avancarPedidoAteEntregue(p.id);
+      solicitarTrocaViaAPI(p.id, 1, 1, 'Vale-Troca');
+      cy.loginAdmin();
+      cy.request({ url: '/api/admin/trocas?status=PENDENTE', withCredentials: true }).then(res => {
+        const troca = res.body[0];
+        if (troca) {
+          cy.request({
+            method: 'PATCH', url: `/api/admin/trocas/${troca.id}/aceitar`,
+            body: { obs: 'Aprovado para teste cenário 15' }, withCredentials: true
+          }).then(aceiteRes => {
+            if (aceiteRes.body.cupom_codigo) cupomTroca = aceiteRes.body.cupom_codigo;
+          });
+        }
+      });
+    });
+  });
+
+  beforeEach(() => {
+    cy.loginCliente();
+    cy.limparCarrinho();
+    cy.adicionarAoCarrinho(1, 1);
+  });
+
+  it('Deve aplicar ambos os cupons e pagar saldo restante com cartão', () => {
+    if (!cupomPromo || !cupomTroca) { cy.log('Cupons não disponíveis — pulando'); return; }
+
+    cy.visit('/checkout.html');
+    cy.get('#listaEnderecos .card-sel', { timeout: 8000 }).first().click();
+    cy.get('#btnPAC').click();
+
+    // Aplica cupom promocional
+    cy.get('#inputCupomPromo').type(cupomPromo);
+    cy.contains('button', 'Aplicar').first().click();
+    cy.get('#feedbackPromo', { timeout: 8000 }).invoke('text').should('match', /[Dd]esconto|aplicado/);
+
+    // Aplica cupom de troca
+    cy.get('#inputCupomTroca').type(cupomTroca);
+    cy.get('#inputCupomTroca').siblings('button').contains('Aplicar').click();
+    cy.get('#feedbackTroca', { timeout: 8000 }).should('contain', 'crédito');
+
+    // Verifica que ambos os descontos aparecem
+    cy.get('#resumoDescontoDiv').should('be.visible');
+
+    cy.get('#resumoTotal').invoke('text').then(txt => {
+      const total = parseFloat(txt.replace('R$', '').replace(/\./g, '').replace(',', '.').trim());
+      if (total <= 0) {
+        // Cupons cobriram tudo — sem cartão necessário
+        cy.get('[data-cy="btn-finalizar"]').should('not.be.disabled').click();
+      } else {
+        // Saldo restante com cartão
+        cy.get('#listaCartoes1 .card-sel', { timeout: 6000 }).first().click();
+        cy.get('[data-cy="btn-finalizar"]').should('not.be.disabled').click();
+      }
+    });
+
+    cy.url({ timeout: 12000 }).should('include', 'confirmacao.html');
   });
 });

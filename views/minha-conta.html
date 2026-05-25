@@ -423,11 +423,20 @@
 
                 const statusCor = {
                     'AGUARDANDO_PAGAMENTO': 'warning',
-                    'EM_PROCESSAMENTO': 'primary',
+                    'EM_PROCESSAMENTO':     'primary',
                     'PAGAMENTO_CONFIRMADO': 'info',
-                    'EM_TRANSPORTE': 'primary',
-                    'ENTREGUE': 'success',
-                    'CANCELADO': 'danger'
+                    'EM_TRANSPORTE':        'info',
+                    'ENTREGUE':             'success',
+                    'CANCELADO':            'danger'
+                };
+
+                const statusLabel = {
+                    'AGUARDANDO_PAGAMENTO': 'Aguardando Pagamento',
+                    'EM_PROCESSAMENTO':     'Em Processamento',
+                    'PAGAMENTO_CONFIRMADO': 'Pagamento Confirmado',
+                    'EM_TRANSPORTE':        'Em Transporte',
+                    'ENTREGUE':             'Entregue',
+                    'CANCELADO':            'Cancelado'
                 };
 
                 lista.innerHTML = pedidos.map(p => {
@@ -436,7 +445,7 @@
                     const totalFmt = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                     const data = p.criado_em ? new Date(p.criado_em).toLocaleDateString('pt-BR') : '';
                     const cor = statusCor[p.status] || 'secondary';
-                    const label = (p.status || '').replace(/_/g, ' ');
+                    const label = statusLabel[p.status] || (p.status || '').replace(/_/g, ' ');
 
                     return `
                 <div class="order-card">
@@ -451,10 +460,11 @@
                             class="btn btn-outline-dark btn-sm">
                                 <i class="fas fa-eye me-1"></i>Ver Detalhes
                             </a>
+                            ${p.status === 'ENTREGUE' ? `
                             <a href="troca.html?pedido=${p.id}"
                             class="btn btn-warning btn-sm fw-bold">
                                 <i class="fas fa-exchange-alt me-1"></i>Troca/Dev.
-                            </a>
+                            </a>` : ''}
                             ${['AGUARDANDO_PAGAMENTO', 'EM_PROCESSAMENTO'].includes(p.status) ? `
                             <button onclick="cancelarPedido(${p.id})"
                                 class="btn btn-outline-danger btn-sm" data-cy="btn-cancelar-${p.id}">

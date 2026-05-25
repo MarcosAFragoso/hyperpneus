@@ -170,7 +170,7 @@
             <thead class="table-dark">
               <tr>
                 <th>#</th><th>Cliente</th><th>Pedido</th><th>Pneu</th>
-                <th>Qtd</th><th>Status</th><th>Cupom</th><th>Ações</th>
+                <th>Qtd</th><th>Status</th><th>Solicitação</th><th>Cupom</th><th>Ações</th>
               </tr>
             </thead>
             <tbody id="tabelaTrocas">
@@ -285,8 +285,22 @@ function mostrarAlerta(msg, tipo = 'danger') {
   el.classList.remove('d-none');
   setTimeout(() => el.classList.add('d-none'), 5000);
 }
+const STATUS_LABEL = {
+  'AGUARDANDO_PAGAMENTO': 'Aguard. Pagamento',
+  'EM_PROCESSAMENTO':     'Em Processamento',
+  'PAGAMENTO_CONFIRMADO': 'Pagamento Confirmado',
+  'EM_TRANSPORTE':        'Em Transporte',
+  'ENTREGUE':             'Entregue',
+  'CANCELADO':            'Cancelado',
+  'PENDENTE':             'Pendente',
+  'APROVADO':             'Aprovado',
+  'NEGADO':               'Negado',
+  'PRODUTO_RECEBIDO':     'Produto Recebido'
+};
+
 function badgeStatus(s) {
-  return `<span class="status-badge ${s}">${(s || '').replace(/_/g, ' ')}</span>`;
+  const label = STATUS_LABEL[s] || (s || '').replace(/_/g, ' ');
+  return `<span class="status-badge ${s}">${label}</span>`;
 }
 
 // ── Login / Logout ────────────────────────────────────────
@@ -575,7 +589,13 @@ async function carregarTrocas() {
         <td><small>${t.marca} ${t.modelo} ${t.largura}/${t.perfil} R${t.aro}</small></td>
         <td class="text-center">${t.quantidade_trocada}</td>
         <td>${badgeStatus(t.status)}</td>
-        <td><small class="text-success">${t.cupom_codigo || '—'}</small></td>
+        <td>
+            ${t.acao_cliente === 'Estorno'
+              ? '<span class="badge bg-secondary">Estorno</span>'
+              : '<span class="badge bg-warning text-dark">Vale-Troca</span>'
+            }
+          </td>
+          <td><small class="text-success">${t.cupom_codigo || (t.status === 'PENDENTE' ? '<em class="text-muted">Aguard. aprovação</em>' : '—')}</small></td>
         <td>
           <div class="d-flex gap-1">
             ${t.status === 'PENDENTE' ? `
@@ -604,7 +624,7 @@ async function carregarTrocas() {
 
 function acaoTroca(id, acao) {
   const textos = {
-    aceitar:      { titulo: 'Aceitar Troca', msg: `Aceitar a troca #${id}? O estoque será reposto e o cupom gerado.`, btn: 'success' },
+    aceitar:      { titulo: 'Aceitar Troca', msg: `Aceitar a troca #${id}? O estoque será reposto. Se for Vale-Troca, o cupom será gerado agora.`, btn: 'success' },
     negar:        { titulo: 'Negar Troca',   msg: `Negar a troca #${id}?`, btn: 'danger' },
     recebimento:  { titulo: 'Confirmar Recebimento', msg: `Confirmar recebimento do produto da troca #${id}?`, btn: 'info' }
   };
@@ -631,7 +651,9 @@ async function executarAcaoTroca(id, acao) {
       return;
     }
     bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAcao')).hide();
-    mostrarAlerta(data.mensagem, 'success');
+    let msg = data.mensagem;
+    if (data.cupom_codigo) msg += ` Cupom: <strong>${data.cupom_codigo}</strong>`;
+    mostrarAlerta(msg, 'success');
     carregarTrocas();
     carregarDashboard();
   } catch (e) { mostrarAlerta('Erro ao processar ação.'); }

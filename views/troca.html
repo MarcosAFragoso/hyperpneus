@@ -83,7 +83,7 @@
             <div class="flex-grow-1">
                 <label class="fw-bold">${item.marca} ${item.modelo}</label><br>
                 <small>R$ ${item.preco_unitario}</small>
-                ${trocaInfo ? `<br><small class="text-primary fw-bold">Cupom: ${trocaInfo.codigo}</small>` : ''}
+                ${trocaInfo?.codigo ? `<br><small class="text-primary fw-bold"><i class="fas fa-tag me-1"></i>Cupom: ${trocaInfo.codigo}</small>` : trocaInfo ? '<br><small class="text-warning">Aguardando aprovação do administrador</small>' : ''}
             </div>
             ${!trocaInfo ? `
                 <select class="form-select w-auto qtd-devolver">
@@ -123,14 +123,26 @@
             const divResultado = document.getElementById('resultadoTroca');
 
             if (res.ok) {
+                const msgSucesso = acao === 'Estorno'
+                    ? 'Solicitação de estorno enviada! Aguarde a análise do administrador.'
+                    : 'Solicitação de troca enviada! O cupom será gerado após aprovação do administrador.';
                 divResultado.innerHTML = `
                     <div class="alert alert-success mt-3">
-                        <i class="fas fa-check-circle"></i> ${acao === 'Estorno' ? 'Solicitação enviada com sucesso!' : 'Troca realizada! Cupom: <strong>' + data.codigo + '</strong>'}
+                        <i class="fas fa-check-circle me-2"></i>${msgSucesso}
+                        <hr class="my-2">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Você receberá o código do cupom em <strong>Meus Pedidos</strong> após a aprovação.
+                        </small>
                     </div>`;
+                // Desabilita botão para evitar duplo envio
+                document.querySelector('.btn-confirmar').disabled = true;
+                document.querySelector('.btn-confirmar').textContent = 'Solicitação Enviada';
             } else {
+                const msgErro = data.erro || 'Alguns itens já possuem solicitação de troca ativa.';
                 divResultado.innerHTML = `
                     <div class="alert alert-warning mt-3">
-                        <i class="fas fa-exclamation-circle"></i> Atenção: Alguns itens selecionados já possuem uma solicitação de troca ativa.
+                        <i class="fas fa-exclamation-circle me-2"></i>${msgErro}
                     </div>`;
             }
         }
