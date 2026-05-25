@@ -260,46 +260,31 @@
         }
 
         // ── MAPA GLOBAL DE ETAPAS DO PEDIDO ────────────────────────────
+        // Status reais do banco — alinhados com adminPedidoController
         const ETAPAS_PEDIDO = [
             {
-                status: 'AGUARDANDO_PAGAMENTO',
-                titulo: 'Processando pagamento...',
-                subtitulo: 'Aguarde, estamos confirmando sua compra.',
-                icone: 'fa-spinner fa-spin text-primary',
-                log: 'Pedido recebido e registrado no sistema.',
-                logTipo: 'success'
-            },
-            {
-                status: 'PAGAMENTO_APROVADO',
-                titulo: 'Pagamento Confirmado',
-                subtitulo: 'Seu pagamento foi aprovado.',
-                icone: 'fa-check-circle text-success',
-                log: '✓ Pagamento aprovado pela operadora.',
-                logTipo: 'success'
-            },
-            {
                 status: 'EM_PROCESSAMENTO',
-                titulo: 'Em Separação',
-                subtitulo: 'Seu pedido está sendo preparado.',
-                icone: 'fa-box text-primary',
-                log: '📦 Pedido em separação.',
-                logTipo: 'info'
+                titulo: 'Pedido Recebido',
+                subtitulo: 'Seu pedido foi registrado e está aguardando confirmação.',
+                icone: 'fa-clock text-warning',
+                log: '✅ Pedido recebido e registrado no sistema.',
+                logTipo: 'success'
             },
             {
-                status: 'ENVIADO',
-                titulo: 'Na Transportadora',
-                subtitulo: 'Seu pedido está em trânsito.',
-                icone: 'fa-truck text-info',
-                log: '🚚 Pedido na transportadora.',
-                logTipo: 'info'
+                status: 'PAGAMENTO_CONFIRMADO',
+                titulo: 'Pagamento Confirmado',
+                subtitulo: 'Seu pagamento foi confirmado pelo administrador.',
+                icone: 'fa-check-circle text-success',
+                log: '💳 Pagamento confirmado.',
+                logTipo: 'success'
             },
             {
-                status: 'SAIU_PARA_ENTREGA',
-                titulo: 'Saiu para Entrega',
+                status: 'EM_TRANSPORTE',
+                titulo: 'Em Transporte',
                 subtitulo: 'Seu pedido está a caminho.',
-                icone: 'fa-shipping-fast text-primary',
-                log: '🚚 Saiu para entrega.',
-                logTipo: 'truck'
+                icone: 'fa-truck text-info',
+                log: '🚚 Pedido enviado para transporte.',
+                logTipo: 'info'
             },
             {
                 status: 'ENTREGUE',
@@ -307,7 +292,7 @@
                 subtitulo: 'Seu pedido foi entregue com sucesso!',
                 icone: 'fa-home text-success',
                 log: '🏠 Pedido entregue com sucesso!',
-                logTipo: 'home'
+                logTipo: 'success'
             }
         ];
 
@@ -412,39 +397,53 @@
 
         // ── MODO SIMULAÇÃO (vindo do checkout) ────────────────────────
         async function iniciarSimulacao(pedidoId) {
+            // Modo simulação: animação visual de confirmação do pedido
+            // O pedido já está EM_PROCESSAMENTO no banco — apenas mostramos feedback visual
+            // Quem avança o status logístico é o administrador pelo painel admin
             try { await carregarPedido(pedidoId); } catch (e) { console.error(e); }
 
-            const porcentagens = [0, 20, 40, 60, 80, 100];
+            // Etapas visuais de confirmação (não alteram o banco)
+            const etapasVisuais = [
+                {
+                    titulo: 'Verificando estoque...',
+                    subtitulo: 'Conferindo disponibilidade dos produtos.',
+                    icone: 'fa-search text-primary',
+                    log: '🔍 Estoque verificado com sucesso.'
+                },
+                {
+                    titulo: 'Processando pagamento...',
+                    subtitulo: 'Comunicando com a operadora do cartão.',
+                    icone: 'fa-credit-card text-info',
+                    log: '💳 Pagamento enviado para processamento.'
+                },
+                {
+                    titulo: 'Confirmando pedido...',
+                    subtitulo: 'Registrando seu pedido no sistema.',
+                    icone: 'fa-check-circle text-success',
+                    log: '✅ Pedido registrado com sucesso!'
+                }
+            ];
 
-            for (let i = 0; i < ETAPAS_PEDIDO.length; i++) {
-                const etapa = ETAPAS_PEDIDO[i];
+            const porcentagens = [20, 60, 100];
 
-                // Atualiza Título, Subtítulo e Ícone no topo
+            for (let i = 0; i < etapasVisuais.length; i++) {
+                const etapa = etapasVisuais[i];
                 document.getElementById('iconePagamento').innerHTML = `<i class="fas ${etapa.icone} fa-4x"></i>`;
                 document.getElementById('tituloPagamento').textContent = etapa.titulo;
                 document.getElementById('subtituloPagamento').textContent = etapa.subtitulo;
-
-                // Adiciona o Log e avança a barra
-                adicionarLog(etapa.log, etapa.logTipo);
-                ativarStep(i, porcentagens[i], i < 5);
-
-                // Mostra os cards de resumo logo após aprovar o pagamento
-                if (i === 1) mostrarCardsEAcoes();
-
-                // Espera 2 segundos antes de ir para o próximo passo (exceto no último)
-                if (i < ETAPAS_PEDIDO.length - 1) {
-                    await esperar(2000);
-                }
+                adicionarLog(etapa.log, 'success');
+                ativarStep(i, porcentagens[i], i < etapasVisuais.length - 1);
+                if (i < etapasVisuais.length - 1) await esperar(2000);
             }
 
-            // ATUALIZAÇÃO DO BANCO (No final de tudo)
-            try {
-                await fetch(`/api/pedidos/${pedidoId}/status`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: 'ENTREGUE' })
-                });
-            } catch (err) { console.log("Erro ao salvar no banco, ignorando..."); }
+            // Estado final — mostra resumo do pedido
+            document.getElementById('iconePagamento').innerHTML = `<i class="fas fa-check-circle text-success fa-4x"></i>`;
+            document.getElementById('tituloPagamento').textContent = 'Pedido Confirmado!';
+            document.getElementById('subtituloPagamento').textContent = 'Seu pedido está sendo processado. Acompanhe o status em Meus Pedidos.';
+            adicionarLog('📦 Pedido em processamento. Aguarde a confirmação do administrador.', 'info');
+            mostrarCardsEAcoes();
+            // NÃO faz PATCH no banco — status permanece EM_PROCESSAMENTO
+            // O admin avança o status pelo painel
         }
 
         // ── MODO VISUALIZAÇÃO (vindo de Meus Pedidos) ─────────────────
@@ -458,7 +457,7 @@
             const idxValido = idxAtual === -1 ? 0 : idxAtual;
 
             const etapaAtual = ETAPAS_PEDIDO[idxValido];
-            const porcentagens = [0, 20, 40, 60, 80, 100];
+            const porcentagens = [0, 33, 66, 100];
 
             // Atualiza topo
             document.getElementById('iconePagamento').innerHTML = `<i class="fas ${etapaAtual.icone} fa-4x"></i>`;

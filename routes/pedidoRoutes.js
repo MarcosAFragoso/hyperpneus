@@ -1,13 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const ctrl = require('../controllers/pedidoController');
+const { exigirLogin } = require('../middlewares/auth');
 
-router.post('/finalizar',          ctrl.finalizar);
-router.post('/migrar-carrinho',    ctrl.migrarCarrinho);
-router.get('/',                    ctrl.listar);
-router.get('/:id',                 ctrl.buscar);
-router.patch('/:id/status',        ctrl.atualizarStatus);
-router.patch('/:id/cancelar',      ctrl.cancelar);          // ← NOVO
-router.post('/gerar-cupom-troca',  ctrl.gerarCupomTroca);
+router.post('/finalizar',         exigirLogin, ctrl.finalizar);
+router.post('/migrar-carrinho',   ctrl.migrarCarrinho);
+router.get('/',                   exigirLogin, ctrl.listar);
+router.get('/:id',                exigirLogin, ctrl.buscar);
+router.patch('/:id/cancelar',     exigirLogin, ctrl.cancelar);
+router.post('/gerar-cupom-troca', exigirLogin, ctrl.gerarCupomTroca);
+
+// ── REMOVIDA rota PATCH /:id/status para cliente ──
+// Status logístico só via /api/admin/pedidos/:id/status
+// e /api/admin/pedidos/:id/confirmar-pagamento
 
 module.exports = router;
