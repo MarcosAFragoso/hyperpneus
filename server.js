@@ -54,9 +54,11 @@ const carrinhoRoutes = require('./routes/carrinhoRoutes');
 const pedidoRoutes = require('./routes/pedidoRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const chatbotRoutes = require('./routes/chatbotRoutes');
+const carrosRoutes = require('./routes/carrosRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/pneus', pneuRoutes);
+app.use('/api/carros', carrosRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 
