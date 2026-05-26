@@ -27,6 +27,7 @@ router.post('/mensagem', async (req, res) => {
 
     // Busca veículos do cliente logado (se houver sessão)
     let garagemTexto = '';
+    let historicoComprasTexto = '';
     const clienteId = req.session?.cliente?.id;
     if (clienteId) {
       const { rows: veiculos } = await pool.query(
@@ -37,6 +38,28 @@ router.post('/mensagem', async (req, res) => {
       if (veiculos.length) {
         garagemTexto = `\nVeículos do cliente:\n` +
           veiculos.map(v => `- ${v.marca} ${v.modelo} ${v.ano}${v.versao ? ' ' + v.versao : ''}`).join('\n');
+      }
+
+      const { rows: compras } = await pool.query(
+        `SELECT pn.marca, pn.modelo, pn.largura, pn.perfil, pn.aro,
+                SUM(ip.quantidade)::int AS quantidade,
+                MAX(p.criado_em) AS ultima_compra
+         FROM pedidos p
+         JOIN itens_pedido ip ON ip.pedido_id = p.id
+         JOIN pneus pn ON pn.id = ip.pneu_id
+         WHERE p.cliente_id = $1
+           AND p.status <> 'CANCELADO'
+         GROUP BY pn.marca, pn.modelo, pn.largura, pn.perfil, pn.aro
+         ORDER BY ultima_compra DESC
+         LIMIT 12`,
+        [clienteId]
+      );
+
+      if (compras.length) {
+        historicoComprasTexto = `\nHistórico de compras do cliente:\n` +
+          compras.map(c =>
+            `- ${c.marca} ${c.modelo} ${c.largura}/${c.perfil} R${c.aro} (${c.quantidade} un.)`
+          ).join('\n');
       }
     }
 
@@ -51,11 +74,15 @@ Regras:
 - Troca gera cupom de crédito após aprovação do administrador
 - Responda em português do Brasil, de forma curta e direta
 - Se o cliente mencionar o veículo dele, sugira pneus compatíveis do catálogo
-- Não invente pneus que não estão no catálogo abaixo
+- Use o histórico de compras para personalizar a recomendação quando existir
+- Recomende somente produtos listados no catálogo disponível abaixo
+- Se não houver produto compatível no catálogo, diga isso claramente e sugira ajustar medida, aro ou marca
+- Não invente marcas, modelos, medidas, preços, estoque ou benefícios
 
 Catálogo disponível:
 ${catalogoTexto}
 ${garagemTexto}
+${historicoComprasTexto}
 `.trim();
 
     // Monta histórico no formato do Gemini

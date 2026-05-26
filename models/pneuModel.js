@@ -30,6 +30,15 @@ module.exports = {
     if (filtros.perfil)  { query += ` AND perfil = $${i++}`;  params.push(filtros.perfil); }
     if (filtros.aro)     { query += ` AND aro = $${i++}`;     params.push(filtros.aro); }
     if (filtros.marca)   { query += ` AND LOWER(marca) LIKE $${i++}`; params.push(`%${filtros.marca.toLowerCase()}%`); }
+    if (filtros.q) {
+      query += ` AND (
+        LOWER(marca) LIKE $${i}
+        OR LOWER(modelo) LIKE $${i}
+        OR LOWER(CAST(largura AS TEXT) || '/' || CAST(perfil AS TEXT) || ' R' || CAST(aro AS TEXT)) LIKE $${i}
+      )`;
+      params.push(`%${filtros.q.toLowerCase()}%`);
+      i++;
+    }
     if (filtros.ativo !== undefined) { query += ` AND ativo = $${i++}`; params.push(filtros.ativo); }
 
     query += ` ORDER BY marca, modelo`;

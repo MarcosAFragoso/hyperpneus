@@ -13,6 +13,7 @@ router.get('/perfil',   authCtrl.perfil);
 
 // ── Pedidos (protegido) ────────────────────────────────────
 router.get('/pedidos',                           exigirAdmin, pedidoCtrl.listar);
+router.get('/analise/vendas-categorias',         exigirAdmin, pedidoCtrl.vendasPorCategoria);
 router.get('/pedidos/:id',                       exigirAdmin, pedidoCtrl.buscar);
 router.patch('/pedidos/:id/status',              exigirAdmin, pedidoCtrl.atualizarStatus);
 router.patch('/pedidos/:id/confirmar-pagamento', exigirAdmin, pedidoCtrl.confirmarPagamento);

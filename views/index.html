@@ -72,9 +72,14 @@
             <h1 class="fw-bold display-5">Encontre o pneu ideal</h1>
             <p class="text-white-50">Busque por medida ou compatibilidade veicular</p>
         </div>
-        <div class="card shadow-lg border-0 mx-auto" style="max-width: 700px;">
+        <div class="card shadow-lg border-0 mx-auto" style="max-width: 860px;">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small">Marca ou modelo</label>
+                        <input id="filtroTexto" class="form-control" placeholder="Ex: Corolla, Michelin"
+                               onkeydown="if(event.key==='Enter') buscarPneus()">
+                    </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold small">Largura</label>
                         <select id="filtroLargura" class="form-select">
@@ -83,6 +88,7 @@
                             <option>185</option><option>195</option><option>205</option>
                             <option>215</option><option>225</option><option>235</option>
                             <option>245</option><option>255</option><option>265</option>
+                            <option>275</option><option>285</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -92,6 +98,7 @@
                             <option>35</option><option>40</option><option>45</option>
                             <option>50</option><option>55</option><option>60</option>
                             <option>65</option><option>70</option><option>75</option>
+                            <option>80</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -101,18 +108,19 @@
                             <option>13</option><option>14</option><option>15</option>
                             <option>16</option><option>17</option><option>18</option>
                             <option>19</option><option>20</option><option>21</option>
+                            <option>22</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-12">
                         <button class="btn btn-buscar w-100 py-2" onclick="buscarPneus()">
                             <i class="fas fa-search me-1"></i> Buscar
                         </button>
                     </div>
                 </div>
                 <div class="text-center mt-3">
-                    <a href="#" class="small text-muted">
+                    <span class="small text-muted">
                         <i class="fas fa-car me-1"></i> Ou busque pelo seu carro →
-                    </a>
+                    </span>
                 </div>
             </div>
         </div>
@@ -175,6 +183,26 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const API = '';
+
+const compatibilidadeVeiculos = {
+    corolla: { largura: '205', perfil: '55', aro: '16' },
+    civic: { largura: '205', perfil: '55', aro: '16' },
+    cruze: { largura: '205', perfil: '55', aro: '16' },
+    jetta: { largura: '205', perfil: '55', aro: '16' },
+    onix: { largura: '185', perfil: '65', aro: '15' },
+    hb20: { largura: '185', perfil: '60', aro: '15' },
+    argo: { largura: '185', perfil: '60', aro: '15' },
+    gol: { largura: '175', perfil: '70', aro: '14' },
+    ka: { largura: '175', perfil: '65', aro: '14' },
+    compass: { largura: '225', perfil: '60', aro: '17' },
+    renegade: { largura: '215', perfil: '65', aro: '16' },
+    kicks: { largura: '205', perfil: '60', aro: '16' },
+    creta: { largura: '215', perfil: '60', aro: '17' },
+    hilux: { largura: '265', perfil: '65', aro: '17' },
+    ranger: { largura: '265', perfil: '65', aro: '17' },
+    s10: { largura: '265', perfil: '65', aro: '17' },
+    toro: { largura: '225', perfil: '65', aro: '17' }
+};
 
 function inmetroBadge(letra) {
     if (!letra) return '';
@@ -312,11 +340,19 @@ async function adicionarAoCarrinho(event, pneuId) {
 }
 
 async function buscarPneus() {
-    const largura = document.getElementById('filtroLargura').value;
-    const perfil = document.getElementById('filtroPerfil').value;
-    const aro = document.getElementById('filtroAro').value;
+    const texto = document.getElementById('filtroTexto').value.trim();
+    let largura = document.getElementById('filtroLargura').value;
+    let perfil = document.getElementById('filtroPerfil').value;
+    let aro = document.getElementById('filtroAro').value;
+    const termo = texto.toLowerCase();
+    const veiculo = Object.keys(compatibilidadeVeiculos).find(nome => termo.includes(nome));
+
+    if (veiculo && !largura && !perfil && !aro) {
+        ({ largura, perfil, aro } = compatibilidadeVeiculos[veiculo]);
+    }
 
     const params = new URLSearchParams();
+    if (texto && !veiculo) params.append('q', texto);
     if (largura) params.append('largura', largura);
     if (perfil) params.append('perfil', perfil);
     if (aro) params.append('aro', aro);

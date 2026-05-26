@@ -138,5 +138,56 @@ module.exports = {
     } catch (err) {
       res.status(500).json({ erro: err.message });
     }
+  },
+
+  async vendasPorCategoria(req, res) {
+    try {
+      const fimPadrao = new Date();
+      const inicioPadrao = new Date(fimPadrao.getFullYear(), fimPadrao.getMonth() - 12, 1);
+      const inicio = req.query.inicio || inicioPadrao.toISOString().slice(0, 10);
+      const fim = req.query.fim || fimPadrao.toISOString().slice(0, 10);
+      const categoriasSelecionadas = String(req.query.categorias || '')
+        .split(',')
+        .map(c => c.trim())
+        .filter(Boolean);
+
+      const { rows: categoriasRows } = await pool.query(
+        `SELECT DISTINCT marca AS categoria
+         FROM pneus
+         WHERE marca IS NOT NULL AND marca <> ''
+         ORDER BY marca`
+      );
+
+      const params = [inicio, fim];
+      let filtroCategorias = '';
+      if (categoriasSelecionadas.length) {
+        params.push(categoriasSelecionadas);
+        filtroCategorias = `AND pn.marca = ANY($${params.length})`;
+      }
+
+      const { rows } = await pool.query(
+        `SELECT to_char(date_trunc('month', p.criado_em), 'YYYY-MM') AS mes,
+                pn.marca AS categoria,
+                SUM(ip.quantidade)::int AS quantidade
+         FROM pedidos p
+         JOIN itens_pedido ip ON ip.pedido_id = p.id
+         JOIN pneus pn ON pn.id = ip.pneu_id
+         WHERE p.criado_em::date BETWEEN $1::date AND $2::date
+           AND p.status <> 'CANCELADO'
+           ${filtroCategorias}
+         GROUP BY mes, pn.marca
+         ORDER BY mes, pn.marca`,
+        params
+      );
+
+      res.json({
+        inicio,
+        fim,
+        categoriasDisponiveis: categoriasRows.map(r => r.categoria),
+        dados: rows
+      });
+    } catch (err) {
+      res.status(500).json({ erro: err.message });
+    }
   }
 };

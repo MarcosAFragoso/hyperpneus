@@ -7,10 +7,46 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { overflow-x: hidden; }
-    .sidebar { width: 240px; min-width: 240px; min-height: 100vh; background: #1a1a2e; }
-    .sidebar .nav-link { color: #adb5bd; border-radius: 6px; margin-bottom: 2px; }
-    .sidebar .nav-link:hover, .sidebar .nav-link.ativo { background: #e8b84b; color: #1a1a2e !important; font-weight: bold; }
+    :root {
+      --admin-bg: #f4f6f8;
+      --admin-panel: #ffffff;
+      --admin-dark: #151827;
+      --admin-muted: #697386;
+      --admin-line: #e6e8ee;
+      --admin-accent: #e8b84b;
+      --admin-accent-dark: #9a6a04;
+    }
+    body { overflow-x: hidden; background: var(--admin-bg); color: #202534; }
+    .sidebar { width: 264px; min-width: 264px; min-height: 100vh; background: var(--admin-dark); box-shadow: 10px 0 30px rgba(15, 23, 42, .08); }
+    .sidebar-brand {
+      width: 44px; height: 44px; border-radius: 10px; display: inline-flex;
+      align-items: center; justify-content: center; background: rgba(232, 184, 75, .14);
+      color: var(--admin-accent);
+    }
+    .sidebar .nav-link { color: #c7cedb; border-radius: 8px; margin-bottom: 4px; padding: 10px 12px; font-weight: 600; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.ativo { background: var(--admin-accent); color: #171923 !important; }
+    .admin-shell { min-height: 100vh; background: var(--admin-bg); }
+    .admin-topbar {
+      background: rgba(255, 255, 255, .92); border-bottom: 1px solid var(--admin-line);
+      position: sticky; top: 0; z-index: 20; backdrop-filter: blur(8px);
+    }
+    .page-title { font-size: 1.35rem; font-weight: 800; margin: 0; }
+    .page-subtitle { color: var(--admin-muted); font-size: .9rem; }
+    .metric-card {
+      border: 1px solid var(--admin-line); border-radius: 8px; background: var(--admin-panel);
+      box-shadow: 0 8px 22px rgba(15, 23, 42, .05); padding: 18px; height: 100%;
+    }
+    .metric-icon {
+      width: 40px; height: 40px; border-radius: 8px; display: inline-flex; align-items: center;
+      justify-content: center; background: #f7efd7; color: var(--admin-accent-dark);
+    }
+    .metric-value { font-size: 1.9rem; font-weight: 800; line-height: 1; }
+    .metric-label { color: var(--admin-muted); font-size: .82rem; font-weight: 700; text-transform: uppercase; }
+    .admin-card { border: 1px solid var(--admin-line); border-radius: 8px; box-shadow: 0 8px 22px rgba(15,23,42,.05); }
+    .admin-card .card-header { border-bottom: 1px solid var(--admin-line); background: #fff; }
+    .table { --bs-table-hover-bg: #f8fafc; }
+    .table thead th { background: #f7f8fb; color: #485266; border-bottom: 1px solid var(--admin-line); font-size: .78rem; text-transform: uppercase; letter-spacing: 0; }
+    .btn-icon { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; }
     .status-badge { font-size: .75rem; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
     .AGUARDANDO_PAGAMENTO { background: #fff3cd; color: #856404; }
     .EM_PROCESSAMENTO     { background: #cfe2ff; color: #084298; }
@@ -22,18 +58,32 @@
     .APROVADO             { background: #d1e7dd; color: #0f5132; }
     .NEGADO               { background: #f8d7da; color: #842029; }
     .PRODUTO_RECEBIDO     { background: #d1ecf1; color: #0c5460; }
-    #telaLogin { position:fixed; inset:0; background:#1a1a2e; z-index:9999;
-                 display:flex; align-items:center; justify-content:center; }
+    #telaLogin {
+      position:fixed; inset:0; background:
+        radial-gradient(circle at 20% 20%, rgba(232,184,75,.24), transparent 28%),
+        linear-gradient(135deg, #111421 0%, #1a1a2e 55%, #252b45 100%);
+      z-index:9999; display:flex; align-items:center; justify-content:center; padding: 20px;
+    }
+    .login-card { width: 390px; border: 1px solid rgba(255,255,255,.16); border-radius: 12px; overflow: hidden; }
+    .login-mark { width: 48px; height: 48px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; background: #1a1a2e; color: var(--admin-accent); }
+    .category-filter { max-height: 150px; overflow-y: auto; border: 1px solid var(--admin-line); border-radius: 8px; padding: 10px; background: #fff; }
+    #graficoVendasCategorias { min-height: 320px; }
   </style>
 </head>
 <body>
 
 <!-- ── TELA DE LOGIN ──────────────────────────────────────── -->
 <div id="telaLogin">
-  <div class="card shadow-lg" style="width:360px">
+  <a href="index.html" class="btn btn-outline-light btn-sm position-absolute top-0 start-0 m-3">
+    <i class="fas fa-arrow-left me-1"></i>Voltar para loja
+  </a>
+  <div class="card login-card shadow-lg">
     <div class="card-body p-5">
-      <h4 class="fw-bold text-center mb-1">HyperPneus</h4>
-      <p class="text-muted text-center small mb-4">Painel Administrativo</p>
+      <div class="text-center mb-4">
+        <div class="login-mark mb-3"><i class="fas fa-shield-alt"></i></div>
+        <h4 class="fw-bold mb-1">HyperAdmin</h4>
+        <p class="text-muted small mb-0">Painel operacional da HyperPneus</p>
+      </div>
       <div id="alertaLogin" class="alert d-none"></div>
       <div class="mb-3">
         <label class="form-label fw-bold">Usuário</label>
@@ -45,8 +95,8 @@
         <input type="password" id="loginSenha" class="form-control" placeholder="••••••••"
                data-cy="input-senha" onkeydown="if(event.key==='Enter')fazerLoginAdmin()">
       </div>
-      <button onclick="fazerLoginAdmin()" class="btn btn-warning w-100 fw-bold"
-              data-cy="btn-login-admin">ENTRAR</button>
+      <button onclick="fazerLoginAdmin()" class="btn btn-warning w-100 fw-bold py-2"
+              data-cy="btn-login-admin"><i class="fas fa-lock-open me-2"></i>Entrar</button>
     </div>
   </div>
 </div>
@@ -56,13 +106,17 @@
 
   <!-- Sidebar -->
   <div class="sidebar p-3 d-flex flex-column">
-    <div class="text-center mb-4">
-      <h5 class="text-warning fw-bold mb-0"><i class="fas fa-cogs me-2"></i>HyperAdmin</h5>
-      <small class="text-secondary" id="sidebarUsuario"></small>
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <div class="sidebar-brand"><i class="fas fa-gauge-high"></i></div>
+      <div>
+        <h5 class="text-warning fw-bold mb-0">HyperAdmin</h5>
+        <small class="text-secondary" id="sidebarUsuario"></small>
+      </div>
     </div>
     <hr class="border-secondary">
     <ul class="nav flex-column gap-1 flex-grow-1">
       <li><a href="#" onclick="mostrarSecao('dashboard')"  class="nav-link ativo" id="menu-dashboard"><i class="fas fa-chart-line me-2"></i>Dashboard</a></li>
+      <li><a href="#" onclick="mostrarSecao('analise')"    class="nav-link" id="menu-analise"><i class="fas fa-chart-area me-2"></i>Análise</a></li>
       <li><a href="#" onclick="mostrarSecao('pedidos')"    class="nav-link" id="menu-pedidos"><i class="fas fa-shopping-bag me-2"></i>Pedidos</a></li>
       <li><a href="#" onclick="mostrarSecao('trocas')"     class="nav-link" id="menu-trocas"><i class="fas fa-exchange-alt me-2"></i>Trocas <span class="badge bg-danger ms-1" id="badgeTrocas" style="display:none">0</span></a></li>
       <li><a href="#" onclick="mostrarSecao('clientes')"   class="nav-link" id="menu-clientes"><i class="fas fa-users me-2"></i>Clientes</a></li>
@@ -77,39 +131,53 @@
   </div>
 
   <!-- Conteúdo -->
-  <div class="flex-grow-1 p-4 bg-light" style="min-height:100vh">
+  <div class="flex-grow-1 admin-shell">
+    <div class="admin-topbar px-4 py-3 d-flex align-items-center justify-content-between">
+      <div>
+        <h1 class="page-title" id="tituloSecao">Dashboard</h1>
+        <div class="page-subtitle" id="subtituloSecao">Visão geral dos pedidos, trocas e operação.</div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button onclick="carregarSecaoAtual()" class="btn btn-outline-secondary btn-sm">
+          <i class="fas fa-rotate me-1"></i>Atualizar
+        </button>
+        <a href="index.html" class="btn btn-warning btn-sm fw-bold">
+          <i class="fas fa-store me-1"></i>Loja
+        </a>
+      </div>
+    </div>
+    <div class="p-4">
     <div id="alerta" class="alert d-none mb-3"></div>
 
     <!-- ── DASHBOARD ──────────────────────────────────────── -->
     <div id="sec-dashboard">
-      <h3 class="fw-bold mb-4">Dashboard</h3>
       <div class="row g-3 mb-4" id="cards-dashboard">
         <div class="col-md-3">
-          <div class="card border-0 shadow-sm text-center p-3">
+          <div class="metric-card text-center">
             <div class="text-muted small">Total de Pedidos</div>
             <div class="fs-3 fw-bold text-primary" id="dash-total">—</div>
           </div>
         </div>
         <div class="col-md-3">
-          <div class="card border-0 shadow-sm text-center p-3">
+          <div class="metric-card text-center">
             <div class="text-muted small">Aguard. Pagamento</div>
             <div class="fs-3 fw-bold text-warning" id="dash-aguardando">—</div>
           </div>
         </div>
         <div class="col-md-3">
-          <div class="card border-0 shadow-sm text-center p-3">
+          <div class="metric-card text-center">
             <div class="text-muted small">Em Transporte</div>
             <div class="fs-3 fw-bold text-info" id="dash-transporte">—</div>
           </div>
         </div>
         <div class="col-md-3">
-          <div class="card border-0 shadow-sm text-center p-3">
+          <div class="metric-card text-center">
             <div class="text-muted small">Trocas Pendentes</div>
             <div class="fs-3 fw-bold text-danger" id="dash-trocas">—</div>
           </div>
         </div>
       </div>
-      <div class="card shadow-sm">
+      <div class="card admin-card">
         <div class="card-header fw-bold bg-white">Pedidos Recentes</div>
         <div class="card-body p-0" id="dash-pedidos-recentes">
           <p class="text-muted p-3">Carregando...</p>
@@ -118,6 +186,47 @@
     </div>
 
     <!-- ── PEDIDOS ────────────────────────────────────────── -->
+    <div id="sec-analise" class="d-none">
+      <div class="row g-3 mb-4">
+        <div class="col-lg-3">
+          <div class="card admin-card h-100">
+            <div class="card-header fw-bold">Período</div>
+            <div class="card-body">
+              <label class="form-label small fw-bold">Início</label>
+              <input type="date" id="analiseInicio" class="form-control mb-3">
+              <label class="form-label small fw-bold">Fim</label>
+              <input type="date" id="analiseFim" class="form-control mb-3">
+              <button class="btn btn-warning w-100 fw-bold" onclick="carregarAnaliseVendas()">
+                <i class="fas fa-chart-line me-1"></i>Gerar gráfico
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-9">
+          <div class="card admin-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span class="fw-bold">Categorias</span>
+              <small class="text-muted">Marcas cadastradas</small>
+            </div>
+            <div class="card-body">
+              <div id="analiseCategorias" class="category-filter">
+                <span class="text-muted small">Carregando categorias...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card admin-card">
+        <div class="card-header">
+          <strong>Volume vendido por categoria</strong>
+          <div class="text-muted small">Quantidade de pneus vendidos por mês no período selecionado</div>
+        </div>
+        <div class="card-body">
+          <canvas id="graficoVendasCategorias" height="110"></canvas>
+        </div>
+      </div>
+    </div>
+
     <div id="sec-pedidos" class="d-none">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="fw-bold mb-0">Gerenciar Pedidos</h3>
@@ -204,6 +313,7 @@
     </div>
 
   </div><!-- /conteúdo -->
+  </div><!-- /conteudo interno -->
 </div><!-- /painel -->
 
 <!-- ── MODAL DETALHE PEDIDO ───────────────────────────────── -->
@@ -270,6 +380,8 @@
 const API = '';
 let todosClientes = [];
 let adminLogado = null;
+let secaoAtual = 'dashboard';
+let graficoVendasCategorias = null;
 
 // ── Helpers ───────────────────────────────────────────────
 function fmt(v) {
@@ -348,17 +460,41 @@ async function fazerLogoutAdmin() {
 
 // ── Navegação ─────────────────────────────────────────────
 function mostrarSecao(secao) {
-  ['dashboard','pedidos','trocas','clientes'].forEach(s => {
+  const meta = {
+    dashboard: ['Dashboard', 'Visão geral dos pedidos, trocas e operação.'],
+    analise: ['Análise de vendas', 'Volume vendido por categoria em gráfico de linhas.'],
+    pedidos: ['Gerenciar pedidos', 'Acompanhe status, pagamentos e entregas.'],
+    trocas: ['Gerenciar trocas', 'Aprove, negue e registre recebimentos.'],
+    clientes: ['Clientes', 'Consulte e mantenha a base de clientes.']
+  };
+  secaoAtual = secao;
+  ['dashboard','analise','pedidos','trocas','clientes'].forEach(s => {
     document.getElementById(`sec-${s}`).classList.add('d-none');
     document.getElementById(`menu-${s}`).classList.remove('ativo');
   });
   document.getElementById(`sec-${secao}`).classList.remove('d-none');
   document.getElementById(`menu-${secao}`).classList.add('ativo');
+  document.getElementById('tituloSecao').textContent = meta[secao][0];
+  document.getElementById('subtituloSecao').textContent = meta[secao][1];
 
   if (secao === 'pedidos')   carregarPedidos();
   if (secao === 'trocas')    carregarTrocas();
   if (secao === 'clientes')  carregarClientes();
   if (secao === 'dashboard') carregarDashboard();
+  if (secao === 'analise')   carregarAnaliseVendas();
+}
+
+function carregarSecaoAtual() {
+  mostrarSecao(secaoAtual);
+}
+
+async function lerJsonSeguro(res) {
+  const texto = await res.text();
+  try {
+    return JSON.parse(texto);
+  } catch (e) {
+    throw new Error('A rota de análise ainda não está respondendo em JSON. Reinicie o servidor local ou faça redeploy no Render.');
+  }
 }
 
 // ── Dashboard ─────────────────────────────────────────────
@@ -412,6 +548,102 @@ async function carregarDashboard() {
 }
 
 // ── Pedidos ───────────────────────────────────────────────
+function iniciarPeriodoAnalise() {
+  const inicioEl = document.getElementById('analiseInicio');
+  const fimEl = document.getElementById('analiseFim');
+  if (inicioEl.value && fimEl.value) return;
+
+  const fim = new Date();
+  const inicio = new Date(fim.getFullYear(), fim.getMonth() - 12, 1);
+  inicioEl.value = inicio.toISOString().slice(0, 10);
+  fimEl.value = fim.toISOString().slice(0, 10);
+}
+
+function mesesEntre(inicio, fim) {
+  const meses = [];
+  const cursor = new Date(`${inicio.slice(0, 7)}-01T00:00:00`);
+  const limite = new Date(`${fim.slice(0, 7)}-01T00:00:00`);
+  while (cursor <= limite) {
+    meses.push(cursor.toISOString().slice(0, 7));
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  return meses;
+}
+
+function labelMes(mes) {
+  const [ano, numeroMes] = mes.split('-').map(Number);
+  return new Date(ano, numeroMes - 1, 1).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+}
+
+function categoriasSelecionadasAnalise() {
+  return [...document.querySelectorAll('.analise-categoria:checked')].map(el => el.value);
+}
+
+function renderizarCategoriasAnalise(categorias, selecionadas) {
+  const box = document.getElementById('analiseCategorias');
+  if (!categorias.length) {
+    box.innerHTML = '<span class="text-muted small">Nenhuma categoria cadastrada.</span>';
+    return;
+  }
+
+  const escolha = selecionadas.length ? selecionadas : categorias.slice(0, 4);
+  box.innerHTML = categorias.map(categoria => `
+    <label class="form-check form-check-inline mb-2 me-3">
+      <input class="form-check-input analise-categoria" type="checkbox" value="${categoria}"
+             ${escolha.includes(categoria) ? 'checked' : ''}
+             onchange="carregarAnaliseVendas(true)">
+      <span class="form-check-label">${categoria}</span>
+    </label>
+  `).join('');
+}
+
+async function carregarAnaliseVendas(manterSelecao = false) {
+  iniciarPeriodoAnalise();
+  const inicio = document.getElementById('analiseInicio').value;
+  const fim = document.getElementById('analiseFim').value;
+  const selecionadas = manterSelecao ? categoriasSelecionadasAnalise() : [];
+  const params = new URLSearchParams({ inicio, fim });
+  if (selecionadas.length) params.set('categorias', selecionadas.join(','));
+
+  try {
+    const res = await fetch(`${API}/api/admin/analise/vendas-categorias?${params}`);
+    const data = await lerJsonSeguro(res);
+    if (!res.ok) throw new Error(data.erro || 'Erro ao carregar análise.');
+
+    renderizarCategoriasAnalise(data.categoriasDisponiveis || [], selecionadas);
+    const categorias = categoriasSelecionadasAnalise();
+    const meses = mesesEntre(data.inicio, data.fim);
+    const cores = ['#1a1a2e', '#e8b84b', '#0d6efd', '#198754', '#dc3545', '#6f42c1', '#0dcaf0'];
+
+    const datasets = categorias.map((categoria, idx) => ({
+      label: categoria,
+      data: meses.map(mes => {
+        const item = data.dados.find(d => d.mes === mes && d.categoria === categoria);
+        return item ? Number(item.quantidade) : 0;
+      }),
+      borderColor: cores[idx % cores.length],
+      backgroundColor: `${cores[idx % cores.length]}22`,
+      tension: .35,
+      pointRadius: 3,
+      pointHoverRadius: 5
+    }));
+
+    const ctx = document.getElementById('graficoVendasCategorias');
+    if (graficoVendasCategorias) graficoVendasCategorias.destroy();
+    graficoVendasCategorias = new Chart(ctx, {
+      type: 'line',
+      data: { labels: meses.map(labelMes), datasets },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+      }
+    });
+  } catch (e) {
+    mostrarAlerta(e.message || 'Erro ao carregar análise de vendas.');
+  }
+}
+
 async function carregarPedidos() {
   const status = document.getElementById('filtroPedidoStatus')?.value || '';
   const url = `${API}/api/admin/pedidos${status ? `?status=${status}` : ''}`;
