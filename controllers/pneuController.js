@@ -1,10 +1,39 @@
 const Pneu = require('../models/pneuModel');
+const pool = require('../config/database');
 
 module.exports = {
+
   async listar(req, res) {
     try {
-      const pneus = await Pneu.listar(req.query);
+      const { carro, ...filtros } = req.query;
+
+      // Se buscou por carro, consulta tabela carros e filtra por medida
+      if (carro && carro.trim().length >= 2) {
+        const termo = `%${carro.toLowerCase()}%`;
+        const { rows: carros } = await pool.query(
+          `SELECT largura, perfil, aro, marca, modelo
+           FROM carros
+           WHERE LOWER(marca)  LIKE $1
+              OR LOWER(modelo) LIKE $1
+              OR LOWER(id)     LIKE $1
+           ORDER BY marca, modelo
+           LIMIT 1`,
+          [termo]
+        );
+
+        if (!carros.length) {
+          return res.json([]); // carro não encontrado na base
+        }
+
+        const { largura, perfil, aro } = carros[0];
+        const pneus = await Pneu.listar({ largura, perfil, aro, ativo: true });
+        return res.json(pneus);
+      }
+
+      // Busca normal por medidas/marca
+      const pneus = await Pneu.listar(filtros);
       res.json(pneus);
+
     } catch (err) {
       res.status(500).json({ erro: err.message });
     }
