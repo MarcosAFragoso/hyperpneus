@@ -442,6 +442,12 @@ async function fazerLoginAdmin() {
       return;
     }
     adminLogado = data.admin;
+    // Salva marcador no localStorage para que index.html exiba o botão Admin
+    localStorage.setItem('cliente', JSON.stringify({
+      id: adminLogado.id,
+      nome: adminLogado.usuario,
+      role: 'admin'
+    }));
     document.getElementById('telaLogin').style.display = 'none';
     document.getElementById('painelPrincipal').style.display = 'flex';
     document.getElementById('sidebarUsuario').textContent = adminLogado.usuario;
@@ -455,7 +461,8 @@ async function fazerLoginAdmin() {
 
 async function fazerLogoutAdmin() {
   await fetch(`${API}/api/admin/logout`, { method: 'POST' });
-  location.reload();
+  localStorage.removeItem('cliente'); // limpa marcador admin do localStorage
+  window.location.href = 'index.html';
 }
 
 // ── Navegação ─────────────────────────────────────────────
@@ -980,6 +987,12 @@ window.onload = async () => {
     const res = await fetch(`${API}/api/admin/perfil`);
     if (res.ok) {
       adminLogado = await res.json();
+      // Garante marcador no localStorage (caso o admin tenha voltado com sessão ativa)
+      localStorage.setItem('cliente', JSON.stringify({
+        id: adminLogado.id,
+        nome: adminLogado.usuario,
+        role: 'admin'
+      }));
       document.getElementById('telaLogin').style.display = 'none';
       document.getElementById('painelPrincipal').style.display = 'flex';
       document.getElementById('sidebarUsuario').textContent = adminLogado.usuario;
