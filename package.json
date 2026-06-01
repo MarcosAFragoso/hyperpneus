@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/MarcosAFragoso/hyperpneus#readme",
   "dependencies": {
-    "@google/genai": "^2.6.0",
+    "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^3.0.3",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.6",

@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { GoogleGenAI } = require('@google/genai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const pool = require('../config/database');
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 router.post('/mensagem', async (req, res) => {
   try {
@@ -88,30 +88,29 @@ ${historicoComprasTexto}
 `.trim();
 
     // Monta histórico no formato do Gemini
-    const contents = [
-      ...historico.map(h => ({
-        role: h.role,
-        parts: [{ text: h.text }]
-      })),
-      {
-        role: 'user',
-        parts: [{ text: mensagem }]
-      }
-    ];
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents,
-      config: {
-        systemInstruction: contexto,
-        temperature: 0.3
-      }
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-2.0-flash',
+      systemInstruction: contexto
     });
 
-    res.json({ resposta: response.text });
+    const chat = model.startChat({ 
+      history: historico.map(h => ({
+        role: h.role,
+        parts: [{ text: h.text }]
+      }))
+    });
+
+    const result = await chat.sendMessage(mensagem);
+    const textoResposta = result.response.text();
+
+    res.json({ resposta: textoResposta });
 
   } catch (err) {
-    console.error('Erro chatbot:', err.message);
+    console.error('Erro chatbot detalhado:', {
+      mensagem: err.message,
+      stack: err.stack,
+      erro: err
+    });
     res.status(500).json({
       resposta: 'Desculpe, tive um problema técnico. Tente novamente em instantes.'
     });
