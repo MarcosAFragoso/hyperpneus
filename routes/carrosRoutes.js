@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require('../config/database');
 
 // GET /api/carros/buscar?termo=civic
-// Busca na tabela carros por marca, modelo ou id
+// Busca na tabela carros por marca, modelo 
 // Retorna largura, perfil e aro para filtrar pneus compatíveis
 router.get('/buscar', async (req, res) => {
   try {
