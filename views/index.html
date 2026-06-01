@@ -136,7 +136,7 @@
             </a>
             <div class="d-flex align-items-center gap-2">
                 <span id="navUsuario" class="text-white small me-2"></span>
-                <a id="btnAdmin" href="admin.html" class="btn btn-outline-light btn-sm" style="display:none">
+                <a href="admin.html" class="btn btn-outline-light btn-sm">
                     <i class="fas fa-cogs"></i> Admin
                 </a>
                 <a href="carrinho.html" class="btn btn-outline-light btn-sm position-relative">
@@ -456,12 +456,12 @@
             const params = new URLSearchParams();
 
             // Se há um texto digitado e o usuário NÃO escolheu medidas específicas nos selects dropdowns
-            if (texto && !largura && !perfil && !aro) {
+            if (texto) {
                 // Passamos 'carro' e limpamos qualquer resíduo para forçar o back-end a buscar estritamente pelo veículo
+                params.append('q', texto);
                 params.append('carro', texto);
             } else {
                 // Caso contrário, executa o comportamento padrão de filtragem direta por medidas ou palavra-chave do pneu
-                if (texto) params.append('q', texto);
                 if (largura) params.append('largura', largura);
                 if (perfil) params.append('perfil', perfil);
                 if (aro) params.append('aro', aro);
@@ -493,15 +493,10 @@
 
         window.onload = () => {
             const cliente = JSON.parse(localStorage.getItem('cliente'));
-            const btnAdmin = document.getElementById('btnAdmin');
             if (cliente) {
                 document.getElementById('navLogin').style.display = 'none';
                 document.getElementById('navLogado').style.display = 'block';
                 document.getElementById('navNome').textContent = cliente.nome;
-                // Exibe botão Admin apenas para administradores
-                if (cliente.role === 'admin') {
-                    btnAdmin.style.display = 'inline-flex';
-                }
             }
             carregarDestaques();
             atualizarBadgeCarrinho();
@@ -692,34 +687,6 @@
                 const resposta = data.resposta || 'Não consegui processar sua mensagem.';
                 hyperbotAddMsg(resposta, 'bot');
                 hbHistorico.push({ role: 'model', text: resposta });
-
-                // Se a API retornou um pneu_id para adicionar ao carrinho, executa de verdade
-                if (data.pneu_id_para_adicionar) {
-                    const pneuId = data.pneu_id_para_adicionar;
-                    try {
-                        const resCarrinho = await fetch('/api/carrinho', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ pneu_id: pneuId, quantidade: 1 })
-                        });
-                        const dataCarrinho = await resCarrinho.json();
-
-                        // Salva localmente também (compatível com usuário não logado)
-                        const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
-                        const existente = carrinho.find(i => i.pneu_id === pneuId);
-                        if (existente) {
-                            existente.quantidade += 1;
-                        } else {
-                            carrinho.push(dataCarrinho.item ? dataCarrinho.item : { pneu_id: pneuId, quantidade: 1 });
-                        }
-                        localStorage.setItem('carrinho', JSON.stringify(carrinho));
-
-                        await atualizarBadgeCarrinho();
-                        hyperbotAddMsg('✅ Pneu adicionado ao carrinho com sucesso! Veja no 🛒 acima.', 'bot');
-                    } catch (e) {
-                        hyperbotAddMsg('⚠️ Não consegui adicionar ao carrinho automaticamente. Clique em "Adicionar" no card do pneu.', 'bot');
-                    }
-                }
 
             } catch (err) {
                 digitando.remove();
