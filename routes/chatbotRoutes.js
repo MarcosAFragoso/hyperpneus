@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { GoogleGenAI } = require('@google/genai');
+const { Groq } = require('groq-sdk');
 const pool = require('../config/database');
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 router.post('/mensagem', async (req, res) => {
   try {
@@ -12,7 +12,6 @@ router.post('/mensagem', async (req, res) => {
     if (!mensagem?.trim())
       return res.status(400).json({ erro: 'Mensagem vazia.' });
 
-    // Busca catálogo de pneus disponíveis
     const { rows: pneus } = await pool.query(
       `SELECT marca, modelo, largura, perfil, aro, preco_venda, estoque
        FROM pneus
@@ -25,10 +24,10 @@ router.post('/mensagem', async (req, res) => {
       `${p.marca} ${p.modelo} - ${p.largura}/${p.perfil} R${p.aro} - R$${parseFloat(p.preco_venda).toFixed(2)}`
     ).join('\n');
 
-    // Busca veículos do cliente logado (se houver sessão)
     let garagemTexto = '';
     let historicoComprasTexto = '';
     const clienteId = req.session?.cliente?.id;
+
     if (clienteId) {
       const { rows: veiculos } = await pool.query(
         `SELECT marca, modelo, ano, versao FROM veiculos
@@ -87,28 +86,26 @@ ${garagemTexto}
 ${historicoComprasTexto}
 `.trim();
 
-    // Monta histórico no formato do Gemini
-    const contents = [
+    // Groq usa role 'assistant' (não 'model' do Gemini)
+    const messages = [
+      { role: 'system', content: contexto },
       ...historico.map(h => ({
-        role: h.role,
-        parts: [{ text: h.text }]
+        role: h.role === 'model' ? 'assistant' : h.role,
+        content: h.text
       })),
-      {
-        role: 'user',
-        parts: [{ text: mensagem }]
-      }
+      { role: 'user', content: mensagem }
     ];
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents,
-      config: {
-        systemInstruction: contexto,
-        temperature: 0.3
-      }
+    const response = await ai.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages,
+      temperature: 0.3
     });
 
-    res.json({ resposta: response.text });
+    // Groq retorna response.choices[0].message.content (não response.text)
+    const resposta = response.choices[0]?.message?.content || 'Não consegui processar sua mensagem.';
+
+    res.json({ resposta });
 
   } catch (err) {
     console.error('Erro chatbot:', err.message);
