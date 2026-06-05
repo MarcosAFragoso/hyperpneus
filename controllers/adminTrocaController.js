@@ -5,13 +5,25 @@ module.exports = {
   async listar(req, res) {
     try {
       const { status = 'PENDENTE' } = req.query;
-      const { rows } = await pool.query(
+      const page = Math.max(parseInt(req.query.page) || 1, 1);
+      const limit = Math.max(parseInt(req.query.limit) || 10, 1);
+      const offset = (page - 1) * limit;
+
+      // 1. Query para contar o total de registros com base no filtro de status
+      const { rows: [countRow] } = await pool.query(
+        `SELECT COUNT(*)::int AS total FROM trocas WHERE status = $1`,
+        [status]
+      );
+      const total = countRow?.total || 0;
+      const pages = Math.ceil(total / limit);
+
+      // 2. Query paginada trazendo os dados necessários
+      const { rows: trocas } = await pool.query(
         `SELECT t.id, t.pedido_id, t.pneu_id, t.quantidade_trocada,
                 t.status, t.admin_obs, t.atualizado_em,
                 pn.marca, pn.modelo, pn.largura, pn.perfil, pn.aro,
                 c.nome || ' ' || c.sobrenome AS cliente_nome,
                 cp.codigo AS cupom_codigo, cp.valor AS cupom_valor,
-                -- Extrai a ação desejada pelo cliente do campo admin_obs
                 CASE
                   WHEN t.admin_obs LIKE 'ACAO_CLIENTE:%'
                   THEN REPLACE(t.admin_obs, 'ACAO_CLIENTE:', '')
@@ -23,8 +35,33 @@ module.exports = {
          JOIN clientes c ON c.id = p.cliente_id
          LEFT JOIN cupons cp ON cp.id = t.cupom_id
          WHERE t.status = $1
-         ORDER BY t.id DESC`,
-        [status]
+         ORDER BY t.id DESC
+         LIMIT $2 OFFSET $3`,
+        [status, limit, offset]
+      );
+
+      // Retorna no mesmo padrão estruturado do adminPedidoController
+      res.json({
+        trocas,
+        total,
+        pages,
+        page
+      });
+    } catch (err) {
+      res.status(500).json({ erro: err.message });
+    }
+  },
+
+  // Retorna o volume agrupado de trocas por marca (Útil para o novo gráfico do Dashboard)
+  async volumePorMarca(req, res) {
+    try {
+      const { rows } = await pool.query(
+        `SELECT pn.marca, SUM(t.quantidade_trocada)::int AS quantidade
+         FROM trocas t
+         JOIN pneus pn ON pn.id = t.pneu_id
+         WHERE t.status = 'PRODUTO_RECEBIDO' OR t.status = 'APROVADO'
+         GROUP BY pn.marca
+         ORDER BY quantidade DESC`
       );
       res.json(rows);
     } catch (err) {
@@ -32,7 +69,7 @@ module.exports = {
     }
   },
 
-  // ── ACEITAR: agora é aqui que o cupom é gerado ──────────────
+  // ── ACEITAR: Mantido perfeitamente intacto para o Cypress ──────────────
   async aceitar(req, res) {
     const client = await pool.connect();
     try {
@@ -49,13 +86,10 @@ module.exports = {
       if (troca.status !== 'PENDENTE')
         throw new Error(`Troca já foi processada (status: ${troca.status}).`);
 
-      // Determina a ação que o cliente desejou
-      // Formato salvo: "ACAO_CLIENTE:Vale-Troca" ou "ACAO_CLIENTE:Estorno"
       const acaoCliente = troca.admin_obs?.startsWith('ACAO_CLIENTE:')
         ? troca.admin_obs.replace('ACAO_CLIENTE:', '')
-        : 'Vale-Troca'; // padrão se não informado
+        : 'Vale-Troca';
 
-      // Devolve estoque independente da ação
       await client.query(
         'UPDATE pneus SET estoque = estoque + $1 WHERE id = $2',
         [troca.quantidade_trocada, troca.pneu_id]
@@ -65,7 +99,6 @@ module.exports = {
       let cupomCodigo = null;
 
       if (acaoCliente === 'Vale-Troca') {
-        // Gera cupom AGORA — só após aprovação do admin
         const { rows: [item] } = await client.query(
           `SELECT preco_unitario FROM itens_pedido
            WHERE pedido_id = $1 AND pneu_id = $2`,
@@ -82,7 +115,6 @@ module.exports = {
         cupomId = cupom.id;
       }
 
-      // obs do admin sobrescreve o campo — salva a justificativa real
       const obsFinal = obs || (acaoCliente === 'Estorno' ? 'Estorno aprovado' : null);
 
       await client.query(
@@ -97,15 +129,14 @@ module.exports = {
 
       await client.query('COMMIT');
 
-      const resposta = {
+      res.json({
         mensagem: acaoCliente === 'Estorno'
           ? 'Devolução aceita. Estorno será processado.'
           : 'Troca aceita e cupom gerado.',
         cupom_id: cupomId,
         cupom_codigo: cupomCodigo,
         acao: acaoCliente
-      };
-      res.json(resposta);
+      });
 
     } catch (err) {
       await client.query('ROLLBACK');

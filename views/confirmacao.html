@@ -260,7 +260,7 @@
         }
 
         // ── MAPA GLOBAL DE ETAPAS DO PEDIDO ────────────────────────────
-        // Status reais do banco — alinhados com adminPedidoController
+        // 6 etapas visuais alinhadas com os 6 steps do HTML (step0…step5)
         const ETAPAS_PEDIDO = [
             {
                 status: 'EM_PROCESSAMENTO',
@@ -280,10 +280,26 @@
             },
             {
                 status: 'EM_TRANSPORTE',
-                titulo: 'Em Transporte',
-                subtitulo: 'Seu pedido está a caminho.',
+                titulo: 'Em Separação / Transportadora',
+                subtitulo: 'Seu pedido está sendo preparado para envio.',
+                icone: 'fa-box text-info',
+                log: '📦 Pedido enviado para transporte.',
+                logTipo: 'info'
+            },
+            {
+                status: 'EM_TRANSPORTE',      // mesmo status — step extra visual
+                titulo: 'Na Transportadora',
+                subtitulo: 'Seu pedido está com a transportadora.',
+                icone: 'fa-shipping-fast text-info',
+                log: '🚚 Pedido na transportadora.',
+                logTipo: 'info'
+            },
+            {
+                status: 'EM_TRANSPORTE',      // step "Saiu para Entrega" — ainda EM_TRANSPORTE
+                titulo: 'Saiu para Entrega',
+                subtitulo: 'Seu pedido saiu para entrega.',
                 icone: 'fa-truck text-info',
-                log: '🚚 Pedido enviado para transporte.',
+                log: '🚛 Pedido saiu para entrega.',
                 logTipo: 'info'
             },
             {
@@ -295,6 +311,14 @@
                 logTipo: 'success'
             }
         ];
+
+        // Mapeia o status do banco para o índice MAIS AVANÇADO do step visual
+        const STATUS_PARA_STEP = {
+            'EM_PROCESSAMENTO':  0,
+            'PAGAMENTO_CONFIRMADO': 1,
+            'EM_TRANSPORTE':     3,   // mostra "Na Transportadora" como atual
+            'ENTREGUE':          5
+        };
 
         function fmt(v) {
             return parseFloat(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -452,26 +476,31 @@
 
             const statusNormalizado = pedidoData.status?.trim().toUpperCase();
 
-            // Descobre o índice do status atual no nosso array
-            const idxAtual = ETAPAS_PEDIDO.findIndex(e => e.status === statusNormalizado);
-            const idxValido = idxAtual === -1 ? 0 : idxAtual;
+            // Mapeia o status do banco para o step visual correto (0–5)
+            const idxValido = STATUS_PARA_STEP[statusNormalizado] ?? 0;
 
+            // Etapa de exibição no topo: usa o step atual
             const etapaAtual = ETAPAS_PEDIDO[idxValido];
-            const porcentagens = [0, 33, 66, 100];
+
+            // Porcentagem da barra para cada step (0–5)
+            // step0=0%, step1=20%, step2=40%, step3=60%, step4=80%, step5=100%
+            const porcentagens = [0, 20, 40, 60, 80, 100];
 
             // Atualiza topo
             document.getElementById('iconePagamento').innerHTML = `<i class="fas ${etapaAtual.icone} fa-4x"></i>`;
             document.getElementById('tituloPagamento').textContent = etapaAtual.titulo;
             document.getElementById('subtituloPagamento').textContent = etapaAtual.subtitulo;
 
-            // Preenche o histórico de logs até o ponto atual
+            // Preenche o histórico de logs — mostra apenas os status únicos até o atual
             document.getElementById('logEventos').innerHTML = '';
+            const horaBase = new Date(pedidoData.criado_em).toLocaleTimeString('pt-BR');
+            const statusVistos = new Set();
             for (let i = 0; i <= idxValido; i++) {
-                adicionarLog(
-                    ETAPAS_PEDIDO[i].log,
-                    ETAPAS_PEDIDO[i].logTipo,
-                    new Date(pedidoData.criado_em).toLocaleTimeString('pt-BR')
-                );
+                const st = ETAPAS_PEDIDO[i].status;
+                if (!statusVistos.has(st)) {
+                    statusVistos.add(st);
+                    adicionarLog(ETAPAS_PEDIDO[i].log, ETAPAS_PEDIDO[i].logTipo, horaBase);
+                }
             }
 
             ativarStep(idxValido, porcentagens[idxValido]);
@@ -480,35 +509,35 @@
 
         // ── Ativar step na trilha ──────────────────────────────────────
         function ativarStep(idx, progressPct, ehAtual = true) {
+            const isEntregue = idx === 5;
+
             for (let i = 0; i <= 5; i++) {
                 const step = document.getElementById(`step${i}`);
                 if (!step) continue;
 
                 const icon = step.querySelector('.step-icon');
                 const label = step.querySelector('.step-label');
-
                 if (!icon || !label) continue;
 
                 icon.classList.remove('atual', 'ativo');
                 label.classList.remove('atual', 'ativo');
 
-                // 🔥 TODOS OS ANTERIORES = VERDE
                 if (i < idx) {
+                    // anteriores ao atual → sempre verde
                     icon.classList.add('ativo');
                     label.classList.add('ativo');
-                }
-
-                // 🔥 ATUAL = AZUL (MENOS SE FOR ENTREGUE)
-                else if (i === idx) {
-                    if (idx === 5) {
-                        // 🚨 ENTREGUE = VERDE
+                } else if (i === idx) {
+                    if (isEntregue || !ehAtual) {
+                        // step final (ENTREGUE) ou modo visualização concluído → verde
                         icon.classList.add('ativo');
                         label.classList.add('ativo');
                     } else {
+                        // step atual em andamento → azul pulsante
                         icon.classList.add('atual');
                         label.classList.add('atual');
                     }
                 }
+                // i > idx → fica cinza (sem classe)
             }
 
             document.getElementById('progressLine').style.width = progressPct + '%';

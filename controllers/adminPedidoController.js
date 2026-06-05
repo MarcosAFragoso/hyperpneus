@@ -3,11 +3,11 @@ const pool = require('../config/database');
 // Status válidos e transições permitidas
 const TRANSICOES = {
   'AGUARDANDO_PAGAMENTO': ['EM_PROCESSAMENTO', 'CANCELADO'],
-  'EM_PROCESSAMENTO':     ['PAGAMENTO_CONFIRMADO', 'CANCELADO'],
+  'EM_PROCESSAMENTO': ['PAGAMENTO_CONFIRMADO', 'CANCELADO'],
   'PAGAMENTO_CONFIRMADO': ['EM_TRANSPORTE'],
-  'EM_TRANSPORTE':        ['ENTREGUE'],
-  'ENTREGUE':             [],   // terminal — trocas tratadas separado
-  'CANCELADO':            []    // terminal
+  'EM_TRANSPORTE': ['ENTREGUE'],
+  'ENTREGUE': [],   // terminal — trocas tratadas separado
+  'CANCELADO': []    // terminal
 };
 
 module.exports = {
@@ -213,17 +213,17 @@ module.exports = {
 
       const { rows } = await pool.query(
         `SELECT to_char(date_trunc('month', p.criado_em), 'YYYY-MM') AS mes,
-                pn.marca AS categoria,
-                SUM(ip.quantidade)::int AS quantidade,
-                ROUND(SUM(ip.quantidade * ip.preco_unitario)::numeric, 2) AS valor
-         FROM pedidos p
-         JOIN itens_pedido ip ON ip.pedido_id = p.id
-         JOIN pneus pn ON pn.id = ip.pneu_id
-         WHERE p.criado_em::date BETWEEN $1::date AND $2::date
-           AND p.status <> 'CANCELADO'
-           ${filtroCategorias}
-         GROUP BY mes, pn.marca
-         ORDER BY mes, pn.marca`,
+          UPPER(TRIM(pn.marca)) AS categoria,
+          SUM(ip.quantidade)::int AS quantidade,
+          ROUND(SUM(ip.quantidade * ip.preco_unitario)::numeric, 2) AS valor
+   FROM pedidos p
+   JOIN itens_pedido ip ON ip.pedido_id = p.id
+   JOIN pneus pn ON pn.id = ip.pneu_id
+   WHERE p.criado_em::date BETWEEN $1::date AND $2::date
+     AND p.status <> 'CANCELADO'
+     ${filtroCategorias}
+   GROUP BY mes, UPPER(TRIM(pn.marca))
+   ORDER BY mes, UPPER(TRIM(pn.marca))`,
         params
       );
 

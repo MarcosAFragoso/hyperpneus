@@ -29,7 +29,7 @@
       overflow-x: hidden;
     }
 
-    \n .sidebar {
+    .sidebar {
       width: 264px;
       min-width: 264px;
       flex-shrink: 0;
@@ -39,47 +39,48 @@
       z-index: 10;
     }
 
-    \n .sidebar-brand {
+    .sidebar-brand {
       height: 72px;
       border-bottom: 1px solid rgba(255, 255, 255, .1);
     }
 
-    \n .nav-admin .nav-link {
+    .nav-admin .nav-link {
       color: #8a94a6;
       padding: 12px 24px;
       font-weight: 500;
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
       border-left: 4px solid transparent;
       transition: all .2s;
+      text-decoration: none;
     }
 
-    \n .nav-admin .nav-link:hover {
+    .nav-admin .nav-link:hover {
       color: #fff;
       background: rgba(255, 255, 255, .03);
     }
 
-    \n .nav-admin .nav-link.active {
+    .nav-admin .nav-link.active {
       color: #fff;
       background: rgba(255, 255, 255, .05);
       border-left-color: var(--admin-accent);
     }
 
-    \n .header-admin {
+    .header-admin {
       height: 72px;
       background: var(--admin-panel);
       border-bottom: 1px solid var(--admin-line);
       padding: 0 32px;
     }
 
-    \n .conteudo-admin {
+    .conteudo-admin {
       padding: 40px;
       background: var(--admin-bg);
       min-height: calc(100vh - 72px);
     }
 
-    \n .card-metrica {
+    .card-metrica {
       background: var(--admin-panel);
       border: 1px solid var(--admin-line);
       border-radius: 12px;
@@ -87,7 +88,7 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, .02);
     }
 
-    \n .card-metrica .icon-box {
+    .card-metrica .icon-box {
       width: 48px;
       height: 48px;
       border-radius: 8px;
@@ -99,22 +100,22 @@
       font-size: 20px;
     }
 
-    \n .painel-tabela {
+    .painel-tabela {
       background: var(--admin-panel);
       border: 1px solid var(--admin-line);
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, .02);
     }
 
-    \n .secao-painel {
+    .secao-painel {
       display: none;
     }
 
-    \n .secao-painel.active {
+    .secao-painel.active {
       display: block;
     }
 
-    \n .filtro-barra {
+    .filtro-barra {
       background: var(--admin-panel);
       border: 1px solid var(--admin-line);
       border-radius: 12px;
@@ -122,7 +123,25 @@
       margin-bottom: 24px;
     }
 
-    \n
+    .card-status-pedido:hover {
+      box-shadow: 0 6px 20px rgba(0,0,0,.08) !important;
+      transform: translateY(-1px);
+    }
+    .card-status-pedido.ativo {
+      box-shadow: 0 0 0 2px var(--admin-accent);
+    }
+
+    /* Cupom Estilizado */
+    .cupom-tag {
+      font-family: monospace;
+      font-weight: bold;
+      color: #151827;
+      background: #fff9e6;
+      border: 1px dashed #e8b84b;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
   </style>
 </head>
 
@@ -137,8 +156,8 @@
       </div>
       <form id="formLoginAdmin" onsubmit="realizarLoginAdmin(event)">
         <div class="mb-3">
-          <label class="form-label text-secondary small fw-bold">E-MAIL</label>
-          <input type="email" id="loginEmail" class="form-control" placeholder="admin@hyperpneus.com" required>
+          <label class="form-label text-secondary small fw-bold">USUÁRIO</label>
+          <input type="text" id="loginUsuario" class="form-control" placeholder="admin" required>
         </div>
         <div class="mb-4">
           <label class="form-label text-secondary small fw-bold">SENHA</label>
@@ -152,24 +171,38 @@
     </div>
   </div>
 
-  <div id="painelPrincipal" class="d-flex" style="display: none !important;">
+  <div id="painelPrincipal" class="d-none">
     <aside class="sidebar d-flex flex-column">
       <div class="sidebar-brand d-flex align-items-center px-4">
         <h5 class="m-0 text-white fw-bold tracking-tight"><i class="fa fa-gauge-high text-warning me-2"></i>HyperPneus
         </h5>
       </div>
       <nav class="nav nav-admin flex-column py-4 flex-grow-1">
-        <a class="nav-link active" href="#" onclick="mostrarSecao('dashboard')"><i class="fa fa-chart-pie"></i>
-          Dashboard</a>
-        <a class="nav-link" href="#" onclick="mostrarSecao('pedidos')"><i class="fa fa-shopping-bag"></i> Pedidos</a>
-        <a class="nav-link" href="#" onclick="mostrarSecao('clientes')"><i class="fa fa-users"></i> Clientes</a>
-        <a class="nav-link" href="#" onclick="mostrarSecao('trocas')"><i class="fa fa-right-left"></i> Trocas</a>
+        <a class="nav-link active" href="#" onclick="mostrarSecao('dashboard')">
+          <span><i class="fa fa-chart-pie me-2"></i> Dashboard</span>
+        </a>
+        <a class="nav-link" href="#" onclick="mostrarSecao('pedidos')">
+          <span><i class="fa fa-shopping-bag me-2"></i> Pedidos</span>
+        </a>
+        <a class="nav-link" href="#" onclick="mostrarSecao('clientes')">
+          <span><i class="fa fa-users me-2"></i> Clientes</span>
+        </a>
+        <a class="nav-link" href="#" onclick="mostrarSecao('trocas')">
+          <span><i class="fa fa-right-left me-2"></i> Trocas</span>
+          <span class="badge bg-danger d-none" id="badgeTrocasPendentes">0</span>
+        </a>
       </nav>
-      <div
-        class="p-4 border-top border-secondary border-opacity-10 d-flex align-items-center justify-content-between text-muted small">
-        <div><i class="fa fa-user-circle me-2"></i><span id="sidebarUsuario">Admin</span></div>
-        <a href="#" onclick="realizarLogoutAdmin()" class="text-danger decoration-none"><i
-            class="fa fa-sign-out-alt"></i></a>
+      <div class="p-4 border-top border-secondary border-opacity-10">
+        <div class="d-flex align-items-center justify-content-between text-muted small mb-3">
+          <div><i class="fa fa-user-circle me-2"></i><span id="sidebarUsuario">Admin</span></div>
+          <a href="#" onclick="realizarLogoutAdmin()" class="text-danger text-decoration-none" title="Sair do painel">
+            <i class="fa fa-sign-out-alt"></i>
+          </a>
+        </div>
+        <a href="/" class="btn btn-sm w-100 fw-semibold"
+          style="background: rgba(255,255,255,.07); color: #8a94a6; border: 1px solid rgba(255,255,255,.1); border-radius: 8px;">
+          <i class="fa fa-store me-2"></i>Voltar à Loja
+        </a>
       </div>
     </aside>
 
@@ -180,10 +213,9 @@
       </header>
 
       <main class="conteudo-admin overflow-y-auto">
-
         <section id="secao-dashboard" class="secao-painel active">
-          <div class="row g-4 mb-5">
-            <div class="col-md-3">
+          <div class="row g-4 mb-4">
+            <div class="col-md-6">
               <div class="card-metrica d-flex align-items-center justify-content-between">
                 <div>
                   <span class="text-secondary small fw-bold">TOTAL DE PEDIDOS</span>
@@ -192,25 +224,7 @@
                 <div class="icon-box"><i class="fa fa-shopping-cart"></i></div>
               </div>
             </div>
-            <div class="col-md-3">
-              <div class="card-metrica d-flex align-items-center justify-content-between">
-                <div>
-                  <span class="text-secondary small fw-bold">AGUARDANDO PGTO</span>
-                  <h3 id="m-aguardando" class="m-0 fw-bold mt-1 text-warning">0</h3>
-                </div>
-                <div class="icon-box"><i class="fa fa-clock"></i></div>
-              </div>
-            </div>
-            <div class="col-md-3">
-              <div class="card-metrica d-flex align-items-center justify-content-between">
-                <div>
-                  <span class="text-secondary small fw-bold">EM TRANSPORTE</span>
-                  <h3 id="m-transporte" class="m-0 fw-bold mt-1 text-info">0</h3>
-                </div>
-                <div class="icon-box"><i class="fa fa-truck"></i></div>
-              </div>
-            </div>
-            <div class="col-md-3">
+            <div class="col-md-6">
               <div class="card-metrica d-flex align-items-center justify-content-between">
                 <div>
                   <span class="text-secondary small fw-bold">FATURAMENTO TOTAL</span>
@@ -221,11 +235,16 @@
             </div>
           </div>
 
+          <div class="row g-3 mb-4" id="containerCardsMarcas"></div>
+
           <div class="row g-4 mb-5">
             <div class="col-lg-8">
-              <div class="card p-4 border-1 shadow-sm" style="border-radius: 12px; background: #fff;">
-                <h5 class="fw-bold mb-4 text-dark">Curva de Faturamento por Categorias (13 Meses)</h5>
-                <canvas id="graficoVendasCategorias" height="300"></canvas>
+              <div class="card p-4 border-1 shadow-sm h-100"
+                style="border-radius: 12px; background: #fff; position: relative;">
+                <h5 class="fw-bold mb-4 text-dark">Curva de Faturamento por Categorias</h5>
+                <div style="position: relative; height: 320px; width: 100%;">
+                  <canvas id="graficoVendasCategorias"></canvas>
+                </div>
               </div>
             </div>
             <div class="col-lg-4">
@@ -248,10 +267,87 @@
         </section>
 
         <section id="secao-pedidos" class="secao-painel">
+
+          <!-- Cards de status clicáveis -->
+          <div class="row g-3 mb-3" id="cardsPedidosStatus">
+            <div class="col-6 col-md-4 col-xl-2">
+              <div class="card-metrica card-status-pedido" onclick="filtrarPorStatus('AGUARDANDO_PAGAMENTO')" title="Filtrar por Aguardando Pagamento"
+                style="cursor:pointer; border-left: 4px solid #f59e0b; transition: box-shadow .15s;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <span class="text-secondary" style="font-size:10px; font-weight:700; letter-spacing:.5px;">AGUARDANDO PGTO</span>
+                    <h4 id="cs-aguardando" class="m-0 fw-bold mt-1 text-warning">0</h4>
+                  </div>
+                  <div class="icon-box" style="background:rgba(245,158,11,.1);color:#b45309;"><i class="fa fa-clock"></i></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+              <div class="card-metrica card-status-pedido" onclick="filtrarPorStatus('EM_PROCESSAMENTO')" title="Filtrar por Em Processamento"
+                style="cursor:pointer; border-left: 4px solid #6b7280; transition: box-shadow .15s;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <span class="text-secondary" style="font-size:10px; font-weight:700; letter-spacing:.5px;">EM PROCESSAMENTO</span>
+                    <h4 id="cs-processamento" class="m-0 fw-bold mt-1">0</h4>
+                  </div>
+                  <div class="icon-box" style="background:rgba(107,114,128,.1);color:#374151;"><i class="fa fa-cog"></i></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+              <div class="card-metrica card-status-pedido" onclick="filtrarPorStatus('PAGAMENTO_CONFIRMADO')" title="Filtrar por Pagamento Confirmado"
+                style="cursor:pointer; border-left: 4px solid #3b82f6; transition: box-shadow .15s;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <span class="text-secondary" style="font-size:10px; font-weight:700; letter-spacing:.5px;">PGTO CONFIRMADO</span>
+                    <h4 id="cs-confirmado" class="m-0 fw-bold mt-1 text-primary">0</h4>
+                  </div>
+                  <div class="icon-box" style="background:rgba(59,130,246,.1);color:#1d4ed8;"><i class="fa fa-check-circle"></i></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+              <div class="card-metrica card-status-pedido" onclick="filtrarPorStatus('EM_TRANSPORTE')" title="Filtrar por Em Transporte"
+                style="cursor:pointer; border-left: 4px solid #06b6d4; transition: box-shadow .15s;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <span class="text-secondary" style="font-size:10px; font-weight:700; letter-spacing:.5px;">EM TRANSPORTE</span>
+                    <h4 id="cs-transporte" class="m-0 fw-bold mt-1 text-info">0</h4>
+                  </div>
+                  <div class="icon-box" style="background:rgba(6,182,212,.1);color:#0e7490;"><i class="fa fa-truck"></i></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+              <div class="card-metrica card-status-pedido" onclick="filtrarPorStatus('ENTREGUE')" title="Filtrar por Entregue"
+                style="cursor:pointer; border-left: 4px solid #10b981; transition: box-shadow .15s;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <span class="text-secondary" style="font-size:10px; font-weight:700; letter-spacing:.5px;">ENTREGUE</span>
+                    <h4 id="cs-entregue" class="m-0 fw-bold mt-1 text-success">0</h4>
+                  </div>
+                  <div class="icon-box" style="background:rgba(16,185,129,.1);color:#047857;"><i class="fa fa-home"></i></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+              <div class="card-metrica card-status-pedido" onclick="filtrarPorStatus('CANCELADO')" title="Filtrar por Cancelado"
+                style="cursor:pointer; border-left: 4px solid #ef4444; transition: box-shadow .15s;">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <span class="text-secondary" style="font-size:10px; font-weight:700; letter-spacing:.5px;">CANCELADO</span>
+                    <h4 id="cs-cancelado" class="m-0 fw-bold mt-1 text-danger">0</h4>
+                  </div>
+                  <div class="icon-box" style="background:rgba(239,68,68,.1);color:#b91c1c;"><i class="fa fa-times-circle"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="filtro-barra d-flex align-items-center justify-content-between gap-3 flex-wrap">
             <div class="d-flex align-items-center gap-3">
               <select id="filtroStatusPedido" class="form-select border-line" style="width: 220px;"
-                onchange="pedidoPaginaAtual = 1; carregarPedidos();">
+                onchange="pedidoPaginaAtual = 1; carregarPedidos(); sincronizarCardAtivo();">
                 <option value="">Todos os Status</option>
                 <option value="AGUARDANDO_PAGAMENTO">Aguardando Pagamento</option>
                 <option value="EM_PROCESSAMENTO">Em Processamento</option>
@@ -316,25 +412,133 @@
         </section>
 
         <section id="secao-trocas" class="secao-painel">
-          <div class="painel-tabela">
-            <div class="table-responsive">
-              <table class="table table-hover align-middle m-0 text-dark">
-                <thead class="table-light text-secondary border-bottom small fw-bold">
-                  <tr>
-                    <th class="px-4 py-3">TROCA</th>
-                    <th class="py-3">PEDIDO</th>
-                    <th class="py-3">CLIENTE</th>
-                    <th class="py-3">MOTIVO</th>
-                    <th class="py-3">STATUS</th>
-                    <th class="px-4 py-3 text-end">AÇÕES</th>
-                  </tr>
-                </thead>
-                <tbody id="tabelaTrocasBody"></tbody>
-              </table>
+
+          <!-- Sub-abas -->
+          <div class="mb-4" style="border-bottom: 2px solid var(--admin-line);">
+            <div class="d-flex gap-1">
+              <button id="aba-trocas-dashboard" onclick="trocarAbaTroca('dashboard')"
+                class="btn btn-sm fw-bold px-4 py-2 aba-troca-btn aba-troca-ativa"
+                style="border-radius: 8px 8px 0 0; border: none; background: var(--admin-panel); border-bottom: 3px solid var(--admin-accent); color: #151827;">
+                <i class="fa fa-chart-bar me-2 text-warning"></i>Dashboard
+              </button>
+              <button id="aba-trocas-lista" onclick="trocarAbaTroca('lista')"
+                class="btn btn-sm fw-bold px-4 py-2 aba-troca-btn"
+                style="border-radius: 8px 8px 0 0; border: none; background: transparent; color: #697386;">
+                <i class="fa fa-list me-2"></i>Gerenciar Trocas
+              </button>
             </div>
           </div>
-        </section>
 
+          <!-- Aba: Dashboard de Trocas -->
+          <div id="painel-trocas-dashboard">
+            <!-- Cards de resumo -->
+            <div class="row g-3 mb-4" id="cardsTrocasResumo">
+              <div class="col-6 col-md-3">
+                <div class="card-metrica d-flex align-items-center justify-content-between">
+                  <div>
+                    <span class="text-secondary small fw-bold">PENDENTES</span>
+                    <h3 id="tc-pendentes" class="m-0 fw-bold mt-1 text-warning">0</h3>
+                  </div>
+                  <div class="icon-box"><i class="fa fa-clock"></i></div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="card-metrica d-flex align-items-center justify-content-between">
+                  <div>
+                    <span class="text-secondary small fw-bold">APROVADAS</span>
+                    <h3 id="tc-aprovadas" class="m-0 fw-bold mt-1 text-success">0</h3>
+                  </div>
+                  <div class="icon-box" style="background: rgba(16,185,129,.1); color: #059669;"><i class="fa fa-check-circle"></i></div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="card-metrica d-flex align-items-center justify-content-between">
+                  <div>
+                    <span class="text-secondary small fw-bold">NEGADAS</span>
+                    <h3 id="tc-negadas" class="m-0 fw-bold mt-1 text-danger">0</h3>
+                  </div>
+                  <div class="icon-box" style="background: rgba(244,63,94,.1); color: #e11d48;"><i class="fa fa-times-circle"></i></div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="card-metrica d-flex align-items-center justify-content-between">
+                  <div>
+                    <span class="text-secondary small fw-bold">RECEBIDOS</span>
+                    <h3 id="tc-recebidos" class="m-0 fw-bold mt-1 text-primary">0</h3>
+                  </div>
+                  <div class="icon-box" style="background: rgba(59,130,246,.1); color: #2563eb;"><i class="fa fa-box"></i></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gráfico -->
+            <div class="card p-4 border-1 shadow-sm" style="border-radius: 12px; background: #fff;">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="fw-bold m-0 text-dark">
+                  <i class="fa fa-chart-bar me-2 text-warning"></i>Volume de Trocas por Marca
+                </h5>
+                <span class="badge bg-light text-secondary border" style="font-size: 11px;">APROVADO + PRODUTO_RECEBIDO</span>
+              </div>
+              <div id="graficoTrocasVazio" class="text-center text-muted py-5 d-none">
+                <i class="fa fa-chart-bar fa-2x mb-2 opacity-25"></i>
+                <p class="small">Nenhuma troca finalizada ainda.</p>
+              </div>
+              <div id="graficoTrocasContainer" style="position: relative; height: 260px; width: 100%;">
+                <canvas id="graficoTrocasMarca"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aba: Gerenciar Trocas -->
+          <div id="painel-trocas-lista" class="d-none">
+            <!-- Filtro de status -->
+            <div class="filtro-barra d-flex align-items-center justify-content-between gap-3 flex-wrap mb-0">
+              <div class="d-flex align-items-center gap-3">
+                <select id="filtroStatusTroca" class="form-select border-line" style="width: 220px;"
+                  onchange="trocaPaginaAtual = 1; carregarTrocas();">
+                  <option value="PENDENTE">Pendentes</option>
+                  <option value="APROVADO">Aprovadas</option>
+                  <option value="NEGADO">Negadas</option>
+                  <option value="PRODUTO_RECEBIDO">Produto Recebido</option>
+                </select>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="small text-muted">Itens por pág:</span>
+                <select id="seletorLimiteTrocas" class="form-select form-select-sm border-line" style="width: 75px;">
+                  <option value="5">5</option>
+                  <option value="10" selected>10</option>
+                  <option value="20">20</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="painel-tabela">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle m-0 text-dark">
+                  <thead class="table-light text-secondary border-bottom small fw-bold">
+                    <tr>
+                      <th class="px-4 py-3">#</th>
+                      <th class="py-3">Cliente</th>
+                      <th class="py-3">Pedido</th>
+                      <th class="py-3">Pneu</th>
+                      <th class="py-3">Qtd</th>
+                      <th class="py-3">Status</th>
+                      <th class="py-3">Cupom</th>
+                      <th class="px-4 py-3 text-end">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tabelaTrocasBody"></tbody>
+                </table>
+              </div>
+              <div class="d-flex align-items-center justify-content-between px-4 py-3 border-top border-line bg-light"
+                style="border-radius: 0 0 12px 12px;">
+                <span id="infoPaginacaoTrocas" class="small text-muted fw-medium">Mostrando 0 de 0 trocas</span>
+                <div id="botoesPaginacaoTrocas" class="d-flex align-items-center"></div>
+              </div>
+            </div>
+          </div>
+
+        </section>
       </main>
     </div>
   </div>
@@ -419,25 +623,55 @@
     </div>
   </div>
 
+  <div class="modal fade" id="modalJustificativaTroca" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+        <div id="modalJustificativaHeader" class="modal-header text-white px-4 py-3"
+          style="border-radius: 16px 16px 0 0;">
+          <h5 class="modal-title fw-bold" id="modalJustificativaTitulo"><i
+              class="fa fa-comment-alt me-2"></i>Justificativa da Ação</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4 text-dark">
+          <input type="hidden" id="justificativaTrocaId">
+          <input type="hidden" id="justificativaAcao">
+          <p class="text-muted small fw-medium mb-3" id="modalJustificativaSubtitulo">Por favor, descreva detalhadamente
+            os motivos para esta decisão.</p>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">JUSTIFICATIVA</label>
+            <textarea id="justificativaTexto" class="form-control" rows="4" placeholder="Insira o motivo aqui..."
+              required style="border-radius: 8px; resize: none;"></textarea>
+          </div>
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-light px-4 fw-semibold" data-bs-dismiss="modal"
+              style="border-radius: 8px;">Cancelar</button>
+            <button type="button" id="btnConfirmarJustificativa" class="btn text-white px-4 fw-bold"
+              onclick="enviarTrocaComJustificativa()" style="border-radius: 8px;">Confirmar e Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const API = '';
     let adminLogado = null;
     let token = '';
 
-    // Estado global da paginação de pedidos
     let pedidoPaginaAtual = 1;
     let pedidoLimite = 10;
     let graficoVendasInstancia = null;
+    let trocaPaginaAtual = 1;
+    let trocaLimite = 10;
+    let graficoTrocasInstancia = null;
 
-    // Utilitário de Alertas na tela
     function mostrarAlerta(msg, tipo = 'success') {
       const container = document.getElementById('containerAlertasGlobal');
-      container.innerHTML = `<div class="alert alert-${tipo} py-2 px-3 m-0 shadow-sm small border-0 animate__animated animate__fadeIn" style="border-radius:8px;">${msg}</div>`;
+      container.innerHTML = `<div class="alert alert-${tipo} py-2 px-3 m-0 shadow-sm small border-0" style="border-radius:8px;">${msg}</div>`;
       setTimeout(() => container.innerHTML = '', 4000);
     }
 
-    // Navegação entre abas
     function mostrarSecao(secao) {
       document.querySelectorAll('.secao-painel').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.nav-admin .nav-link').forEach(l => l.classList.remove('active'));
@@ -445,39 +679,39 @@
       const secaoAlvo = document.getElementById(`secao-${secao}`);
       if (secaoAlvo) secaoAlvo.classList.add('active');
 
-      // Ativa link correspondente
       const link = Array.from(document.querySelectorAll('.nav-admin .nav-link')).find(l => l.textContent.toLowerCase().includes(secao));
       if (link) link.classList.add('active');
 
-      // Títulos dinâmicos e gatilho de carga
-      const titulos = { dashboard: 'Visão Geral', pedidos: 'Gerenciamento de Pedidos', clientes: 'Lista de Clientes', trocas: 'Controle de Trocas e Devoluções' };
+      const titulos = { dashboard: 'Visão Geral', pedidos: 'Gerenciamento de Pedidos', clientes: 'Lista de Clientes', trocas: 'Gerenciar Trocas' };
       document.getElementById('tituloPagina').textContent = titulos[secao] || 'Painel Administrativo';
 
+      atualizarContadorSidebar();
+
       if (secao === 'dashboard') { carregarResumoDashboard(); recarregarAnaliseCategorias(); }
-      if (secao === 'pedidos') { carregarPedidos(); }
+      if (secao === 'pedidos') { carregarPedidos(); carregarResumoPedidos(); }
       if (secao === 'clientes') { carregarClientes(); }
-      if (secao === 'trocas') { carregarTrocas(); }
+      if (secao === 'trocas') { trocarAbaTroca('dashboard'); }
     }
 
-    // Login do Administrador
     async function realizarLoginAdmin(event) {
       event.preventDefault();
-      const email = document.getElementById('loginEmail').value;
+      const usuario = document.getElementById('loginUsuario').value;
       const senha = document.getElementById('loginSenha').value;
 
       try {
         const res = await fetch(`${API}/api/admin/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, senha })
+          body: JSON.stringify({ usuario, senha })
         });
         const data = await res.json();
 
         if (!res.ok) throw new Error(data.erro || 'Falha na autenticação');
 
         adminLogado = data.admin;
-        document.getElementById('telaLogin').style.display = 'none';
-        document.getElementById('painelPrincipal').style.removeAttribute('style'); // exibe
+        document.getElementById('telaLogin').classList.add('d-none');
+        document.getElementById('painelPrincipal').classList.remove('d-none');
+        document.getElementById('painelPrincipal').classList.add('d-flex');
         document.getElementById('sidebarUsuario').textContent = adminLogado.usuario;
 
         mostrarSecao('dashboard');
@@ -491,23 +725,65 @@
       location.reload();
     }
 
-    // ── DASHBOARD: RESUMO DAS MÉTRICAS ──────────────────────────
     async function carregarResumoDashboard() {
       try {
         const res = await fetch(`${API}/api/admin/dashboard/resumo`);
         if (!res.ok) return;
         const dados = await res.json();
-
         document.getElementById('m-total-pedidos').textContent = dados.total || 0;
-        document.getElementById('m-aguardando').textContent = dados.aguardando_pagamento || 0;
-        document.getElementById('m-transporte').textContent = dados.em_transporte || 0;
         document.getElementById('m-faturamento').textContent = parseFloat(dados.faturamento_total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
       } catch (err) {
         console.error(err);
       }
     }
 
-    // ── DASHBOARD: GRÁFICO DE CATEGORIAS (13 MESES) ─────────────
+    async function carregarResumoPedidos() {
+      // Busca contagem por status para os cards da seção Pedidos
+      const statusMap = {
+        'AGUARDANDO_PAGAMENTO': 'cs-aguardando',
+        'EM_PROCESSAMENTO':     'cs-processamento',
+        'PAGAMENTO_CONFIRMADO': 'cs-confirmado',
+        'EM_TRANSPORTE':        'cs-transporte',
+        'ENTREGUE':             'cs-entregue',
+        'CANCELADO':            'cs-cancelado'
+      };
+      try {
+        await Promise.all(Object.entries(statusMap).map(async ([st, elId]) => {
+          const res = await fetch(`${API}/api/admin/pedidos?status=${st}&page=1&limit=1&comPaginacao=true`);
+          if (!res.ok) return;
+          const dados = await res.json();
+          const el = document.getElementById(elId);
+          if (el) el.textContent = dados.paginacao?.total ?? 0;
+        }));
+      } catch (err) {
+        console.error('Erro ao carregar resumo de pedidos:', err);
+      }
+    }
+
+    function filtrarPorStatus(status) {
+      const select = document.getElementById('filtroStatusPedido');
+      select.value = status;
+      pedidoPaginaAtual = 1;
+      carregarPedidos();
+      sincronizarCardAtivo();
+    }
+
+    function sincronizarCardAtivo() {
+      const status = document.getElementById('filtroStatusPedido').value;
+      const mapa = {
+        'AGUARDANDO_PAGAMENTO': 'cs-aguardando',
+        'EM_PROCESSAMENTO':     'cs-processamento',
+        'PAGAMENTO_CONFIRMADO': 'cs-confirmado',
+        'EM_TRANSPORTE':        'cs-transporte',
+        'ENTREGUE':             'cs-entregue',
+        'CANCELADO':            'cs-cancelado'
+      };
+      document.querySelectorAll('.card-status-pedido').forEach(c => c.classList.remove('ativo'));
+      if (status && mapa[status]) {
+        document.getElementById(mapa[status])?.closest('.card-status-pedido')?.classList.add('ativo');
+      }
+    }
+
     async function recarregarAnaliseCategorias() {
       const inicio = document.getElementById('analiseDataInicio').value;
       const fim = document.getElementById('analiseDataFim').value;
@@ -522,26 +798,53 @@
         const res = await fetch(url);
         const dados = await res.json();
 
-        // Inicializa inputs de data se retornados vazios
         if (!inicio && dados.inicio) document.getElementById('analiseDataInicio').value = dados.inicio;
         if (!fim && dados.fim) document.getElementById('analiseDataFim').value = dados.fim;
 
         const mesesSet = new Set();
-        const categoriasSet = new Set();
+        const categoriesSet = new Set();
         const mapaDados = {};
+        const resumoMarcas = {};
 
         dados.dados.forEach(item => {
+          const marca = item.categoria ? item.categoria.trim().toUpperCase() : 'OUTROS';
+
           mesesSet.add(item.mes);
-          categoriasSet.add(item.categoria);
-          if (!mapaDados[item.categoria]) mapaDados[item.categoria] = {};
-          mapaDados[item.categoria][item.mes] = parseFloat(item.valor);
+          categoriesSet.add(marca);
+
+          if (!mapaDados[marca]) mapaDados[marca] = {};
+          mapaDados[marca][item.mes] = parseFloat(item.valor || 0);
+
+          if (!resumoMarcas[marca]) {
+            resumoMarcas[marca] = { quantidade: 0, faturamento: 0 };
+          }
+          resumoMarcas[marca].quantidade += parseInt(item.quantidade || 0);
+          resumoMarcas[marca].faturamento += parseFloat(item.valor || 0);
+        });
+
+        const containerCards = document.getElementById('containerCardsMarcas');
+        containerCards.innerHTML = '';
+
+        Object.keys(resumoMarcas).sort().forEach(marca => {
+          const dadosMarca = resumoMarcas[marca];
+          const totalDinheiro = dadosMarca.faturamento.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+          containerCards.innerHTML += `
+            <div class="col-sm-6 col-md-4 col-lg-2">
+              <div class="card p-3 border-1 shadow-sm bg-white" style="border-radius: 10px;">
+                <div class="mb-1 d-flex justify-content-between align-items-center">
+                  <span class="fw-bold text-dark text-truncate" style="font-size: 13px;" title="${marca}">${marca}</span>
+                </div>
+                <small class="text-muted d-block mb-1" style="font-size: 11px;">${dadosMarca.quantidade} pneus vendidos</small>
+                <h6 class="m-0 fw-bold text-success" style="font-size: 14px;">${totalDinheiro}</h6>
+              </div>
+            </div>
+          `;
         });
 
         const listaMeses = Array.from(mesesSet).sort();
-        const listaCategorias = Array.from(categoriasSet);
-
-        // Paleta de cores dinâmica para as linhas do gráfico
-        const cores = ['#e8b84b', '#1e293b', '#3b82f6', '#10b981', '#f43f5e', '#8b5cf6'];
+        const listaCategorias = Array.from(categoriesSet);
+        const cores = ['#e8b84b', '#151827', '#3b82f6', '#10b981', '#f43f5e', '#8b5cf6', '#06b6d4', '#f97316'];
 
         const datasets = listaCategorias.map((cat, index) => {
           return {
@@ -564,30 +867,36 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { position: 'top', labels: { font: { weight: '600' } } } },
+            resizeDelay: 50,
+            plugins: {
+              legend: { position: 'top', labels: { font: { weight: '600' } } }
+            },
             scales: {
-              y: { ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') } }
+              y: {
+                ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') }
+              }
             }
           }
         });
+
       } catch (err) {
-        console.error(err);
+        console.error('Erro ao carregar análise de categorias:', err);
       }
     }
 
-    // ── SEÇÃO: PEDIDOS (COM PAGINAÇÃO REAL CONECTADA) ────────────
     async function carregarPedidos() {
       const status = document.getElementById('filtroStatusPedido').value;
-
-      let url = `${API}/api/admin/pedidos?page=${pedidoPaginaAtual}&limit=${pedidoLimite}`;
+      let url = `${API}/api/admin/pedidos?page=${pedidoPaginaAtual}&limit=${pedidoLimite}&comPaginacao=true`;
       if (status) url += `&status=${status}`;
 
       try {
         const res = await fetch(url);
-        const data = await res.json();
+        const resJson = await res.json();
 
-        const lista = data.pedidos || [];
-        const totalPaginas = data.pages || 1;
+        const lista = resJson.dados || [];
+        const paginacao = resJson.paginacao || {};
+        const totalPaginas = paginacao.totalPaginas || 1;
+        const totalItens = paginacao.total || 0;
 
         const tbody = document.getElementById('tabelaPedidosBody');
         tbody.innerHTML = '';
@@ -618,12 +927,10 @@
             </tr>`;
         });
 
-        // Atualiza contador textual ("Mostrando X-Y de Z")
         const inicioDoc = (pedidoPaginaAtual - 1) * pedidoLimite + 1;
-        const fimDoc = Math.min(pedidoPaginaAtual * pedidoLimite, data.total);
-        document.getElementById('infoPaginacaoPedidos').textContent = `Mostrando ${inicioDoc}-${fimDoc} de ${data.total} pedidos`;
+        const fimDoc = Math.min(pedidoPaginaAtual * pedidoLimite, totalItens);
+        document.getElementById('infoPaginacaoPedidos').textContent = `Mostrando ${inicioDoc}-${fimDoc} de ${totalItens} pedidos`;
 
-        // Renderiza os botões dinâmicos de Anterior / Próxima
         renderizarControlesPaginacao(totalPaginas);
 
       } catch (err) {
@@ -635,7 +942,6 @@
       const container = document.getElementById('botoesPaginacaoPedidos');
       container.innerHTML = '';
 
-      // Botão Anterior
       const btnAnterior = document.createElement('button');
       btnAnterior.className = `btn btn-sm btn-outline-secondary me-2 ${pedidoPaginaAtual === 1 ? 'disabled' : ''}`;
       btnAnterior.innerHTML = '<i class="fa fa-chevron-left"></i>';
@@ -647,13 +953,11 @@
       };
       container.appendChild(btnAnterior);
 
-      // Indicador Central de Páginas
       const indicador = document.createElement('span');
       indicador.className = 'mx-2 small fw-bold text-dark align-self-center';
       indicador.textContent = `Página ${pedidoPaginaAtual} de ${totalPaginas}`;
       container.appendChild(indicador);
 
-      // Botão Próximo
       const btnProximo = document.createElement('button');
       btnProximo.className = `btn btn-sm btn-outline-secondary ms-2 ${pedidoPaginaAtual === totalPaginas ? 'disabled' : ''}`;
       btnProximo.innerHTML = '<i class="fa fa-chevron-right"></i>';
@@ -666,11 +970,16 @@
       container.appendChild(btnProximo);
     }
 
-    // Listener para o gatilho de mudança do limite por página
     document.getElementById('seletorLimitePedidos').onchange = function () {
       pedidoLimite = parseInt(this.value);
-      pedidoPaginaAtual = 1; // Sempre reseta a paginação para evitar index fora do range
+      pedidoPaginaAtual = 1;
       carregarPedidos();
+    };
+
+    document.getElementById('seletorLimiteTrocas').onchange = function () {
+      trocaLimite = parseInt(this.value);
+      trocaPaginaAtual = 1;
+      carregarTrocas();
     };
 
     function getBadgeStatus(status) {
@@ -685,7 +994,6 @@
       return cores[status] || 'dark';
     }
 
-    // ── PEDIDOS: VER DETALHES E AJUSTAR STATUS ─────────────────
     async function verDetalhesPedido(id) {
       try {
         const res = await fetch(`${API}/api/admin/pedidos/${id}`);
@@ -697,9 +1005,16 @@
         document.getElementById('detalhePedidoEmail').textContent = p.cliente_email || '';
         document.getElementById('detalhePedidoData').textContent = `Data: ${new Date(p.criado_em).toLocaleString('pt-BR')}`;
 
-        // Tratamento e exibição do Frete
-        const frete = parseFloat(p.valor_frete || 0);
-        document.getElementById('detalhePedidoFrete').textContent = frete > 0 ? `Frete: R$ ${frete.toFixed(2).replace('.', ',')}` : 'Frete Grátis 🚚';
+        // controller retorna p.frete (coluna da tabela pedidos)
+        const frete = parseFloat(p.frete ?? 0);
+        const freteEl = document.getElementById('detalhePedidoFrete');
+        if (frete > 0) {
+          freteEl.textContent = `Frete: R$ ${frete.toFixed(2).replace('.', ',')}`;
+          freteEl.className = 'm-0 text-dark small fw-bold';
+        } else {
+          freteEl.textContent = 'Frete Grátis 🚚';
+          freteEl.className = 'm-0 text-success small fw-bold';
+        }
 
         const statusBadge = document.getElementById('detalhePedidoStatusBadge');
         statusBadge.textContent = p.status;
@@ -721,7 +1036,6 @@
             </tr>`;
         });
 
-        // Configuração dos botões de transição de Status do Fluxo Logístico
         const blocoAcoes = document.getElementById('blocoAcoesPedido');
         blocoAcoes.innerHTML = '';
 
@@ -756,6 +1070,7 @@
           mostrarAlerta('Status do pedido atualizado!', 'success');
           carregarPedidos();
           carregarResumoDashboard();
+          carregarResumoPedidos();
         } else {
           const data = await res.json();
           alert(data.erro || 'Falha ao atualizar status');
@@ -765,7 +1080,6 @@
       }
     }
 
-    // ── SEÇÃO: CLIENTES ─────────────────────────────────────────
     async function carregarClientes() {
       try {
         const res = await fetch(`${API}/api/clientes`);
@@ -831,64 +1145,309 @@
       carregarClientes();
     }
 
-    async function ativarCliente(id) {
+    async function activarCliente(id) {
       await fetch(`${API}/api/clientes/${id}/ativar`, { method: 'PATCH' });
       mostrarAlerta('Cliente reativado com sucesso!', 'success');
       carregarClientes();
     }
 
-    // ── SEÇÃO: TROCAS ───────────────────────────────────────────
+    function trocarAbaTroca(aba) {
+      const btnDash = document.getElementById('aba-trocas-dashboard');
+      const btnLista = document.getElementById('aba-trocas-lista');
+      const painelDash = document.getElementById('painel-trocas-dashboard');
+      const painelLista = document.getElementById('painel-trocas-lista');
+
+      if (aba === 'dashboard') {
+        btnDash.style.borderBottom = '3px solid var(--admin-accent)';
+        btnDash.style.color = '#151827';
+        btnDash.style.background = 'var(--admin-panel)';
+        btnLista.style.borderBottom = 'none';
+        btnLista.style.color = '#697386';
+        btnLista.style.background = 'transparent';
+        painelDash.classList.remove('d-none');
+        painelLista.classList.add('d-none');
+        carregarGraficoTrocasMarca();
+        carregarResumoCabecalhoTrocas();
+      } else {
+        btnLista.style.borderBottom = '3px solid var(--admin-accent)';
+        btnLista.style.color = '#151827';
+        btnLista.style.background = 'var(--admin-panel)';
+        btnDash.style.borderBottom = 'none';
+        btnDash.style.color = '#697386';
+        btnDash.style.background = 'transparent';
+        painelLista.classList.remove('d-none');
+        painelDash.classList.add('d-none');
+        carregarTrocas();
+      }
+    }
+
+    async function carregarResumoCabecalhoTrocas() {
+      const statusList = ['PENDENTE', 'APROVADO', 'NEGADO', 'PRODUTO_RECEBIDO'];
+      const ids = { PENDENTE: 'tc-pendentes', APROVADO: 'tc-aprovadas', NEGADO: 'tc-negadas', PRODUTO_RECEBIDO: 'tc-recebidos' };
+      try {
+        await Promise.all(statusList.map(async st => {
+          const res = await fetch(`${API}/api/admin/trocas?status=${st}&limit=1&page=1`);
+          if (!res.ok) return;
+          const dados = await res.json();
+          document.getElementById(ids[st]).textContent = dados.total ?? 0;
+        }));
+      } catch (err) {
+        console.error('Erro ao carregar resumo de trocas:', err);
+      }
+    }
+
     async function carregarTrocas() {
       try {
-        const res = await fetch(`${API}/api/admin/trocas`);
-        const lista = await res.json();
+        const status = document.getElementById('filtroStatusTroca')?.value || 'PENDENTE';
+        const url = `${API}/api/admin/trocas?status=${status}&page=${trocaPaginaAtual}&limit=${trocaLimite}`;
+        const res = await fetch(url);
+        const dados = await res.json();
+
+        // Controller retorna { trocas, total, pages, page }
+        const lista = dados.trocas || [];
+        const total = dados.total || 0;
+        const totalPaginas = dados.pages || 1;
+
         const tbody = document.getElementById('tabelaTrocasBody');
         tbody.innerHTML = '';
 
         if (lista.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Nenhuma solicitação de troca aberta.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Nenhuma solicitação de troca encontrada.</td></tr>`;
+          document.getElementById('infoPaginacaoTrocas').textContent = 'Mostrando 0 de 0 trocas';
+          document.getElementById('botoesPaginacaoTrocas').innerHTML = '';
           return;
         }
 
         lista.forEach(t => {
           let botoes = '';
-          if (t.status === 'SOLICITADO') {
+          const statusLimpo = t.status ? t.status.trim().toUpperCase() : 'PENDENTE';
+
+          if (statusLimpo === 'PENDENTE' || statusLimpo === 'SOLICITADO') {
             botoes = `
-              <button class="btn btn-sm btn-success me-1" onclick="atualizarTroca(${t.id}, 'aceitar')"><i class="fa fa-check"></i> Autorizar</button>
-              <button class="btn btn-sm btn-danger" onclick="atualizarTroca(${t.id}, 'negar')"><i class="fa fa-times"></i> Recusar</button>`;
-          } else if (t.status === 'AUTORIZADO') {
-            botoes = `<button class="btn btn-sm btn-primary" onclick="atualizarTroca(${t.id}, 'recebimento')"><i class="fa fa-box"></i> Confirmar Chegada</button>`;
+              <button class="btn btn-sm btn-success me-1 px-2 py-1" data-cy="btn-aceitar-troca-${t.id}" onclick="atualizarTroca(${t.id}, 'aceitar')" title="Autorizar Troca">
+                <i class="fa fa-check"></i>
+              </button>
+              <button class="btn btn-sm btn-danger px-2 py-1" data-cy="btn-negar-troca-${t.id}" onclick="atualizarTroca(${t.id}, 'negar')" title="Recusar Troca">
+                <i class="fa fa-times"></i>
+              </button>
+            `;
+          } else if (statusLimpo === 'AUTORIZADO' || statusLimpo === 'APROVADO') {
+            botoes = `<button class="btn btn-sm btn-primary py-1 px-2" onclick="atualizarTroca(${t.id}, 'recebimento')"><i class="fa fa-box me-1"></i> Recebido</button>`;
+          } else {
+            botoes = `<span class="text-muted small fw-medium">Finalizado</span>`;
           }
+
+          const marcaPneu = t.marca || '';
+          const modeloPneu = t.modelo || '';
+          const largura = t.largura || ''; const perfil = t.perfil || ''; const aro = t.aro || '';
+          const especificacao = (largura && perfil && aro) ? ` <small class="text-muted">${largura}/${perfil} R${aro}</small>` : '';
+          const pneuExibido = (marcaPneu || modeloPneu) ? `<span class="fw-bold">${marcaPneu}</span> ${modeloPneu}${especificacao}` : 'Produto Pneu';
+
+          const codigoCupom = t.cupom_codigo || '';
+          const cupomExibido = codigoCupom
+            ? `<span class="cupom-tag"><i class="fa fa-ticket-alt me-1"></i>${codigoCupom}</span>`
+            : '<span class="text-muted">-</span>';
+          const qtdExibida = t.quantidade_trocada || 1;
+
+          const badgeClasse = {
+            'PENDENTE': 'bg-warning text-dark',
+            'APROVADO': 'bg-success',
+            'NEGADO': 'bg-danger',
+            'PRODUTO_RECEBIDO': 'bg-primary'
+          }[statusLimpo] || 'bg-secondary';
 
           tbody.innerHTML += `
             <tr>
               <td class="px-4 fw-bold">#${t.id}</td>
-              <td class="fw-bold">#${t.pedido_id}</td>
-              <td>${t.cliente_nome || 'Cliente'}</td>
-              <td><span class="small text-muted">${t.motivo}</span></td>
-              <td><span class="badge bg-secondary">${t.status}</span></td>
-              <td class="px-4 text-end">${botoes || '<span class="text-muted small">Finalizado</span>'}</td>
+              <td class="fw-medium">${t.cliente_nome || 'Cliente'}</td>
+              <td class="fw-bold text-primary"><a href="#" onclick="mostrarSecao('pedidos')" class="text-decoration-none">#${t.pedido_id}</a></td>
+              <td class="small">${pneuExibido}</td>
+              <td class="text-center font-monospace">${qtdExibida}</td>
+              <td><span class="badge ${badgeClasse}">${statusLimpo}</span></td>
+              <td>${cupomExibido}</td>
+              <td class="px-4 text-end">${botoes}</td>
             </tr>`;
         });
+
+        // Paginação
+        const inicio = (trocaPaginaAtual - 1) * trocaLimite + 1;
+        const fim = Math.min(trocaPaginaAtual * trocaLimite, total);
+        document.getElementById('infoPaginacaoTrocas').textContent = `Mostrando ${inicio}-${fim} de ${total} trocas`;
+        renderizarControlesPaginacaoTrocas(totalPaginas);
+
       } catch (err) {
-        console.error(err);
+        console.error('Erro ao processar visualização de trocas:', err);
       }
     }
 
-    async function atualizarTroca(id, acao) {
-      if (!confirm(`Deseja aplicar a ação [${acao}] nesta solicitação?`)) return;
+    function renderizarControlesPaginacaoTrocas(totalPaginas) {
+      const container = document.getElementById('botoesPaginacaoTrocas');
+      container.innerHTML = '';
+
+      const btnAnterior = document.createElement('button');
+      btnAnterior.className = `btn btn-sm btn-outline-secondary me-2 ${trocaPaginaAtual === 1 ? 'disabled' : ''}`;
+      btnAnterior.innerHTML = '<i class="fa fa-chevron-left"></i>';
+      btnAnterior.onclick = () => { if (trocaPaginaAtual > 1) { trocaPaginaAtual--; carregarTrocas(); } };
+      container.appendChild(btnAnterior);
+
+      const indicador = document.createElement('span');
+      indicador.className = 'mx-2 small fw-bold text-dark align-self-center';
+      indicador.textContent = `Página ${trocaPaginaAtual} de ${totalPaginas}`;
+      container.appendChild(indicador);
+
+      const btnProximo = document.createElement('button');
+      btnProximo.className = `btn btn-sm btn-outline-secondary ms-2 ${trocaPaginaAtual === totalPaginas ? 'disabled' : ''}`;
+      btnProximo.innerHTML = '<i class="fa fa-chevron-right"></i>';
+      btnProximo.onclick = () => { if (trocaPaginaAtual < totalPaginas) { trocaPaginaAtual++; carregarTrocas(); } };
+      container.appendChild(btnProximo);
+    }
+
+    async function carregarGraficoTrocasMarca() {
       try {
-        const res = await fetch(`${API}/api/admin/trocas/${id}/${acao}`, { method: 'PATCH' });
+        const res = await fetch(`${API}/api/admin/trocas/volume-por-marca`);
+        if (!res.ok) return;
+        const dados = await res.json(); // [{ marca, quantidade }]
+
+        if (!dados.length) {
+          document.getElementById('graficoTrocasContainer').classList.add('d-none');
+          document.getElementById('graficoTrocasVazio').classList.remove('d-none');
+          return;
+        }
+        document.getElementById('graficoTrocasContainer').classList.remove('d-none');
+        document.getElementById('graficoTrocasVazio').classList.add('d-none');
+
+        const labels = dados.map(d => d.marca);
+        const valores = dados.map(d => d.quantidade);
+        const cores = ['#e8b84b', '#3b82f6', '#10b981', '#f43f5e', '#8b5cf6', '#06b6d4', '#f97316', '#151827'];
+
+        if (graficoTrocasInstancia) graficoTrocasInstancia.destroy();
+
+        const ctx = document.getElementById('graficoTrocasMarca').getContext('2d');
+        graficoTrocasInstancia = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Quantidade Trocada',
+              data: valores,
+              backgroundColor: labels.map((_, i) => cores[i % cores.length] + 'cc'),
+              borderColor: labels.map((_, i) => cores[i % cores.length]),
+              borderWidth: 2,
+              borderRadius: 6,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: ctx => ` ${ctx.parsed.y} pneu(s) trocado(s)`
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1, precision: 0 },
+                grid: { color: '#f0f0f0' }
+              },
+              x: {
+                grid: { display: false }
+              }
+            }
+          }
+        });
+      } catch (err) {
+        console.error('Erro ao carregar gráfico de trocas por marca:', err);
+      }
+    }
+
+    async function atualizarContadorSidebar() {
+      try {
+        // Usa limit=1 só para pegar o total de pendentes sem trazer todos os dados
+        const res = await fetch(`${API}/api/admin/trocas?status=PENDENTE&limit=1&page=1`);
+        if (!res.ok) return;
+        const dados = await res.json();
+        const pendentes = dados.total || 0;
+
+        const badge = document.getElementById('badgeTrocasPendentes');
+        if (pendentes > 0) {
+          badge.textContent = pendentes;
+          badge.classList.remove('d-none');
+        } else {
+          badge.classList.add('d-none');
+        }
+      } catch (err) {
+        console.error('Erro na contagem de pendências:', err);
+      }
+    }
+
+    // INTERFACE REESTRUTURADA PARA CONFIGURAR O MODAL CUSTOMIZADO ANTES DE EXIBIR
+    function atualizarTroca(id, acao) {
+      document.getElementById('justificativaTrocaId').value = id;
+      document.getElementById('justificativaAcao').value = acao;
+      document.getElementById('justificativaTexto').value = ''; // Limpa o campo anterior
+
+      const header = document.getElementById('modalJustificativaHeader');
+      const titulo = document.getElementById('modalJustificativaTitulo');
+      const botaoConfirmar = document.getElementById('btnConfirmarJustificativa');
+
+      // Aplica as cores correspondentes (Verde para aceitar, Vermelho para negar/outro)
+      if (acao === 'aceitar') {
+        header.className = "modal-header bg-success text-white px-4 py-3";
+        titulo.innerHTML = '<i class="fa fa-check-circle me-2"></i>Autorizar Troca';
+        botaoConfirmar.className = "btn btn-success text-white px-4 fw-bold";
+      } else {
+        header.className = "modal-header bg-danger text-white px-4 py-3";
+        titulo.innerHTML = '<i class="fa fa-times-circle me-2"></i>Recusar Troca';
+        botaoConfirmar.className = "btn btn-danger text-white px-4 fw-bold";
+      }
+
+      // Exibe o modal elegante do Bootstrap
+      const modal = new bootstrap.Modal(document.getElementById('modalJustificativaTroca'));
+      modal.show();
+    }
+
+    // PROCESSAMENTO DO ENVIO COMPLETO COM A JUSTIFICATIVA CAPTURADA
+    async function enviarTrocaComJustificativa() {
+      const id = document.getElementById('justificativaTrocaId').value;
+      const acao = document.getElementById('justificativaAcao').value;
+      const justificativa = document.getElementById('justificativaTexto').value;
+
+      if (!justificativa.trim()) {
+        alert("A justificativa é obrigatória para processar esta ação!");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/api/admin/trocas/${id}/${acao}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ obs: justificativa.trim() })
+        });
+
         if (res.ok) {
-          mostrarAlerta('Solicitação de troca atualizada!', 'success');
+          // Fecha o modal limpando as instâncias ativas do Bootstrap
+          const modalElement = document.getElementById('modalJustificativaTroca');
+          const modalInstance = bootstrap.Modal.getInstance(modalElement);
+          if (modalInstance) modalInstance.hide();
+
+          mostrarAlerta(`Solicitação de troca processada com sucesso!`, 'success');
           carregarTrocas();
+          carregarGraficoTrocasMarca();
+          carregarResumoCabecalhoTrocas();
+          atualizarContadorSidebar();
+        } else {
+          const dadosErro = await res.json();
+          alert(dadosErro.erro || 'Erro ao atualizar status da troca no servidor.');
         }
       } catch (err) {
         console.error(err);
       }
     }
 
-    // ── INITIALIZATION / SESSION CHECK ─────────────────────────
     function iniciarPainel() {
       mostrarSecao('dashboard');
     }
@@ -898,13 +1457,16 @@
         const res = await fetch(`${API}/api/admin/perfil`);
         if (res.ok) {
           adminLogado = await res.json();
-          document.getElementById('telaLogin').style.display = 'none';
-          document.getElementById('painelPrincipal').style.display = 'flex'; // Exibe painel flexível
+          document.getElementById('telaLogin').classList.add('d-none');
+          document.getElementById('painelPrincipal').classList.remove('d-none');
+          document.getElementById('painelPrincipal').classList.add('d-flex');
           document.getElementById('sidebarUsuario').textContent = adminLogado.usuario;
           iniciarPainel();
         } else {
-          document.getElementById('telaLogin').style.display = 'flex';
-          document.getElementById('painelPrincipal').style.setProperty('display', 'none', 'important');
+          document.getElementById('telaLogin').classList.remove('d-none');
+          document.getElementById('telaLogin').classList.add('d-flex');
+          document.getElementById('painelPrincipal').classList.remove('d-flex');
+          document.getElementById('painelPrincipal').classList.add('d-none');
         }
       } catch (err) {
         console.error('Falha de comunicação com o servidor administrativo.', err);
