@@ -12,11 +12,31 @@ const TRANSICOES = {
 
 module.exports = {
 
+  async resumoDashboard(req, res) {
+    try {
+      const { rows: [resumo] } = await pool.query(
+        `SELECT
+           COUNT(*)::int AS total,
+           COUNT(*) FILTER (WHERE status = 'AGUARDANDO_PAGAMENTO')::int AS aguardando_pagamento,
+           COUNT(*) FILTER (WHERE status = 'EM_TRANSPORTE')::int AS em_transporte,
+           COALESCE(SUM(total), 0)::numeric(12,2) AS faturamento_total
+         FROM pedidos`
+      );
+
+      res.json(resumo);
+    } catch (err) {
+      res.status(500).json({ erro: err.message });
+    }
+  },
+
   // Lista todos os pedidos com dados do cliente
   async listar(req, res) {
     try {
-      const { status, page = 1, limit = 20 } = req.query;
+      const { status } = req.query;
+      const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+      const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 100);
       const offset = (page - 1) * limit;
+      const comPaginacao = req.query.comPaginacao === 'true';
       const params = [];
       let where = '';
 
@@ -40,7 +60,33 @@ module.exports = {
          LIMIT $${params.length - 1} OFFSET $${params.length}`,
         params
       );
-      res.json(rows);
+
+      if (!comPaginacao) return res.json(rows);
+
+      const paramsCount = [];
+      let whereCount = '';
+      if (status) {
+        paramsCount.push(status);
+        whereCount = `WHERE p.status = $${paramsCount.length}`;
+      }
+
+      const { rows: [countRow] } = await pool.query(
+        `SELECT COUNT(*)::int AS total
+         FROM pedidos p
+         ${whereCount}`,
+        paramsCount
+      );
+
+      const total = countRow?.total || 0;
+      res.json({
+        dados: rows,
+        paginacao: {
+          page,
+          limit,
+          total,
+          totalPaginas: Math.max(Math.ceil(total / limit), 1)
+        }
+      });
     } catch (err) {
       res.status(500).json({ erro: err.message });
     }
@@ -168,7 +214,8 @@ module.exports = {
       const { rows } = await pool.query(
         `SELECT to_char(date_trunc('month', p.criado_em), 'YYYY-MM') AS mes,
                 pn.marca AS categoria,
-                SUM(ip.quantidade)::int AS quantidade
+                SUM(ip.quantidade)::int AS quantidade,
+                ROUND(SUM(ip.quantidade * ip.preco_unitario)::numeric, 2) AS valor
          FROM pedidos p
          JOIN itens_pedido ip ON ip.pedido_id = p.id
          JOIN pneus pn ON pn.id = ip.pneu_id

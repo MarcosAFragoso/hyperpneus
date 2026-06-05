@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
   <meta charset="UTF-8">
   <title>Admin - HyperPneus</title>
@@ -16,977 +17,900 @@
       --admin-accent: #e8b84b;
       --admin-accent-dark: #9a6a04;
     }
-    body { overflow-x: hidden; background: var(--admin-bg); color: #202534; }
-    .sidebar { width: 264px; min-width: 264px; min-height: 100vh; background: var(--admin-dark); box-shadow: 10px 0 30px rgba(15, 23, 42, .08); }
-    .sidebar-brand {
-      width: 44px; height: 44px; border-radius: 10px; display: inline-flex;
-      align-items: center; justify-content: center; background: rgba(232, 184, 75, .14);
-      color: var(--admin-accent);
+
+    body {
+      overflow-x: hidden;
+      background: var(--admin-bg);
+      color: #202534;
     }
-    .sidebar .nav-link { color: #c7cedb; border-radius: 8px; margin-bottom: 4px; padding: 10px 12px; font-weight: 600; }
-    .sidebar .nav-link:hover, .sidebar .nav-link.ativo { background: var(--admin-accent); color: #171923 !important; }
-    .admin-shell { min-height: 100vh; background: var(--admin-bg); }
-    .admin-topbar {
-      background: rgba(255, 255, 255, .92); border-bottom: 1px solid var(--admin-line);
-      position: sticky; top: 0; z-index: 20; backdrop-filter: blur(8px);
+
+    #painelPrincipal {
+      width: 100vw;
+      overflow-x: hidden;
     }
-    .page-title { font-size: 1.35rem; font-weight: 800; margin: 0; }
-    .page-subtitle { color: var(--admin-muted); font-size: .9rem; }
-    .metric-card {
-      border: 1px solid var(--admin-line); border-radius: 8px; background: var(--admin-panel);
-      box-shadow: 0 8px 22px rgba(15, 23, 42, .05); padding: 18px; height: 100%;
+
+    \n .sidebar {
+      width: 264px;
+      min-width: 264px;
+      flex-shrink: 0;
+      min-height: 100vh;
+      background: var(--admin-dark);
+      box-shadow: 10px 0 30px rgba(15, 23, 42, .05);
+      z-index: 10;
     }
-    .metric-icon {
-      width: 40px; height: 40px; border-radius: 8px; display: inline-flex; align-items: center;
-      justify-content: center; background: #f7efd7; color: var(--admin-accent-dark);
+
+    \n .sidebar-brand {
+      height: 72px;
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
     }
-    .metric-value { font-size: 1.9rem; font-weight: 800; line-height: 1; }
-    .metric-label { color: var(--admin-muted); font-size: .82rem; font-weight: 700; text-transform: uppercase; }
-    .admin-card { border: 1px solid var(--admin-line); border-radius: 8px; box-shadow: 0 8px 22px rgba(15,23,42,.05); }
-    .admin-card .card-header { border-bottom: 1px solid var(--admin-line); background: #fff; }
-    .table { --bs-table-hover-bg: #f8fafc; }
-    .table thead th { background: #f7f8fb; color: #485266; border-bottom: 1px solid var(--admin-line); font-size: .78rem; text-transform: uppercase; letter-spacing: 0; }
-    .btn-icon { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; }
-    .status-badge { font-size: .75rem; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
-    .AGUARDANDO_PAGAMENTO { background: #fff3cd; color: #856404; }
-    .EM_PROCESSAMENTO     { background: #cfe2ff; color: #084298; }
-    .PAGAMENTO_CONFIRMADO { background: #d1ecf1; color: #0c5460; }
-    .EM_TRANSPORTE        { background: #d0f0fd; color: #055160; }
-    .ENTREGUE             { background: #d1e7dd; color: #0f5132; }
-    .CANCELADO            { background: #f8d7da; color: #842029; }
-    .PENDENTE             { background: #fff3cd; color: #856404; }
-    .APROVADO             { background: #d1e7dd; color: #0f5132; }
-    .NEGADO               { background: #f8d7da; color: #842029; }
-    .PRODUTO_RECEBIDO     { background: #d1ecf1; color: #0c5460; }
-    #telaLogin {
-      position:fixed; inset:0; background:
-        radial-gradient(circle at 20% 20%, rgba(232,184,75,.24), transparent 28%),
-        linear-gradient(135deg, #111421 0%, #1a1a2e 55%, #252b45 100%);
-      z-index:9999; display:flex; align-items:center; justify-content:center; padding: 20px;
+
+    \n .nav-admin .nav-link {
+      color: #8a94a6;
+      padding: 12px 24px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-left: 4px solid transparent;
+      transition: all .2s;
     }
-    .login-card { width: 390px; border: 1px solid rgba(255,255,255,.16); border-radius: 12px; overflow: hidden; }
-    .login-mark { width: 48px; height: 48px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; background: #1a1a2e; color: var(--admin-accent); }
-    .category-filter { max-height: 150px; overflow-y: auto; border: 1px solid var(--admin-line); border-radius: 8px; padding: 10px; background: #fff; }
-    #graficoVendasCategorias { min-height: 320px; }
+
+    \n .nav-admin .nav-link:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, .03);
+    }
+
+    \n .nav-admin .nav-link.active {
+      color: #fff;
+      background: rgba(255, 255, 255, .05);
+      border-left-color: var(--admin-accent);
+    }
+
+    \n .header-admin {
+      height: 72px;
+      background: var(--admin-panel);
+      border-bottom: 1px solid var(--admin-line);
+      padding: 0 32px;
+    }
+
+    \n .conteudo-admin {
+      padding: 40px;
+      background: var(--admin-bg);
+      min-height: calc(100vh - 72px);
+    }
+
+    \n .card-metrica {
+      background: var(--admin-panel);
+      border: 1px solid var(--admin-line);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .02);
+    }
+
+    \n .card-metrica .icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      background: rgba(232, 184, 75, .1);
+      color: var(--admin-accent-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    \n .painel-tabela {
+      background: var(--admin-panel);
+      border: 1px solid var(--admin-line);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .02);
+    }
+
+    \n .secao-painel {
+      display: none;
+    }
+
+    \n .secao-painel.active {
+      display: block;
+    }
+
+    \n .filtro-barra {
+      background: var(--admin-panel);
+      border: 1px solid var(--admin-line);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    \n
   </style>
 </head>
+
 <body>
 
-<!-- ── TELA DE LOGIN ──────────────────────────────────────── -->
-<div id="telaLogin">
-  <a href="index.html" class="btn btn-outline-light btn-sm position-absolute top-0 start-0 m-3">
-    <i class="fas fa-arrow-left me-1"></i>Voltar para loja
-  </a>
-  <div class="card login-card shadow-lg">
-    <div class="card-body p-5">
+  <div id="telaLogin" class="d-flex align-items-center justify-content-center"
+    style="min-height: 100vh; background: var(--admin-dark);">
+    <div class="card p-4 border-0 shadow" style="width: 100%; max-width: 400px; border-radius: 16px;">
       <div class="text-center mb-4">
-        <div class="login-mark mb-3"><i class="fas fa-shield-alt"></i></div>
-        <h4 class="fw-bold mb-1">HyperAdmin</h4>
-        <p class="text-muted small mb-0">Painel operacional da HyperPneus</p>
+        <h4 class="fw-bold text-dark m-0">HyperPneus Admin</h4>
+        <small class="text-muted">Acesse o painel gerencial</small>
       </div>
-      <div id="alertaLogin" class="alert d-none"></div>
-      <div class="mb-3">
-        <label class="form-label fw-bold">Usuário</label>
-        <input type="text" id="loginUsuario" class="form-control" placeholder="admin"
-               data-cy="input-usuario">
-      </div>
-      <div class="mb-4">
-        <label class="form-label fw-bold">Senha</label>
-        <input type="password" id="loginSenha" class="form-control" placeholder="••••••••"
-               data-cy="input-senha" onkeydown="if(event.key==='Enter')fazerLoginAdmin()">
-      </div>
-      <button onclick="fazerLoginAdmin()" class="btn btn-warning w-100 fw-bold py-2"
-              data-cy="btn-login-admin"><i class="fas fa-lock-open me-2"></i>Entrar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── PAINEL PRINCIPAL ───────────────────────────────────── -->
-<div class="d-flex" id="painelPrincipal" style="display:none!important">
-
-  <!-- Sidebar -->
-  <div class="sidebar p-3 d-flex flex-column">
-    <div class="d-flex align-items-center gap-3 mb-4">
-      <div class="sidebar-brand"><i class="fas fa-gauge-high"></i></div>
-      <div>
-        <h5 class="text-warning fw-bold mb-0">HyperAdmin</h5>
-        <small class="text-secondary" id="sidebarUsuario"></small>
-      </div>
-    </div>
-    <hr class="border-secondary">
-    <ul class="nav flex-column gap-1 flex-grow-1">
-      <li><a href="#" onclick="mostrarSecao('dashboard')"  class="nav-link ativo" id="menu-dashboard"><i class="fas fa-chart-line me-2"></i>Dashboard</a></li>
-      <li><a href="#" onclick="mostrarSecao('analise')"    class="nav-link" id="menu-analise"><i class="fas fa-chart-area me-2"></i>Análise</a></li>
-      <li><a href="#" onclick="mostrarSecao('pedidos')"    class="nav-link" id="menu-pedidos"><i class="fas fa-shopping-bag me-2"></i>Pedidos</a></li>
-      <li><a href="#" onclick="mostrarSecao('trocas')"     class="nav-link" id="menu-trocas"><i class="fas fa-exchange-alt me-2"></i>Trocas <span class="badge bg-danger ms-1" id="badgeTrocas" style="display:none">0</span></a></li>
-      <li><a href="#" onclick="mostrarSecao('clientes')"   class="nav-link" id="menu-clientes"><i class="fas fa-users me-2"></i>Clientes</a></li>
-    </ul>
-    <hr class="border-secondary">
-    <button onclick="fazerLogoutAdmin()" class="btn btn-outline-secondary btn-sm w-100">
-      <i class="fas fa-sign-out-alt me-1"></i>Sair
-    </button>
-    <a href="index.html" class="btn btn-outline-light btn-sm w-100 mt-2">
-      <i class="fas fa-store me-1"></i>Ver Loja
-    </a>
-  </div>
-
-  <!-- Conteúdo -->
-  <div class="flex-grow-1 admin-shell">
-    <div class="admin-topbar px-4 py-3 d-flex align-items-center justify-content-between">
-      <div>
-        <h1 class="page-title" id="tituloSecao">Dashboard</h1>
-        <div class="page-subtitle" id="subtituloSecao">Visão geral dos pedidos, trocas e operação.</div>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <button onclick="carregarSecaoAtual()" class="btn btn-outline-secondary btn-sm">
-          <i class="fas fa-rotate me-1"></i>Atualizar
+      <form id="formLoginAdmin" onsubmit="realizarLoginAdmin(event)">
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-bold">E-MAIL</label>
+          <input type="email" id="loginEmail" class="form-control" placeholder="admin@hyperpneus.com" required>
+        </div>
+        <div class="mb-4">
+          <label class="form-label text-secondary small fw-bold">SENHA</label>
+          <input type="password" id="loginSenha" class="form-control" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-dark w-100 py-2 fw-bold"
+          style="border-radius: 8px; background: var(--admin-dark);">
+          Entrar no Painel
         </button>
-        <a href="index.html" class="btn btn-warning btn-sm fw-bold">
-          <i class="fas fa-store me-1"></i>Loja
-        </a>
-      </div>
+      </form>
     </div>
-    <div class="p-4">
-    <div id="alerta" class="alert d-none mb-3"></div>
+  </div>
 
-    <!-- ── DASHBOARD ──────────────────────────────────────── -->
-    <div id="sec-dashboard">
-      <div class="row g-3 mb-4" id="cards-dashboard">
-        <div class="col-md-3">
-          <div class="metric-card text-center">
-            <div class="text-muted small">Total de Pedidos</div>
-            <div class="fs-3 fw-bold text-primary" id="dash-total">—</div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="metric-card text-center">
-            <div class="text-muted small">Aguard. Pagamento</div>
-            <div class="fs-3 fw-bold text-warning" id="dash-aguardando">—</div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="metric-card text-center">
-            <div class="text-muted small">Em Transporte</div>
-            <div class="fs-3 fw-bold text-info" id="dash-transporte">—</div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="metric-card text-center">
-            <div class="text-muted small">Trocas Pendentes</div>
-            <div class="fs-3 fw-bold text-danger" id="dash-trocas">—</div>
-          </div>
-        </div>
+  <div id="painelPrincipal" class="d-flex" style="display: none !important;">
+    <aside class="sidebar d-flex flex-column">
+      <div class="sidebar-brand d-flex align-items-center px-4">
+        <h5 class="m-0 text-white fw-bold tracking-tight"><i class="fa fa-gauge-high text-warning me-2"></i>HyperPneus
+        </h5>
       </div>
-      <div class="card admin-card">
-        <div class="card-header fw-bold bg-white">Pedidos Recentes</div>
-        <div class="card-body p-0" id="dash-pedidos-recentes">
-          <p class="text-muted p-3">Carregando...</p>
-        </div>
+      <nav class="nav nav-admin flex-column py-4 flex-grow-1">
+        <a class="nav-link active" href="#" onclick="mostrarSecao('dashboard')"><i class="fa fa-chart-pie"></i>
+          Dashboard</a>
+        <a class="nav-link" href="#" onclick="mostrarSecao('pedidos')"><i class="fa fa-shopping-bag"></i> Pedidos</a>
+        <a class="nav-link" href="#" onclick="mostrarSecao('clientes')"><i class="fa fa-users"></i> Clientes</a>
+        <a class="nav-link" href="#" onclick="mostrarSecao('trocas')"><i class="fa fa-right-left"></i> Trocas</a>
+      </nav>
+      <div
+        class="p-4 border-top border-secondary border-opacity-10 d-flex align-items-center justify-content-between text-muted small">
+        <div><i class="fa fa-user-circle me-2"></i><span id="sidebarUsuario">Admin</span></div>
+        <a href="#" onclick="realizarLogoutAdmin()" class="text-danger decoration-none"><i
+            class="fa fa-sign-out-alt"></i></a>
       </div>
-    </div>
+    </aside>
 
-    <!-- ── PEDIDOS ────────────────────────────────────────── -->
-    <div id="sec-analise" class="d-none">
-      <div class="row g-3 mb-4">
-        <div class="col-lg-3">
-          <div class="card admin-card h-100">
-            <div class="card-header fw-bold">Período</div>
-            <div class="card-body">
-              <label class="form-label small fw-bold">Início</label>
-              <input type="date" id="analiseInicio" class="form-control mb-3">
-              <label class="form-label small fw-bold">Fim</label>
-              <input type="date" id="analiseFim" class="form-control mb-3">
-              <button class="btn btn-warning w-100 fw-bold" onclick="carregarAnaliseVendas()">
-                <i class="fas fa-chart-line me-1"></i>Gerar gráfico
-              </button>
+    <div class="flex-grow-1 d-flex flex-column overflow-hidden">
+      <header class="header-admin d-flex align-items-center justify-content-between">
+        <h4 id="tituloPagina" class="m-0 fw-bold">Visão Geral</h4>
+        <div id="containerAlertasGlobal"></div>
+      </header>
+
+      <main class="conteudo-admin overflow-y-auto">
+
+        <section id="secao-dashboard" class="secao-painel active">
+          <div class="row g-4 mb-5">
+            <div class="col-md-3">
+              <div class="card-metrica d-flex align-items-center justify-content-between">
+                <div>
+                  <span class="text-secondary small fw-bold">TOTAL DE PEDIDOS</span>
+                  <h3 id="m-total-pedidos" class="m-0 fw-bold mt-1">0</h3>
+                </div>
+                <div class="icon-box"><i class="fa fa-shopping-cart"></i></div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div class="col-lg-9">
-          <div class="card admin-card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <span class="fw-bold">Categorias</span>
-              <small class="text-muted">Marcas cadastradas</small>
+            <div class="col-md-3">
+              <div class="card-metrica d-flex align-items-center justify-content-between">
+                <div>
+                  <span class="text-secondary small fw-bold">AGUARDANDO PGTO</span>
+                  <h3 id="m-aguardando" class="m-0 fw-bold mt-1 text-warning">0</h3>
+                </div>
+                <div class="icon-box"><i class="fa fa-clock"></i></div>
+              </div>
             </div>
-            <div class="card-body">
-              <div id="analiseCategorias" class="category-filter">
-                <span class="text-muted small">Carregando categorias...</span>
+            <div class="col-md-3">
+              <div class="card-metrica d-flex align-items-center justify-content-between">
+                <div>
+                  <span class="text-secondary small fw-bold">EM TRANSPORTE</span>
+                  <h3 id="m-transporte" class="m-0 fw-bold mt-1 text-info">0</h3>
+                </div>
+                <div class="icon-box"><i class="fa fa-truck"></i></div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card-metrica d-flex align-items-center justify-content-between">
+                <div>
+                  <span class="text-secondary small fw-bold">FATURAMENTO TOTAL</span>
+                  <h3 id="m-faturamento" class="m-0 fw-bold mt-1 text-success">R$ 0,00</h3>
+                </div>
+                <div class="icon-box"><i class="fa fa-dollar-sign"></i></div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      <div class="card admin-card">
-        <div class="card-header">
-          <strong>Volume vendido por categoria</strong>
-          <div class="text-muted small">Quantidade de pneus vendidos por mês no período selecionado</div>
-        </div>
-        <div class="card-body">
-          <canvas id="graficoVendasCategorias" height="110"></canvas>
-        </div>
-      </div>
-    </div>
 
-    <div id="sec-pedidos" class="d-none">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="fw-bold mb-0">Gerenciar Pedidos</h3>
-        <div class="d-flex gap-2">
-          <select id="filtroPedidoStatus" class="form-select form-select-sm" onchange="carregarPedidos()" style="width:200px">
-            <option value="">Todos os status</option>
-            <option value="AGUARDANDO_PAGAMENTO">Aguardando Pagamento</option>
-            <option value="EM_PROCESSAMENTO">Em Processamento</option>
-            <option value="PAGAMENTO_CONFIRMADO">Pagamento Confirmado</option>
-            <option value="EM_TRANSPORTE">Em Transporte</option>
-            <option value="ENTREGUE">Entregue</option>
-            <option value="CANCELADO">Cancelado</option>
-          </select>
-          <button onclick="carregarPedidos()" class="btn btn-outline-secondary btn-sm">
-            <i class="fas fa-sync"></i>
-          </button>
-        </div>
-      </div>
-      <div class="card shadow-sm">
-        <div class="card-body p-0">
-          <table class="table table-hover mb-0 align-middle">
-            <thead class="table-dark">
-              <tr>
-                <th>#</th><th>Cliente</th><th>Status</th>
-                <th>Total</th><th>Data</th><th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaPedidos">
-              <tr><td colspan="6" class="text-center py-3">Carregando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+          <div class="row g-4 mb-5">
+            <div class="col-lg-8">
+              <div class="card p-4 border-1 shadow-sm" style="border-radius: 12px; background: #fff;">
+                <h5 class="fw-bold mb-4 text-dark">Curva de Faturamento por Categorias (13 Meses)</h5>
+                <canvas id="graficoVendasCategorias" height="300"></canvas>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="card p-4 border-1 shadow-sm h-100" style="border-radius: 12px; background: #fff;">
+                <h5 class="fw-bold mb-3 text-dark">Filtros de Análise</h5>
+                <div class="mb-3">
+                  <label class="form-label small text-muted">Data Inicial</label>
+                  <input type="date" id="analiseDataInicio" class="form-control">
+                </div>
+                <div class="mb-4">
+                  <label class="form-label small text-muted">Data Final</label>
+                  <input type="date" id="analiseDataFim" class="form-control">
+                </div>
+                <button class="btn btn-dark w-100 py-2 fw-bold" onclick="recarregarAnaliseCategorias()">
+                  <i class="fa fa-sync me-2"></i>Atualizar Gráfico
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
 
-    <!-- ── TROCAS ─────────────────────────────────────────── -->
-    <div id="sec-trocas" class="d-none">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="fw-bold mb-0">Gerenciar Trocas</h3>
-        <select id="filtroTrocaStatus" class="form-select form-select-sm" onchange="carregarTrocas()" style="width:180px">
-          <option value="PENDENTE">Pendentes</option>
-          <option value="APROVADO">Aprovadas</option>
-          <option value="NEGADO">Negadas</option>
-          <option value="PRODUTO_RECEBIDO">Produto Recebido</option>
-        </select>
-      </div>
-      <div class="card shadow-sm">
-        <div class="card-body p-0">
-          <table class="table table-hover mb-0 align-middle">
-            <thead class="table-dark">
-              <tr>
-                <th>#</th><th>Cliente</th><th>Pedido</th><th>Pneu</th>
-                <th>Qtd</th><th>Status</th><th>Solicitação</th><th>Cupom</th><th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaTrocas">
-              <tr><td colspan="8" class="text-center py-3">Carregando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+        <section id="secao-pedidos" class="secao-painel">
+          <div class="filtro-barra d-flex align-items-center justify-content-between gap-3 flex-wrap">
+            <div class="d-flex align-items-center gap-3">
+              <select id="filtroStatusPedido" class="form-select border-line" style="width: 220px;"
+                onchange="pedidoPaginaAtual = 1; carregarPedidos();">
+                <option value="">Todos os Status</option>
+                <option value="AGUARDANDO_PAGAMENTO">Aguardando Pagamento</option>
+                <option value="EM_PROCESSAMENTO">Em Processamento</option>
+                <option value="PAGAMENTO_CONFIRMADO">Pagamento Confirmado</option>
+                <option value="EM_TRANSPORTE">Em Transporte</option>
+                <option value="ENTREGUE">Entregue</option>
+                <option value="CANCELADO">Cancelado</option>
+              </select>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="small text-muted">Itens por pág:</span>
+              <select id="seletorLimitePedidos" class="form-select form-select-sm border-line" style="width: 75px;">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+          </div>
 
-    <!-- ── CLIENTES ───────────────────────────────────────── -->
-    <div id="sec-clientes" class="d-none">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="fw-bold mb-0">Clientes</h3>
-        <input type="text" id="buscaCliente" class="form-control w-25" placeholder="Buscar..."
-               oninput="filtrarClientes()">
-      </div>
-      <div id="alertaAdmin" class="alert d-none mb-2"></div>
-      <div class="card shadow-sm">
-        <div class="card-body p-0">
-          <table class="table table-hover mb-0 align-middle">
-            <thead class="table-dark">
-              <tr><th>#</th><th>Nome</th><th>CPF</th><th>E-mail</th><th>Status</th><th>Ações</th></tr>
-            </thead>
-            <tbody id="tabelaClientes">
-              <tr><td colspan="6" class="text-center py-3">Carregando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+          <div class="painel-tabela">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle m-0 text-dark">
+                <thead class="table-light text-secondary border-bottom small fw-bold">
+                  <tr>
+                    <th class="px-4 py-3">PEDIDO</th>
+                    <th class="py-3">CLIENTE</th>
+                    <th class="py-3">DATA</th>
+                    <th class="py-3">TOTAL</th>
+                    <th class="py-3">STATUS</th>
+                    <th class="px-4 py-3 text-end">AÇÕES</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelaPedidosBody" class="border-0"></tbody>
+              </table>
+            </div>
+            <div class="d-flex align-items-center justify-content-between px-4 py-3 border-top border-line bg-light"
+              style="border-radius: 0 0 12px 12px;">
+              <span id="infoPaginacaoPedidos" class="small text-muted fw-medium">Mostrando 0-0 de 0 pedidos</span>
+              <div id="botoesPaginacaoPedidos" class="d-flex align-items-center"></div>
+            </div>
+          </div>
+        </section>
 
-  </div><!-- /conteúdo -->
-  </div><!-- /conteudo interno -->
-</div><!-- /painel -->
+        <section id="secao-clientes" class="secao-painel">
+          <div class="painel-tabela">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle m-0 text-dark">
+                <thead class="table-light text-secondary border-bottom small fw-bold">
+                  <tr>
+                    <th class="px-4 py-3">ID</th>
+                    <th class="py-3">NOME</th>
+                    <th class="py-3">E-MAIL</th>
+                    <th class="py-3">STATUS</th>
+                    <th class="px-4 py-3 text-end">AÇÕES</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelaClientesBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
-<!-- ── MODAL DETALHE PEDIDO ───────────────────────────────── -->
-<div class="modal fade" id="modalPedido" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalPedidoTitulo">Pedido</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" id="modalPedidoCorpo"></div>
-      <div class="modal-footer" id="modalPedidoFooter"></div>
-    </div>
-  </div>
-</div>
+        <section id="secao-trocas" class="secao-painel">
+          <div class="painel-tabela">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle m-0 text-dark">
+                <thead class="table-light text-secondary border-bottom small fw-bold">
+                  <tr>
+                    <th class="px-4 py-3">TROCA</th>
+                    <th class="py-3">PEDIDO</th>
+                    <th class="py-3">CLIENTE</th>
+                    <th class="py-3">MOTIVO</th>
+                    <th class="py-3">STATUS</th>
+                    <th class="px-4 py-3 text-end">AÇÕES</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelaTrocasBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
-<!-- ── MODAL CONFIRMAR AÇÃO ───────────────────────────────── -->
-<div class="modal fade" id="modalAcao" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalAcaoTitulo">Confirmar</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p id="modalAcaoMsg"></p>
-        <div class="mb-2">
-          <label class="form-label small">Observação (opcional)</label>
-          <input type="text" id="modalAcaoObs" class="form-control" placeholder="Justificativa...">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-primary" id="modalAcaoBtn" data-cy="btn-confirmar-acao">Confirmar</button>
-      </div>
+      </main>
     </div>
   </div>
-</div>
 
-<!-- ── MODAL EDITAR CLIENTE ───────────────────────────────── -->
-<div class="modal fade" id="modalEditarCliente" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Editar Cliente</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="editId">
-        <div class="mb-2"><input type="text"  id="editNomeAdmin"      class="form-control mb-2" placeholder="Nome"></div>
-        <div class="mb-2"><input type="text"  id="editSobrenomeAdmin" class="form-control mb-2" placeholder="Sobrenome"></div>
-        <div class="mb-2"><input type="email" id="editEmailAdmin"     class="form-control"      placeholder="E-mail"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-primary" onclick="salvarEdicaoCliente()">Salvar</button>
+  <div class="modal fade" id="modalDetalhesPedido" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+        <div class="modal-header border-bottom px-4 py-3 bg-light" style="border-radius: 16px 16px 0 0;">
+          <h5 class="modal-title fw-bold" id="detalhePedidoTitulo">Detalhes do Pedido</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4 text-dark">
+          <div class="row g-4 mb-4">
+            <div class="col-md-6">
+              <h6 class="text-secondary small fw-bold mb-2">INFORMAÇÕES DO CLIENTE</h6>
+              <p class="m-0 fw-medium" id="detalhePedidoCliente">Nome do Cliente</p>
+              <p class="m-0 text-muted small" id="detalhePedidoEmail">email@cliente.com</p>
+            </div>
+            <div class="col-md-6">
+              <h6 class="text-secondary small fw-bold mb-2">LOGÍSTICA E FRETE</h6>
+              <p class="m-0 fw-medium" id="detalhePedidoData">Data: --/--/----</p>
+              <p class="m-0 text-success small fw-bold" id="detalhePedidoFrete">Frete: R$ 0,00</p>
+            </div>
+          </div>
+
+          <h6 class="text-secondary small fw-bold mb-3">ITENS COMPRADOS</h6>
+          <div class="table-responsive mb-4 border rounded">
+            <table class="table table-hover align-middle m-0">
+              <thead class="table-light small text-secondary">
+                <tr>
+                  <th>Produto</th>
+                  <th class="text-center">Qtd</th>
+                  <th class="text-end">Preço Unit.</th>
+                  <th class="text-end">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody id="detalhePedidoItensBody"></tbody>
+            </table>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+            <div>
+              <span class="small text-secondary fw-bold">STATUS ATUAL:</span>
+              <span class="badge ms-2" id="detalhePedidoStatusBadge">STATUS</span>
+            </div>
+            <div class="text-end">
+              <span class="small text-secondary d-block">VALOR TOTAL</span>
+              <h4 class="m-0 fw-bold text-dark" id="detalhePedidoTotal">R$ 0,00</h4>
+            </div>
+          </div>
+
+          <div id="blocoAcoesPedido" class="mt-4 pt-3 border-top d-flex gap-2 justify-content-end"></div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-const API = '';
-let todosClientes = [];
-let adminLogado = null;
-let secaoAtual = 'dashboard';
-let graficoVendasCategorias = null;
+  <div class="modal fade" id="modalEditarCliente" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+        <div class="modal-header border-bottom px-4 bg-light" style="border-radius: 16px 16px 0 0;">
+          <h5 class="modal-title fw-bold">Editar Cliente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4 text-dark">
+          <input type="hidden" id="editClienteId">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-muted">Nome</label>
+            <input type="text" id="editNomeAdmin" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-muted">Sobrenome</label>
+            <input type="text" id="editSobrenomeAdmin" class="form-control">
+          </div>
+          <div class="mb-4">
+            <label class="form-label small fw-bold text-muted">E-mail</label>
+            <input type="email" id="editEmailAdmin" class="form-control">
+          </div>
+          <button class="btn btn-dark w-100 py-2 fw-bold" onclick="salvarEdicaoCliente()">Salvar Alterações</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-// ── Helpers ───────────────────────────────────────────────
-function fmt(v) {
-  return parseFloat(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-function fmtData(d) {
-  return d ? new Date(d).toLocaleString('pt-BR') : '—';
-}
-function mostrarAlerta(msg, tipo = 'danger') {
-  const el = document.getElementById('alerta');
-  el.className = `alert alert-${tipo}`;
-  el.textContent = msg;
-  el.classList.remove('d-none');
-  setTimeout(() => el.classList.add('d-none'), 5000);
-}
-const STATUS_LABEL = {
-  'AGUARDANDO_PAGAMENTO': 'Aguard. Pagamento',
-  'EM_PROCESSAMENTO':     'Em Processamento',
-  'PAGAMENTO_CONFIRMADO': 'Pagamento Confirmado',
-  'EM_TRANSPORTE':        'Em Transporte',
-  'ENTREGUE':             'Entregue',
-  'CANCELADO':            'Cancelado',
-  'PENDENTE':             'Pendente',
-  'APROVADO':             'Aprovado',
-  'NEGADO':               'Negado',
-  'PRODUTO_RECEBIDO':     'Produto Recebido'
-};
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const API = '';
+    let adminLogado = null;
+    let token = '';
 
-function badgeStatus(s) {
-  const label = STATUS_LABEL[s] || (s || '').replace(/_/g, ' ');
-  return `<span class="status-badge ${s}">${label}</span>`;
-}
+    // Estado global da paginação de pedidos
+    let pedidoPaginaAtual = 1;
+    let pedidoLimite = 10;
+    let graficoVendasInstancia = null;
 
-// ── Login / Logout ────────────────────────────────────────
-async function fazerLoginAdmin() {
-  const usuario = document.getElementById('loginUsuario').value.trim();
-  const senha   = document.getElementById('loginSenha').value;
-  const alerta  = document.getElementById('alertaLogin');
-
-  if (!usuario || !senha) {
-    alerta.className = 'alert alert-danger';
-    alerta.textContent = 'Preencha usuário e senha.';
-    alerta.classList.remove('d-none');
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API}/api/admin/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usuario, senha })
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      alerta.className = 'alert alert-danger';
-      alerta.textContent = data.erro || 'Credenciais inválidas.';
-      alerta.classList.remove('d-none');
-      return;
-    }
-    adminLogado = data.admin;
-    document.getElementById('telaLogin').style.display = 'none';
-    document.getElementById('painelPrincipal').style.display = 'flex';
-    document.getElementById('sidebarUsuario').textContent = adminLogado.usuario;
-    iniciarPainel();
-  } catch (e) {
-    alerta.className = 'alert alert-danger';
-    alerta.textContent = 'Erro de conexão.';
-    alerta.classList.remove('d-none');
-  }
-}
-
-async function fazerLogoutAdmin() {
-  await fetch(`${API}/api/admin/logout`, { method: 'POST' });
-  location.reload();
-}
-
-// ── Navegação ─────────────────────────────────────────────
-function mostrarSecao(secao) {
-  const meta = {
-    dashboard: ['Dashboard', 'Visão geral dos pedidos, trocas e operação.'],
-    analise: ['Análise de vendas', 'Volume vendido por categoria em gráfico de linhas.'],
-    pedidos: ['Gerenciar pedidos', 'Acompanhe status, pagamentos e entregas.'],
-    trocas: ['Gerenciar trocas', 'Aprove, negue e registre recebimentos.'],
-    clientes: ['Clientes', 'Consulte e mantenha a base de clientes.']
-  };
-  secaoAtual = secao;
-  ['dashboard','analise','pedidos','trocas','clientes'].forEach(s => {
-    document.getElementById(`sec-${s}`).classList.add('d-none');
-    document.getElementById(`menu-${s}`).classList.remove('ativo');
-  });
-  document.getElementById(`sec-${secao}`).classList.remove('d-none');
-  document.getElementById(`menu-${secao}`).classList.add('ativo');
-  document.getElementById('tituloSecao').textContent = meta[secao][0];
-  document.getElementById('subtituloSecao').textContent = meta[secao][1];
-
-  if (secao === 'pedidos')   carregarPedidos();
-  if (secao === 'trocas')    carregarTrocas();
-  if (secao === 'clientes')  carregarClientes();
-  if (secao === 'dashboard') carregarDashboard();
-  if (secao === 'analise')   carregarAnaliseVendas();
-}
-
-function carregarSecaoAtual() {
-  mostrarSecao(secaoAtual);
-}
-
-async function lerJsonSeguro(res) {
-  const texto = await res.text();
-  try {
-    return JSON.parse(texto);
-  } catch (e) {
-    throw new Error('A rota de análise ainda não está respondendo em JSON. Reinicie o servidor local ou faça redeploy no Render.');
-  }
-}
-
-// ── Dashboard ─────────────────────────────────────────────
-async function carregarDashboard() {
-  try {
-    const [resPedidos, resTrocas] = await Promise.all([
-      fetch(`${API}/api/admin/pedidos`),
-      fetch(`${API}/api/admin/trocas?status=PENDENTE`)
-    ]);
-    const pedidos = await resPedidos.json();
-    const trocas  = await resTrocas.json();
-
-    document.getElementById('dash-total').textContent = pedidos.length;
-    document.getElementById('dash-aguardando').textContent =
-      pedidos.filter(p => p.status === 'AGUARDANDO_PAGAMENTO').length;
-    document.getElementById('dash-transporte').textContent =
-      pedidos.filter(p => p.status === 'EM_TRANSPORTE').length;
-    document.getElementById('dash-trocas').textContent = trocas.length;
-
-    // Badge sidebar
-    if (trocas.length > 0) {
-      document.getElementById('badgeTrocas').textContent = trocas.length;
-      document.getElementById('badgeTrocas').style.display = 'inline';
+    // Utilitário de Alertas na tela
+    function mostrarAlerta(msg, tipo = 'success') {
+      const container = document.getElementById('containerAlertasGlobal');
+      container.innerHTML = `<div class="alert alert-${tipo} py-2 px-3 m-0 shadow-sm small border-0 animate__animated animate__fadeIn" style="border-radius:8px;">${msg}</div>`;
+      setTimeout(() => container.innerHTML = '', 4000);
     }
 
-    const recentes = pedidos.slice(0, 8);
-    document.getElementById('dash-pedidos-recentes').innerHTML =
-      recentes.length ? `
-      <table class="table table-hover mb-0 align-middle">
-        <thead class="table-light">
-          <tr><th>#</th><th>Cliente</th><th>Status</th><th>Total</th><th>Data</th><th></th></tr>
-        </thead>
-        <tbody>
-          ${recentes.map(p => `
-          <tr>
-            <td><strong>#${p.id}</strong></td>
-            <td>${p.cliente_nome}</td>
-            <td>${badgeStatus(p.status)}</td>
-            <td>${fmt(p.total)}</td>
-            <td>${fmtData(p.criado_em)}</td>
-            <td><button onclick="abrirPedido(${p.id})" class="btn btn-sm btn-outline-primary">
-              <i class="fas fa-eye"></i></button></td>
-          </tr>`).join('')}
-        </tbody>
-      </table>` : '<p class="text-muted p-3">Nenhum pedido encontrado.</p>';
+    // Navegação entre abas
+    function mostrarSecao(secao) {
+      document.querySelectorAll('.secao-painel').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-admin .nav-link').forEach(l => l.classList.remove('active'));
 
-  } catch (e) {
-    document.getElementById('dash-pedidos-recentes').innerHTML =
-      '<p class="text-danger p-3">Erro ao carregar dashboard.</p>';
-  }
-}
+      const secaoAlvo = document.getElementById(`secao-${secao}`);
+      if (secaoAlvo) secaoAlvo.classList.add('active');
 
-// ── Pedidos ───────────────────────────────────────────────
-function iniciarPeriodoAnalise() {
-  const inicioEl = document.getElementById('analiseInicio');
-  const fimEl = document.getElementById('analiseFim');
-  if (inicioEl.value && fimEl.value) return;
+      // Ativa link correspondente
+      const link = Array.from(document.querySelectorAll('.nav-admin .nav-link')).find(l => l.textContent.toLowerCase().includes(secao));
+      if (link) link.classList.add('active');
 
-  const fim = new Date();
-  const inicio = new Date(fim.getFullYear(), fim.getMonth() - 12, 1);
-  inicioEl.value = inicio.toISOString().slice(0, 10);
-  fimEl.value = fim.toISOString().slice(0, 10);
-}
+      // Títulos dinâmicos e gatilho de carga
+      const titulos = { dashboard: 'Visão Geral', pedidos: 'Gerenciamento de Pedidos', clientes: 'Lista de Clientes', trocas: 'Controle de Trocas e Devoluções' };
+      document.getElementById('tituloPagina').textContent = titulos[secao] || 'Painel Administrativo';
 
-function mesesEntre(inicio, fim) {
-  const meses = [];
-  const cursor = new Date(`${inicio.slice(0, 7)}-01T00:00:00`);
-  const limite = new Date(`${fim.slice(0, 7)}-01T00:00:00`);
-  while (cursor <= limite) {
-    meses.push(cursor.toISOString().slice(0, 7));
-    cursor.setMonth(cursor.getMonth() + 1);
-  }
-  return meses;
-}
+      if (secao === 'dashboard') { carregarResumoDashboard(); recarregarAnaliseCategorias(); }
+      if (secao === 'pedidos') { carregarPedidos(); }
+      if (secao === 'clientes') { carregarClientes(); }
+      if (secao === 'trocas') { carregarTrocas(); }
+    }
 
-function labelMes(mes) {
-  const [ano, numeroMes] = mes.split('-').map(Number);
-  return new Date(ano, numeroMes - 1, 1).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
-}
+    // Login do Administrador
+    async function realizarLoginAdmin(event) {
+      event.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const senha = document.getElementById('loginSenha').value;
 
-function categoriasSelecionadasAnalise() {
-  return [...document.querySelectorAll('.analise-categoria:checked')].map(el => el.value);
-}
+      try {
+        const res = await fetch(`${API}/api/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, senha })
+        });
+        const data = await res.json();
 
-function renderizarCategoriasAnalise(categorias, selecionadas) {
-  const box = document.getElementById('analiseCategorias');
-  if (!categorias.length) {
-    box.innerHTML = '<span class="text-muted small">Nenhuma categoria cadastrada.</span>';
-    return;
-  }
+        if (!res.ok) throw new Error(data.erro || 'Falha na autenticação');
 
-  const escolha = selecionadas.length ? selecionadas : categorias.slice(0, 4);
-  box.innerHTML = categorias.map(categoria => `
-    <label class="form-check form-check-inline mb-2 me-3">
-      <input class="form-check-input analise-categoria" type="checkbox" value="${categoria}"
-             ${escolha.includes(categoria) ? 'checked' : ''}
-             onchange="carregarAnaliseVendas(true)">
-      <span class="form-check-label">${categoria}</span>
-    </label>
-  `).join('');
-}
+        adminLogado = data.admin;
+        document.getElementById('telaLogin').style.display = 'none';
+        document.getElementById('painelPrincipal').style.removeAttribute('style'); // exibe
+        document.getElementById('sidebarUsuario').textContent = adminLogado.usuario;
 
-async function carregarAnaliseVendas(manterSelecao = false) {
-  iniciarPeriodoAnalise();
-  const inicio = document.getElementById('analiseInicio').value;
-  const fim = document.getElementById('analiseFim').value;
-  const selecionadas = manterSelecao ? categoriasSelecionadasAnalise() : [];
-  const params = new URLSearchParams({ inicio, fim });
-  if (selecionadas.length) params.set('categorias', selecionadas.join(','));
-
-  try {
-    const res = await fetch(`${API}/api/admin/analise/vendas-categorias?${params}`);
-    const data = await lerJsonSeguro(res);
-    if (!res.ok) throw new Error(data.erro || 'Erro ao carregar análise.');
-
-    renderizarCategoriasAnalise(data.categoriasDisponiveis || [], selecionadas);
-    const categorias = categoriasSelecionadasAnalise();
-    const meses = mesesEntre(data.inicio, data.fim);
-    const cores = ['#1a1a2e', '#e8b84b', '#0d6efd', '#198754', '#dc3545', '#6f42c1', '#0dcaf0'];
-
-    const datasets = categorias.map((categoria, idx) => ({
-      label: categoria,
-      data: meses.map(mes => {
-        const item = data.dados.find(d => d.mes === mes && d.categoria === categoria);
-        return item ? Number(item.quantidade) : 0;
-      }),
-      borderColor: cores[idx % cores.length],
-      backgroundColor: `${cores[idx % cores.length]}22`,
-      tension: .35,
-      pointRadius: 3,
-      pointHoverRadius: 5
-    }));
-
-    const ctx = document.getElementById('graficoVendasCategorias');
-    if (graficoVendasCategorias) graficoVendasCategorias.destroy();
-    graficoVendasCategorias = new Chart(ctx, {
-      type: 'line',
-      data: { labels: meses.map(labelMes), datasets },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: 'bottom' } },
-        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        mostrarSecao('dashboard');
+      } catch (err) {
+        alert(err.message);
       }
-    });
-  } catch (e) {
-    mostrarAlerta(e.message || 'Erro ao carregar análise de vendas.');
-  }
-}
-
-async function carregarPedidos() {
-  const status = document.getElementById('filtroPedidoStatus')?.value || '';
-  const url = `${API}/api/admin/pedidos${status ? `?status=${status}` : ''}`;
-  try {
-    const res = await fetch(url);
-    const pedidos = await res.json();
-    const tbody = document.getElementById('tabelaPedidos');
-
-    if (!pedidos.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-muted">Nenhum pedido encontrado.</td></tr>';
-      return;
     }
 
-    tbody.innerHTML = pedidos.map(p => `
-      <tr data-cy="pedido-row-${p.id}">
-        <td><strong>#${p.id}</strong></td>
-        <td>
-          <div>${p.cliente_nome}</div>
-          <small class="text-muted">${p.email}</small>
-        </td>
-        <td>${badgeStatus(p.status)}</td>
-        <td>${fmt(p.total)}</td>
-        <td><small>${fmtData(p.criado_em)}</small></td>
-        <td>
-          <div class="d-flex gap-1">
-            <button onclick="abrirPedido(${p.id})" class="btn btn-sm btn-outline-primary"
-                    data-cy="btn-ver-pedido-${p.id}" title="Ver detalhes">
-              <i class="fas fa-eye"></i>
-            </button>
-            ${p.status === 'EM_PROCESSAMENTO' ? `
-            <button onclick="confirmarPagamento(${p.id})" class="btn btn-sm btn-success"
-                    data-cy="btn-confirmar-pgto-${p.id}" title="Confirmar pagamento">
-              <i class="fas fa-check"></i> Pgto
-            </button>` : ''}
-            ${p.status === 'PAGAMENTO_CONFIRMADO' ? `
-            <button onclick="avancarStatus(${p.id},'EM_TRANSPORTE')" class="btn btn-sm btn-info text-white"
-                    data-cy="btn-em-transporte-${p.id}" title="Colocar em transporte">
-              <i class="fas fa-truck"></i>
-            </button>` : ''}
-            ${p.status === 'EM_TRANSPORTE' ? `
-            <button onclick="avancarStatus(${p.id},'ENTREGUE')" class="btn btn-sm btn-success"
-                    data-cy="btn-entregue-${p.id}" title="Confirmar entrega">
-              <i class="fas fa-box-open"></i> Entregue
-            </button>` : ''}
-            ${['AGUARDANDO_PAGAMENTO','EM_PROCESSAMENTO'].includes(p.status) ? `
-            <button onclick="avancarStatus(${p.id},'CANCELADO')" class="btn btn-sm btn-outline-danger"
-                    data-cy="btn-cancelar-admin-${p.id}" title="Cancelar pedido">
-              <i class="fas fa-ban"></i>
-            </button>` : ''}
-          </div>
-        </td>
-      </tr>
-    `).join('');
-  } catch (e) {
-    document.getElementById('tabelaPedidos').innerHTML =
-      '<tr><td colspan="6" class="text-danger p-3">Erro ao carregar pedidos.</td></tr>';
-  }
-}
-
-async function abrirPedido(id) {
-  const res = await fetch(`${API}/api/admin/pedidos/${id}`);
-  const p = await res.json();
-
-  document.getElementById('modalPedidoTitulo').textContent = `Pedido #${p.id} — ${p.cliente_nome}`;
-
-  const itensHtml = (p.itens || []).map(i => `
-    <tr>
-      <td>${i.marca} ${i.modelo} ${i.largura}/${i.perfil} R${i.aro}</td>
-      <td class="text-center">${i.quantidade}</td>
-      <td>${fmt(i.preco_unitario)}</td>
-      <td><strong>${fmt(i.preco_unitario * i.quantidade)}</strong></td>
-    </tr>`).join('');
-
-  const pgtoHtml = (p.pagamentos || []).map(pg => `
-    <div class="d-flex justify-content-between">
-      <span>${pg.bandeira} **** ${pg.numero_final}</span>
-      <strong>${fmt(pg.valor)}</strong>
-    </div>`).join('') || '<span class="text-muted">Sem pagamentos (cupom integral)</span>';
-
-  document.getElementById('modalPedidoCorpo').innerHTML = `
-    <div class="row g-3">
-      <div class="col-md-6">
-        <strong>Status:</strong> ${badgeStatus(p.status)}<br>
-        <strong>Data:</strong> ${fmtData(p.criado_em)}<br>
-        <strong>Endereço:</strong> ${p.logradouro || ''}, ${p.numero || ''} — ${p.cidade || ''}/${p.estado || ''}
-      </div>
-      <div class="col-md-6">
-        <strong>Subtotal:</strong> —<br>
-        <strong>Frete:</strong> ${fmt(p.frete)}<br>
-        <strong>Total:</strong> <span class="text-primary fw-bold">${fmt(p.total)}</span>
-      </div>
-    </div>
-    <hr>
-    <h6>Itens</h6>
-    <table class="table table-sm">
-      <thead><tr><th>Pneu</th><th>Qtd</th><th>Unit.</th><th>Total</th></tr></thead>
-      <tbody>${itensHtml}</tbody>
-    </table>
-    <hr>
-    <h6>Pagamentos</h6>
-    ${pgtoHtml}
-  `;
-
-  // Botões de ação no footer
-  let botoesHtml = '';
-  if (p.status === 'EM_PROCESSAMENTO')
-    botoesHtml += `<button onclick="confirmarPagamento(${p.id},true)" class="btn btn-success" data-cy="btn-modal-confirmar-pgto">
-      <i class="fas fa-check me-1"></i>Confirmar Pagamento</button>`;
-  if (p.status === 'PAGAMENTO_CONFIRMADO')
-    botoesHtml += `<button onclick="avancarStatus(${p.id},'EM_TRANSPORTE',true)" class="btn btn-info text-white" data-cy="btn-modal-em-transporte">
-      <i class="fas fa-truck me-1"></i>Em Transporte</button>`;
-  if (p.status === 'EM_TRANSPORTE')
-    botoesHtml += `<button onclick="avancarStatus(${p.id},'ENTREGUE',true)" class="btn btn-success" data-cy="btn-modal-entregue">
-      <i class="fas fa-box-open me-1"></i>Confirmar Entrega</button>`;
-
-  document.getElementById('modalPedidoFooter').innerHTML =
-    botoesHtml + '<button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>';
-
-  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPedido')).show();
-}
-
-async function confirmarPagamento(id, fecharModal = false) {
-  if (!confirm(`Confirmar pagamento do Pedido #${id}?`)) return;
-  try {
-    const res = await fetch(`${API}/api/admin/pedidos/${id}/confirmar-pagamento`, { method: 'PATCH' });
-    const data = await res.json();
-    if (!res.ok) return mostrarAlerta(data.erro);
-    mostrarAlerta('Pagamento confirmado!', 'success');
-    if (fecharModal) bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPedido')).hide();
-    carregarPedidos();
-    carregarDashboard();
-  } catch (e) { mostrarAlerta('Erro ao confirmar pagamento.'); }
-}
-
-async function avancarStatus(id, novoStatus, fecharModal = false) {
-  const labels = {
-    'EM_TRANSPORTE': 'colocar em transporte',
-    'ENTREGUE': 'confirmar entrega',
-    'CANCELADO': 'cancelar'
-  };
-  if (!confirm(`Deseja ${labels[novoStatus] || novoStatus} o Pedido #${id}?`)) return;
-  try {
-    const res = await fetch(`${API}/api/admin/pedidos/${id}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: novoStatus })
-    });
-    const data = await res.json();
-    if (!res.ok) return mostrarAlerta(data.erro);
-    mostrarAlerta(`Status atualizado para ${novoStatus}.`, 'success');
-    if (fecharModal) bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPedido')).hide();
-    carregarPedidos();
-    carregarDashboard();
-  } catch (e) { mostrarAlerta('Erro ao atualizar status.'); }
-}
-
-// ── Trocas ────────────────────────────────────────────────
-async function carregarTrocas() {
-  const status = document.getElementById('filtroTrocaStatus')?.value || 'PENDENTE';
-  try {
-    const res = await fetch(`${API}/api/admin/trocas?status=${status}`);
-    const trocas = await res.json();
-    const tbody = document.getElementById('tabelaTrocas');
-
-    if (!trocas.length) {
-      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-3 text-muted">Nenhuma troca encontrada.</td></tr>';
-      return;
+    async function realizarLogoutAdmin() {
+      await fetch(`${API}/api/admin/logout`, { method: 'POST' });
+      location.reload();
     }
 
-    tbody.innerHTML = trocas.map(t => `
-      <tr data-cy="troca-row-${t.id}">
-        <td><strong>#${t.id}</strong></td>
-        <td>${t.cliente_nome}</td>
-        <td><a href="#" onclick="abrirPedido(${t.pedido_id})">#${t.pedido_id}</a></td>
-        <td><small>${t.marca} ${t.modelo} ${t.largura}/${t.perfil} R${t.aro}</small></td>
-        <td class="text-center">${t.quantidade_trocada}</td>
-        <td>${badgeStatus(t.status)}</td>
-        <td>
-            ${t.acao_cliente === 'Estorno'
-              ? '<span class="badge bg-secondary">Estorno</span>'
-              : '<span class="badge bg-warning text-dark">Vale-Troca</span>'
+    // ── DASHBOARD: RESUMO DAS MÉTRICAS ──────────────────────────
+    async function carregarResumoDashboard() {
+      try {
+        const res = await fetch(`${API}/api/admin/dashboard/resumo`);
+        if (!res.ok) return;
+        const dados = await res.json();
+
+        document.getElementById('m-total-pedidos').textContent = dados.total || 0;
+        document.getElementById('m-aguardando').textContent = dados.aguardando_pagamento || 0;
+        document.getElementById('m-transporte').textContent = dados.em_transporte || 0;
+        document.getElementById('m-faturamento').textContent = parseFloat(dados.faturamento_total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // ── DASHBOARD: GRÁFICO DE CATEGORIAS (13 MESES) ─────────────
+    async function recarregarAnaliseCategorias() {
+      const inicio = document.getElementById('analiseDataInicio').value;
+      const fim = document.getElementById('analiseDataFim').value;
+
+      let url = `${API}/api/admin/analise/vendas-categorias`;
+      const query = [];
+      if (inicio) query.push(`inicio=${inicio}`);
+      if (fim) query.push(`fim=${fim}`);
+      if (query.length) url += `?${query.join('&')}`;
+
+      try {
+        const res = await fetch(url);
+        const dados = await res.json();
+
+        // Inicializa inputs de data se retornados vazios
+        if (!inicio && dados.inicio) document.getElementById('analiseDataInicio').value = dados.inicio;
+        if (!fim && dados.fim) document.getElementById('analiseDataFim').value = dados.fim;
+
+        const mesesSet = new Set();
+        const categoriasSet = new Set();
+        const mapaDados = {};
+
+        dados.dados.forEach(item => {
+          mesesSet.add(item.mes);
+          categoriasSet.add(item.categoria);
+          if (!mapaDados[item.categoria]) mapaDados[item.categoria] = {};
+          mapaDados[item.categoria][item.mes] = parseFloat(item.valor);
+        });
+
+        const listaMeses = Array.from(mesesSet).sort();
+        const listaCategorias = Array.from(categoriasSet);
+
+        // Paleta de cores dinâmica para as linhas do gráfico
+        const cores = ['#e8b84b', '#1e293b', '#3b82f6', '#10b981', '#f43f5e', '#8b5cf6'];
+
+        const datasets = listaCategorias.map((cat, index) => {
+          return {
+            label: cat,
+            data: listaMeses.map(mes => mapaDados[cat][mes] || 0),
+            borderColor: cores[index % cores.length],
+            backgroundColor: 'transparent',
+            borderWidth: 3,
+            tension: 0.3,
+            pointRadius: 4
+          };
+        });
+
+        if (graficoVendasInstancia) graficoVendasInstancia.destroy();
+
+        const ctx = document.getElementById('graficoVendasCategorias').getContext('2d');
+        graficoVendasInstancia = new Chart(ctx, {
+          type: 'line',
+          data: { labels: listaMeses, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'top', labels: { font: { weight: '600' } } } },
+            scales: {
+              y: { ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') } }
             }
-          </td>
-          <td><small class="text-success">${t.cupom_codigo || (t.status === 'PENDENTE' ? '<em class="text-muted">Aguard. aprovação</em>' : '—')}</small></td>
-        <td>
-          <div class="d-flex gap-1">
-            ${t.status === 'PENDENTE' ? `
-            <button onclick="acaoTroca(${t.id},'aceitar')" class="btn btn-sm btn-success"
-                    data-cy="btn-aceitar-troca-${t.id}" title="Aceitar troca">
-              <i class="fas fa-check"></i>
-            </button>
-            <button onclick="acaoTroca(${t.id},'negar')" class="btn btn-sm btn-danger"
-                    data-cy="btn-negar-troca-${t.id}" title="Negar troca">
-              <i class="fas fa-times"></i>
-            </button>` : ''}
-            ${t.status === 'APROVADO' ? `
-            <button onclick="acaoTroca(${t.id},'recebimento')" class="btn btn-sm btn-info text-white"
-                    data-cy="btn-recebimento-troca-${t.id}" title="Confirmar recebimento">
-              <i class="fas fa-box"></i> Recebido
-            </button>` : ''}
-          </div>
-        </td>
-      </tr>
-    `).join('');
-  } catch (e) {
-    document.getElementById('tabelaTrocas').innerHTML =
-      '<tr><td colspan="8" class="text-danger p-3">Erro ao carregar trocas.</td></tr>';
-  }
-}
-
-function acaoTroca(id, acao) {
-  const textos = {
-    aceitar:      { titulo: 'Aceitar Troca', msg: `Aceitar a troca #${id}? O estoque será reposto. Se for Vale-Troca, o cupom será gerado agora.`, btn: 'success' },
-    negar:        { titulo: 'Negar Troca',   msg: `Negar a troca #${id}?`, btn: 'danger' },
-    recebimento:  { titulo: 'Confirmar Recebimento', msg: `Confirmar recebimento do produto da troca #${id}?`, btn: 'info' }
-  };
-  const t = textos[acao];
-  document.getElementById('modalAcaoTitulo').textContent = t.titulo;
-  document.getElementById('modalAcaoMsg').textContent = t.msg;
-  document.getElementById('modalAcaoObs').value = '';
-  document.getElementById('modalAcaoBtn').className = `btn btn-${t.btn}`;
-  document.getElementById('modalAcaoBtn').onclick = () => executarAcaoTroca(id, acao);
-  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAcao')).show();
-}
-
-async function executarAcaoTroca(id, acao) {
-  const obs = document.getElementById('modalAcaoObs').value;
-  try {
-    const res = await fetch(`${API}/api/admin/trocas/${id}/${acao}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ obs })
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      mostrarAlerta(data.erro);
-      return;
+          }
+        });
+      } catch (err) {
+        console.error(err);
+      }
     }
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAcao')).hide();
-    let msg = data.mensagem;
-    if (data.cupom_codigo) msg += ` Cupom: <strong>${data.cupom_codigo}</strong>`;
-    mostrarAlerta(msg, 'success');
-    carregarTrocas();
-    carregarDashboard();
-  } catch (e) { mostrarAlerta('Erro ao processar ação.'); }
-}
 
-// ── Clientes ──────────────────────────────────────────────
-async function carregarClientes() {
-  const res = await fetch(`${API}/api/clientes`);
-  todosClientes = await res.json();
-  renderizarClientes(todosClientes);
-}
+    // ── SEÇÃO: PEDIDOS (COM PAGINAÇÃO REAL CONECTADA) ────────────
+    async function carregarPedidos() {
+      const status = document.getElementById('filtroStatusPedido').value;
 
-function renderizarClientes(clientes) {
-  const tbody = document.getElementById('tabelaClientes');
-  if (!clientes.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum cliente.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = clientes.map(c => `
-    <tr class="${!c.ativo ? 'table-secondary text-muted' : ''}">
-      <td>${c.id}</td>
-      <td>${c.nome} ${c.sobrenome}</td>
-      <td><small>${c.cpf}</small></td>
-      <td><small>${c.email}</small></td>
-      <td><span class="badge ${c.ativo ? 'bg-success' : 'bg-secondary'}">${c.ativo ? 'Ativo' : 'Inativo'}</span></td>
-      <td>
-        <button class="btn btn-sm btn-outline-primary me-1"
-                onclick="abrirEdicaoCliente(${c.id},'${c.nome}','${c.sobrenome}','${c.email}')">
-          <i class="fas fa-edit"></i>
-        </button>
-        <button class="btn btn-sm ${c.ativo ? 'btn-outline-danger' : 'btn-outline-success'}"
-                onclick="${c.ativo ? `inativarCliente(${c.id})` : `ativarCliente(${c.id})`}">
-          <i class="fas fa-${c.ativo ? 'ban' : 'check'}"></i>
-        </button>
-      </td>
-    </tr>`).join('');
-}
+      let url = `${API}/api/admin/pedidos?page=${pedidoPaginaAtual}&limit=${pedidoLimite}`;
+      if (status) url += `&status=${status}`;
 
-function filtrarClientes() {
-  const q = document.getElementById('buscaCliente').value.toLowerCase();
-  renderizarClientes(todosClientes.filter(c =>
-    `${c.nome} ${c.sobrenome}`.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)
-  ));
-}
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
 
-function abrirEdicaoCliente(id, nome, sobrenome, email) {
-  document.getElementById('editId').value = id;
-  document.getElementById('editNomeAdmin').value = nome;
-  document.getElementById('editSobrenomeAdmin').value = sobrenome;
-  document.getElementById('editEmailAdmin').value = email;
-  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarCliente')).show();
-}
+        const lista = data.pedidos || [];
+        const totalPaginas = data.pages || 1;
 
-async function salvarEdicaoCliente() {
-  const id = document.getElementById('editId').value;
-  const res = await fetch(`${API}/api/clientes/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      nome:      document.getElementById('editNomeAdmin').value,
-      sobrenome: document.getElementById('editSobrenomeAdmin').value,
-      email:     document.getElementById('editEmailAdmin').value
-    })
-  });
-  if (res.ok) {
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarCliente')).hide();
-    mostrarAlerta('Cliente atualizado!', 'success');
-    carregarClientes();
-  }
-}
+        const tbody = document.getElementById('tabelaPedidosBody');
+        tbody.innerHTML = '';
 
-async function inativarCliente(id) {
-  if (!confirm('Inativar este cliente?')) return;
-  await fetch(`${API}/api/clientes/${id}/inativar`, { method: 'PATCH' });
-  mostrarAlerta('Cliente inativado.', 'warning');
-  carregarClientes();
-}
-async function ativarCliente(id) {
-  await fetch(`${API}/api/clientes/${id}/ativar`, { method: 'PATCH' });
-  mostrarAlerta('Cliente ativado!', 'success');
-  carregarClientes();
-}
+        if (lista.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Nenhum pedido encontrado.</td></tr>`;
+          document.getElementById('infoPaginacaoPedidos').textContent = 'Mostrando 0 de 0 pedidos';
+          document.getElementById('botoesPaginacaoPedidos').innerHTML = '';
+          return;
+        }
 
-// ── Init ──────────────────────────────────────────────────
-function iniciarPainel() {
-  mostrarSecao('dashboard');
-}
+        lista.forEach(p => {
+          const dataFormatada = new Date(p.criado_em).toLocaleDateString('pt-BR');
+          const totalFormatado = parseFloat(p.total).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-// Verifica sessão ativa ao carregar
-window.onload = async () => {
-  try {
-    const res = await fetch(`${API}/api/admin/perfil`);
-    if (res.ok) {
-      adminLogado = await res.json();
-      document.getElementById('telaLogin').style.display = 'none';
-      document.getElementById('painelPrincipal').style.display = 'flex';
-      document.getElementById('sidebarUsuario').textContent = adminLogado.usuario;
-      iniciarPainel();
+          tbody.innerHTML += `
+            <tr>
+              <td class="px-4 fw-bold">#${p.id}</td>
+              <td>${p.cliente_nome || 'Cliente não identificado'}</td>
+              <td>${dataFormatada}</td>
+              <td class="fw-bold">${totalFormatado}</td>
+              <td><span class="badge bg-${getBadgeStatus(p.status)}">${p.status}</span></td>
+              <td class="px-4 text-end">
+                <button class="btn btn-sm btn-outline-dark" onclick="verDetalhesPedido(${p.id})">
+                  <i class="fa fa-eye me-1"></i> Detalhes
+                </button>
+              </td>
+            </tr>`;
+        });
+
+        // Atualiza contador textual ("Mostrando X-Y de Z")
+        const inicioDoc = (pedidoPaginaAtual - 1) * pedidoLimite + 1;
+        const fimDoc = Math.min(pedidoPaginaAtual * pedidoLimite, data.total);
+        document.getElementById('infoPaginacaoPedidos').textContent = `Mostrando ${inicioDoc}-${fimDoc} de ${data.total} pedidos`;
+
+        // Renderiza os botões dinâmicos de Anterior / Próxima
+        renderizarControlesPaginacao(totalPaginas);
+
+      } catch (err) {
+        console.error('Erro ao listar pedidos:', err);
+      }
     }
-  } catch (e) { /* sessão expirada, fica no login */ }
-};
-</script>
+
+    function renderizarControlesPaginacao(totalPaginas) {
+      const container = document.getElementById('botoesPaginacaoPedidos');
+      container.innerHTML = '';
+
+      // Botão Anterior
+      const btnAnterior = document.createElement('button');
+      btnAnterior.className = `btn btn-sm btn-outline-secondary me-2 ${pedidoPaginaAtual === 1 ? 'disabled' : ''}`;
+      btnAnterior.innerHTML = '<i class="fa fa-chevron-left"></i>';
+      btnAnterior.onclick = () => {
+        if (pedidoPaginaAtual > 1) {
+          pedidoPaginaAtual--;
+          carregarPedidos();
+        }
+      };
+      container.appendChild(btnAnterior);
+
+      // Indicador Central de Páginas
+      const indicador = document.createElement('span');
+      indicador.className = 'mx-2 small fw-bold text-dark align-self-center';
+      indicador.textContent = `Página ${pedidoPaginaAtual} de ${totalPaginas}`;
+      container.appendChild(indicador);
+
+      // Botão Próximo
+      const btnProximo = document.createElement('button');
+      btnProximo.className = `btn btn-sm btn-outline-secondary ms-2 ${pedidoPaginaAtual === totalPaginas ? 'disabled' : ''}`;
+      btnProximo.innerHTML = '<i class="fa fa-chevron-right"></i>';
+      btnProximo.onclick = () => {
+        if (pedidoPaginaAtual < totalPaginas) {
+          pedidoPaginaAtual++;
+          carregarPedidos();
+        }
+      };
+      container.appendChild(btnProximo);
+    }
+
+    // Listener para o gatilho de mudança do limite por página
+    document.getElementById('seletorLimitePedidos').onchange = function () {
+      pedidoLimite = parseInt(this.value);
+      pedidoPaginaAtual = 1; // Sempre reseta a paginação para evitar index fora do range
+      carregarPedidos();
+    };
+
+    function getBadgeStatus(status) {
+      const cores = {
+        'AGUARDANDO_PAGAMENTO': 'warning text-dark',
+        'EM_PROCESSAMENTO': 'secondary',
+        'PAGAMENTO_CONFIRMADO': 'primary',
+        'EM_TRANSPORTE': 'info text-dark',
+        'ENTREGUE': 'success',
+        'CANCELADO': 'danger'
+      };
+      return cores[status] || 'dark';
+    }
+
+    // ── PEDIDOS: VER DETALHES E AJUSTAR STATUS ─────────────────
+    async function verDetalhesPedido(id) {
+      try {
+        const res = await fetch(`${API}/api/admin/pedidos/${id}`);
+        if (!res.ok) return;
+        const p = await res.json();
+
+        document.getElementById('detalhePedidoTitulo').textContent = `Pedido #${p.id}`;
+        document.getElementById('detalhePedidoCliente').textContent = `${p.cliente_nome || 'Sem Nome'}`;
+        document.getElementById('detalhePedidoEmail').textContent = p.cliente_email || '';
+        document.getElementById('detalhePedidoData').textContent = `Data: ${new Date(p.criado_em).toLocaleString('pt-BR')}`;
+
+        // Tratamento e exibição do Frete
+        const frete = parseFloat(p.valor_frete || 0);
+        document.getElementById('detalhePedidoFrete').textContent = frete > 0 ? `Frete: R$ ${frete.toFixed(2).replace('.', ',')}` : 'Frete Grátis 🚚';
+
+        const statusBadge = document.getElementById('detalhePedidoStatusBadge');
+        statusBadge.textContent = p.status;
+        statusBadge.className = `badge bg-${getBadgeStatus(p.status)} ms-2`;
+
+        document.getElementById('detalhePedidoTotal').textContent = parseFloat(p.total).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        const itemsBody = document.getElementById('detalhePedidoItensBody');
+        itemsBody.innerHTML = '';
+
+        p.itens.forEach(it => {
+          const sub = it.quantidade * it.preco_unitario;
+          itemsBody.innerHTML += `
+            <tr>
+              <td><span class="fw-bold">${it.marca}</span> ${it.modelo} <small class="text-muted">(${it.largura}/${it.perfil} R${it.aro})</small></td>
+              <td class="text-center">${it.quantidade}</td>
+              <td class="text-end">R$ ${parseFloat(it.preco_unitario).toFixed(2)}</td>
+              <td class="text-end fw-bold">R$ ${sub.toFixed(2)}</td>
+            </tr>`;
+        });
+
+        // Configuração dos botões de transição de Status do Fluxo Logístico
+        const blocoAcoes = document.getElementById('blocoAcoesPedido');
+        blocoAcoes.innerHTML = '';
+
+        if (p.status === 'AGUARDANDO_PAGAMENTO') {
+          blocoAcoes.innerHTML += `<button class="btn btn-sm btn-success fw-bold" onclick="atualizarStatusPedido(${p.id}, 'EM_PROCESSAMENTO')"><i class="fa fa-check me-1"></i> Aprovar Pagamento</button>`;
+          blocoAcoes.innerHTML += `<button class="btn btn-sm btn-link text-danger small" onclick="atualizarStatusPedido(${p.id}, 'CANCELADO')">Cancelar Pedido</button>`;
+        } else if (p.status === 'EM_PROCESSAMENTO') {
+          blocoAcoes.innerHTML += `<button class="btn btn-sm btn-primary fw-bold" onclick="atualizarStatusPedido(${p.id}, 'PAGAMENTO_CONFIRMADO')"><i class="fa fa-receipt me-1"></i> Confirmar Faturamento</button>`;
+          blocoAcoes.innerHTML += `<button class="btn btn-sm btn-link text-danger small" onclick="atualizarStatusPedido(${p.id}, 'CANCELADO')">Cancelar</button>`;
+        } else if (p.status === 'PAGAMENTO_CONFIRMADO') {
+          blocoAcoes.innerHTML += `<button class="btn btn-sm btn-info fw-bold text-dark" onclick="atualizarStatusPedido(${p.id}, 'EM_TRANSPORTE')"><i class="fa fa-shipping-fast me-1"></i> Despachar para Entrega</button>`;
+        } else if (p.status === 'EM_TRANSPORTE') {
+          blocoAcoes.innerHTML += `<button class="btn btn-sm btn-success fw-bold" onclick="atualizarStatusPedido(${p.id}, 'ENTREGUE')"><i class="fa fa-home me-1"></i> Confirmar Entrega Realizada</button>`;
+        }
+
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalhesPedido')).show();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function atualizarStatusPedido(id, novoStatus) {
+      if (!confirm(`Confirmar alteração de status para: ${novoStatus}?`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/pedidos/${id}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: novoStatus })
+        });
+        if (res.ok) {
+          bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalhesPedido')).hide();
+          mostrarAlerta('Status do pedido atualizado!', 'success');
+          carregarPedidos();
+          carregarResumoDashboard();
+        } else {
+          const data = await res.json();
+          alert(data.erro || 'Falha ao atualizar status');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // ── SEÇÃO: CLIENTES ─────────────────────────────────────────
+    async function carregarClientes() {
+      try {
+        const res = await fetch(`${API}/api/clientes`);
+        const lista = await res.json();
+        const tbody = document.getElementById('tabelaClientesBody');
+        tbody.innerHTML = '';
+
+        lista.forEach(c => {
+          const statusBadge = c.ativo ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-danger">Inativo</span>';
+          const btnStatus = c.ativo
+            ? `<button class="btn btn-sm btn-outline-danger" onclick="inativarCliente(${c.id})"><i class="fa fa-ban"></i> Inativar</button>`
+            : `<button class="btn btn-sm btn-outline-success" onclick="ativarCliente(${c.id})"><i class="fa fa-check"></i> Reativar</button>`;
+
+          tbody.innerHTML += `
+            <tr>
+              <td class="px-4 fw-bold">#${c.id}</td>
+              <td class="fw-medium">${c.nome} ${c.sobrenome || ''}</td>
+              <td>${c.email}</td>
+              <td>${statusBadge}</td>
+              <td class="px-4 text-end gap-2 d-flex justify-content-end">
+                <button class="btn btn-sm btn-outline-dark" onclick="abrirEditarCliente(${c.id}, '${c.nome}', '${c.sobrenome || ''}', '${c.email}')">
+                  <i class="fa fa-edit"></i> Editar
+                </button>
+                ${btnStatus}
+              </td>
+            </tr>`;
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function abrirEditarCliente(id, nome, sobrenome, email) {
+      document.getElementById('editClienteId').value = id;
+      document.getElementById('editNomeAdmin').value = nome;
+      document.getElementById('editSobrenomeAdmin').value = sobrenome;
+      document.getElementById('editEmailAdmin').value = email;
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarCliente')).show();
+    }
+
+    async function salvarEdicaoCliente() {
+      const id = document.getElementById('editClienteId').value;
+      const res = await fetch(`${API}/api/clientes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: document.getElementById('editNomeAdmin').value,
+          sobrenome: document.getElementById('editSobrenomeAdmin').value,
+          email: document.getElementById('editEmailAdmin').value
+        })
+      });
+      if (res.ok) {
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarCliente')).hide();
+        mostrarAlerta('Dados do cliente salvos!', 'success');
+        carregarClientes();
+      }
+    }
+
+    async function inativarCliente(id) {
+      if (!confirm('Inativar este cadastro de cliente?')) return;
+      await fetch(`${API}/api/clientes/${id}/inativar`, { method: 'PATCH' });
+      mostrarAlerta('Cliente inativado no sistema.', 'warning');
+      carregarClientes();
+    }
+
+    async function ativarCliente(id) {
+      await fetch(`${API}/api/clientes/${id}/ativar`, { method: 'PATCH' });
+      mostrarAlerta('Cliente reativado com sucesso!', 'success');
+      carregarClientes();
+    }
+
+    // ── SEÇÃO: TROCAS ───────────────────────────────────────────
+    async function carregarTrocas() {
+      try {
+        const res = await fetch(`${API}/api/admin/trocas`);
+        const lista = await res.json();
+        const tbody = document.getElementById('tabelaTrocasBody');
+        tbody.innerHTML = '';
+
+        if (lista.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Nenhuma solicitação de troca aberta.</td></tr>`;
+          return;
+        }
+
+        lista.forEach(t => {
+          let botoes = '';
+          if (t.status === 'SOLICITADO') {
+            botoes = `
+              <button class="btn btn-sm btn-success me-1" onclick="atualizarTroca(${t.id}, 'aceitar')"><i class="fa fa-check"></i> Autorizar</button>
+              <button class="btn btn-sm btn-danger" onclick="atualizarTroca(${t.id}, 'negar')"><i class="fa fa-times"></i> Recusar</button>`;
+          } else if (t.status === 'AUTORIZADO') {
+            botoes = `<button class="btn btn-sm btn-primary" onclick="atualizarTroca(${t.id}, 'recebimento')"><i class="fa fa-box"></i> Confirmar Chegada</button>`;
+          }
+
+          tbody.innerHTML += `
+            <tr>
+              <td class="px-4 fw-bold">#${t.id}</td>
+              <td class="fw-bold">#${t.pedido_id}</td>
+              <td>${t.cliente_nome || 'Cliente'}</td>
+              <td><span class="small text-muted">${t.motivo}</span></td>
+              <td><span class="badge bg-secondary">${t.status}</span></td>
+              <td class="px-4 text-end">${botoes || '<span class="text-muted small">Finalizado</span>'}</td>
+            </tr>`;
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function atualizarTroca(id, acao) {
+      if (!confirm(`Deseja aplicar a ação [${acao}] nesta solicitação?`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/trocas/${id}/${acao}`, { method: 'PATCH' });
+        if (res.ok) {
+          mostrarAlerta('Solicitação de troca atualizada!', 'success');
+          carregarTrocas();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // ── INITIALIZATION / SESSION CHECK ─────────────────────────
+    function iniciarPainel() {
+      mostrarSecao('dashboard');
+    }
+
+    window.onload = async () => {
+      try {
+        const res = await fetch(`${API}/api/admin/perfil`);
+        if (res.ok) {
+          adminLogado = await res.json();
+          document.getElementById('telaLogin').style.display = 'none';
+          document.getElementById('painelPrincipal').style.display = 'flex'; // Exibe painel flexível
+          document.getElementById('sidebarUsuario').textContent = adminLogado.usuario;
+          iniciarPainel();
+        } else {
+          document.getElementById('telaLogin').style.display = 'flex';
+          document.getElementById('painelPrincipal').style.setProperty('display', 'none', 'important');
+        }
+      } catch (err) {
+        console.error('Falha de comunicação com o servidor administrativo.', err);
+      }
+    };
+  </script>
 </body>
+
 </html>

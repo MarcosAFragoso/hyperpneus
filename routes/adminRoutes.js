@@ -12,6 +12,7 @@ router.post('/logout',  authCtrl.logout);
 router.get('/perfil',   authCtrl.perfil);
 
 // ── Pedidos (protegido) ────────────────────────────────────
+router.get('/dashboard/resumo',                 exigirAdmin, pedidoCtrl.resumoDashboard);
 router.get('/pedidos',                           exigirAdmin, pedidoCtrl.listar);
 router.get('/analise/vendas-categorias',         exigirAdmin, pedidoCtrl.vendasPorCategoria);
 router.get('/pedidos/:id',                       exigirAdmin, pedidoCtrl.buscar);
