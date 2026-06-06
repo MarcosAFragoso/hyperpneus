@@ -12,11 +12,31 @@ module.exports = {
     return rows[0];
   },
 
-  async listar() {
+  async listar({ page = 1, limit = 10, busca = '' } = {}) {
+    const offset = (page - 1) * limit;
+    const params = [];
+    let where = '';
+
+    if (busca) {
+      params.push(`%${busca}%`);
+      where = `WHERE (nome ILIKE $1 OR sobrenome ILIKE $1 OR email ILIKE $1)`;
+    }
+
     const { rows } = await pool.query(
-      `SELECT id, nome, sobrenome, cpf, email, ativo, criado_em FROM clientes ORDER BY nome`
+      `SELECT id, nome, sobrenome, cpf, email, ativo, criado_em
+       FROM clientes
+       ${where}
+       ORDER BY nome
+       LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+      [...params, limit, offset]
     );
-    return rows;
+
+    const { rows: [countRow] } = await pool.query(
+      `SELECT COUNT(*)::int AS total FROM clientes ${where}`,
+      params
+    );
+
+    return { clientes: rows, total: countRow.total };
   },
 
   async buscarPorId(id) {

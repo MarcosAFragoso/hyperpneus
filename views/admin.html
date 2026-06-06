@@ -393,6 +393,26 @@
         </section>
 
         <section id="secao-clientes" class="secao-painel">
+
+          <div class="filtro-barra d-flex align-items-center justify-content-between gap-3 flex-wrap mb-0">
+            <div class="d-flex align-items-center gap-2" style="flex: 1; max-width: 360px;">
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0"><i class="fa fa-search text-muted"></i></span>
+                <input type="text" id="buscaCliente" class="form-control border-start-0 ps-0"
+                  placeholder="Buscar por nome ou e-mail..."
+                  oninput="clientePaginaAtual = 1; carregarClientes();">
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="small text-muted">Itens por pág:</span>
+              <select id="seletorLimiteClientes" class="form-select form-select-sm border-line" style="width: 75px;">
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+          </div>
+
           <div class="painel-tabela">
             <div class="table-responsive">
               <table class="table table-hover align-middle m-0 text-dark">
@@ -407,6 +427,11 @@
                 </thead>
                 <tbody id="tabelaClientesBody"></tbody>
               </table>
+            </div>
+            <div class="d-flex align-items-center justify-content-between px-4 py-3 border-top border-line bg-light"
+              style="border-radius: 0 0 12px 12px;">
+              <span id="infoPaginacaoClientes" class="small text-muted fw-medium">Mostrando 0 de 0 clientes</span>
+              <div id="botoesPaginacaoClientes" class="d-flex align-items-center"></div>
             </div>
           </div>
         </section>
@@ -472,19 +497,34 @@
             </div>
 
             <!-- Gráfico -->
-            <div class="card p-4 border-1 shadow-sm" style="border-radius: 12px; background: #fff;">
-              <div class="d-flex align-items-center justify-content-between mb-3">
-                <h5 class="fw-bold m-0 text-dark">
-                  <i class="fa fa-chart-bar me-2 text-warning"></i>Volume de Trocas por Marca
-                </h5>
-                <span class="badge bg-light text-secondary border" style="font-size: 11px;">APROVADO + PRODUTO_RECEBIDO</span>
+            <div class="row g-4">
+              <div class="col-lg-8">
+                <div class="card p-4 border-1 shadow-sm h-100" style="border-radius: 12px; background: #fff;">
+                  <h5 class="fw-bold mb-4 text-dark">Curva de Trocas por Marca</h5>
+                  <div id="graficoTrocasVazio" class="text-center text-muted py-5 d-none">
+                    <i class="fa fa-chart-line fa-2x mb-2 opacity-25"></i>
+                    <p class="small">Nenhuma troca finalizada no período.</p>
+                  </div>
+                  <div id="graficoTrocasContainer" style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="graficoTrocasMarca"></canvas>
+                  </div>
+                </div>
               </div>
-              <div id="graficoTrocasVazio" class="text-center text-muted py-5 d-none">
-                <i class="fa fa-chart-bar fa-2x mb-2 opacity-25"></i>
-                <p class="small">Nenhuma troca finalizada ainda.</p>
-              </div>
-              <div id="graficoTrocasContainer" style="position: relative; height: 260px; width: 100%;">
-                <canvas id="graficoTrocasMarca"></canvas>
+              <div class="col-lg-4">
+                <div class="card p-4 border-1 shadow-sm h-100" style="border-radius: 12px; background: #fff;">
+                  <h5 class="fw-bold mb-3 text-dark">Filtros de Análise</h5>
+                  <div class="mb-3">
+                    <label class="form-label small text-muted">Data Inicial</label>
+                    <input type="date" id="trocaDataInicio" class="form-control">
+                  </div>
+                  <div class="mb-4">
+                    <label class="form-label small text-muted">Data Final</label>
+                    <input type="date" id="trocaDataFim" class="form-control">
+                  </div>
+                  <button class="btn btn-dark w-100 py-2 fw-bold" onclick="carregarGraficoTrocasMarca()">
+                    <i class="fa fa-sync me-2"></i>Atualizar Gráfico
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -665,6 +705,8 @@
     let trocaPaginaAtual = 1;
     let trocaLimite = 10;
     let graficoTrocasInstancia = null;
+    let clientePaginaAtual = 1;
+    let clienteLimite = 10;
 
     function mostrarAlerta(msg, tipo = 'success') {
       const container = document.getElementById('containerAlertasGlobal');
@@ -982,6 +1024,12 @@
       carregarTrocas();
     };
 
+    document.getElementById('seletorLimiteClientes').onchange = function () {
+      clienteLimite = parseInt(this.value);
+      clientePaginaAtual = 1;
+      carregarClientes();
+    };
+
     function getBadgeStatus(status) {
       const cores = {
         'AGUARDANDO_PAGAMENTO': 'warning text-dark',
@@ -1082,13 +1130,29 @@
 
     async function carregarClientes() {
       try {
-        const res = await fetch(`${API}/api/clientes`);
-        const lista = await res.json();
+        const busca = document.getElementById('buscaCliente')?.value.trim() || '';
+        const url = `${API}/api/clientes?page=${clientePaginaAtual}&limit=${clienteLimite}${busca ? `&busca=${encodeURIComponent(busca)}` : ''}`;
+        const res = await fetch(url);
+        const dados = await res.json();
+
+        const lista  = dados.clientes || [];
+        const total  = dados.total   || 0;
+        const totalPaginas = dados.pages || 1;
+
         const tbody = document.getElementById('tabelaClientesBody');
         tbody.innerHTML = '';
 
+        if (!lista.length) {
+          tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Nenhum cliente encontrado.</td></tr>`;
+          document.getElementById('infoPaginacaoClientes').textContent = 'Mostrando 0 de 0 clientes';
+          document.getElementById('botoesPaginacaoClientes').innerHTML = '';
+          return;
+        }
+
         lista.forEach(c => {
-          const statusBadge = c.ativo ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-danger">Inativo</span>';
+          const statusBadge = c.ativo
+            ? '<span class="badge bg-success">Ativo</span>'
+            : '<span class="badge bg-danger">Inativo</span>';
           const btnStatus = c.ativo
             ? `<button class="btn btn-sm btn-outline-danger" onclick="inativarCliente(${c.id})"><i class="fa fa-ban"></i> Inativar</button>`
             : `<button class="btn btn-sm btn-outline-success" onclick="ativarCliente(${c.id})"><i class="fa fa-check"></i> Reativar</button>`;
@@ -1107,9 +1171,37 @@
               </td>
             </tr>`;
         });
+
+        const inicio = (clientePaginaAtual - 1) * clienteLimite + 1;
+        const fim    = Math.min(clientePaginaAtual * clienteLimite, total);
+        document.getElementById('infoPaginacaoClientes').textContent = `Mostrando ${inicio}-${fim} de ${total} clientes`;
+        renderizarPaginacaoClientes(totalPaginas);
+
       } catch (err) {
         console.error(err);
       }
+    }
+
+    function renderizarPaginacaoClientes(totalPaginas) {
+      const container = document.getElementById('botoesPaginacaoClientes');
+      container.innerHTML = '';
+
+      const btnAnterior = document.createElement('button');
+      btnAnterior.className = `btn btn-sm btn-outline-secondary me-2 ${clientePaginaAtual === 1 ? 'disabled' : ''}`;
+      btnAnterior.innerHTML = '<i class="fa fa-chevron-left"></i>';
+      btnAnterior.onclick = () => { if (clientePaginaAtual > 1) { clientePaginaAtual--; carregarClientes(); } };
+      container.appendChild(btnAnterior);
+
+      const indicador = document.createElement('span');
+      indicador.className = 'mx-2 small fw-bold text-dark align-self-center';
+      indicador.textContent = `Página ${clientePaginaAtual} de ${totalPaginas}`;
+      container.appendChild(indicador);
+
+      const btnProximo = document.createElement('button');
+      btnProximo.className = `btn btn-sm btn-outline-secondary ms-2 ${clientePaginaAtual === totalPaginas ? 'disabled' : ''}`;
+      btnProximo.innerHTML = '<i class="fa fa-chevron-right"></i>';
+      btnProximo.onclick = () => { if (clientePaginaAtual < totalPaginas) { clientePaginaAtual++; carregarClientes(); } };
+      container.appendChild(btnProximo);
     }
 
     function abrirEditarCliente(id, nome, sobrenome, email) {
@@ -1145,7 +1237,7 @@
       carregarClientes();
     }
 
-    async function activarCliente(id) {
+    async function ativarCliente(id) {
       await fetch(`${API}/api/clientes/${id}/ativar`, { method: 'PATCH' });
       mostrarAlerta('Cliente reativado com sucesso!', 'success');
       carregarClientes();
@@ -1304,11 +1396,28 @@
 
     async function carregarGraficoTrocasMarca() {
       try {
-        const res = await fetch(`${API}/api/admin/trocas/volume-por-marca`);
-        if (!res.ok) return;
-        const dados = await res.json(); // [{ marca, quantidade }]
+        const inicio = document.getElementById('trocaDataInicio')?.value;
+        const fim    = document.getElementById('trocaDataFim')?.value;
 
-        if (!dados.length) {
+        let url = `${API}/api/admin/trocas/volume-por-marca`;
+        const query = [];
+        if (inicio) query.push(`inicio=${inicio}`);
+        if (fim)    query.push(`fim=${fim}`);
+        if (query.length) url += `?${query.join('&')}`;
+
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const resposta = await res.json(); // { inicio, fim, dados: [{ mes, marca, quantidade }] }
+
+        // Preenche datas nos inputs se ainda estiverem vazios
+        if (!inicio && resposta.inicio) document.getElementById('trocaDataInicio').value = resposta.inicio;
+        if (!fim    && resposta.fim)    document.getElementById('trocaDataFim').value    = resposta.fim;
+
+        const dados = resposta.dados || [];
+        // Usa todas as marcas do banco — igual ao gráfico de vendas
+        const todasMarcas = resposta.marcasDisponiveis || [...new Set(dados.map(d => d.marca))].sort();
+
+        if (!todasMarcas.length) {
           document.getElementById('graficoTrocasContainer').classList.add('d-none');
           document.getElementById('graficoTrocasVazio').classList.remove('d-none');
           return;
@@ -1316,46 +1425,56 @@
         document.getElementById('graficoTrocasContainer').classList.remove('d-none');
         document.getElementById('graficoTrocasVazio').classList.add('d-none');
 
-        const labels = dados.map(d => d.marca);
-        const valores = dados.map(d => d.quantidade);
-        const cores = ['#e8b84b', '#3b82f6', '#10b981', '#f43f5e', '#8b5cf6', '#06b6d4', '#f97316', '#151827'];
+        // Monta estrutura: meses × marcas
+        const mesesSet = new Set();
+        const mapa = {};
+
+        dados.forEach(({ mes, marca, quantidade }) => {
+          mesesSet.add(mes);
+          if (!mapa[marca]) mapa[marca] = {};
+          mapa[marca][mes] = quantidade;
+        });
+
+        // Se não há nenhum dado mas há marcas, gera pelo menos o mês atual para a legenda aparecer
+        const listaMeses = Array.from(mesesSet).sort();
+        const listaMarcas = todasMarcas;
+        const cores = ['#e8b84b', '#151827', '#3b82f6', '#10b981', '#f43f5e', '#8b5cf6', '#06b6d4', '#f97316'];
+
+        const datasets = listaMarcas.map((marca, i) => ({
+          label: marca,
+          data: listaMeses.map(mes => mapa[marca]?.[mes] || 0),
+          borderColor: cores[i % cores.length],
+          backgroundColor: 'transparent',
+          borderWidth: 3,
+          tension: 0.3,
+          pointRadius: 4
+        }));
 
         if (graficoTrocasInstancia) graficoTrocasInstancia.destroy();
 
         const ctx = document.getElementById('graficoTrocasMarca').getContext('2d');
         graficoTrocasInstancia = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels,
-            datasets: [{
-              label: 'Quantidade Trocada',
-              data: valores,
-              backgroundColor: labels.map((_, i) => cores[i % cores.length] + 'cc'),
-              borderColor: labels.map((_, i) => cores[i % cores.length]),
-              borderWidth: 2,
-              borderRadius: 6,
-            }]
-          },
+          type: 'line',
+          data: { labels: listaMeses, datasets },
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            resizeDelay: 50,
             plugins: {
-              legend: { display: false },
+              legend: { position: 'top', labels: { font: { weight: '600' } } },
               tooltip: {
                 callbacks: {
-                  label: ctx => ` ${ctx.parsed.y} pneu(s) trocado(s)`
+                  label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} pneu(s)`
                 }
               }
             },
             scales: {
               y: {
                 beginAtZero: true,
-                ticks: { stepSize: 1, precision: 0 },
+                ticks: { stepSize: 1, precision: 0, callback: v => v },
                 grid: { color: '#f0f0f0' }
               },
-              x: {
-                grid: { display: false }
-              }
+              x: { grid: { display: false } }
             }
           }
         });

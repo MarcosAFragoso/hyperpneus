@@ -22,8 +22,11 @@ module.exports = {
 
   async listar(req, res) {
     try {
-      const clientes = await Cliente.listar();
-      res.json(clientes);
+      const page  = Math.max(parseInt(req.query.page)  || 1, 1);
+      const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 100);
+      const busca = req.query.busca?.trim() || '';
+      const { clientes, total } = await Cliente.listar({ page, limit, busca });
+      res.json({ clientes, total, pages: Math.max(Math.ceil(total / limit), 1), page });
     } catch (err) {
       res.status(500).json({ erro: err.message });
     }

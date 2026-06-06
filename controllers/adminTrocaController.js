@@ -52,18 +52,42 @@ module.exports = {
     }
   },
 
-  // Retorna o volume agrupado de trocas por marca (Útil para o novo gráfico do Dashboard)
+  // Retorna volume de trocas por marca agrupado por mês — suporta ?inicio=YYYY-MM-DD&fim=YYYY-MM-DD
   async volumePorMarca(req, res) {
     try {
+      const fimPadrao    = new Date();
+      const inicioPadrao = new Date(fimPadrao.getFullYear(), fimPadrao.getMonth() - 12, 1);
+      const inicio = req.query.inicio || inicioPadrao.toISOString().slice(0, 10);
+      const fim    = req.query.fim    || fimPadrao.toISOString().slice(0, 10);
+
+      // Busca todas as marcas cadastradas (igual ao vendasPorCategoria)
+      const { rows: marcasRows } = await pool.query(
+        `SELECT DISTINCT UPPER(TRIM(marca)) AS marca
+         FROM pneus
+         WHERE marca IS NOT NULL AND marca <> ''
+         ORDER BY marca`
+      );
+
       const { rows } = await pool.query(
-        `SELECT pn.marca, SUM(t.quantidade_trocada)::int AS quantidade
+        `SELECT
+           to_char(date_trunc('month', t.atualizado_em), 'YYYY-MM') AS mes,
+           UPPER(TRIM(pn.marca)) AS marca,
+           SUM(t.quantidade_trocada)::int AS quantidade
          FROM trocas t
          JOIN pneus pn ON pn.id = t.pneu_id
-         WHERE t.status = 'PRODUTO_RECEBIDO' OR t.status = 'APROVADO'
-         GROUP BY pn.marca
-         ORDER BY quantidade DESC`
+         WHERE (t.status = 'PRODUTO_RECEBIDO' OR t.status = 'APROVADO')
+           AND t.atualizado_em::date BETWEEN $1::date AND $2::date
+         GROUP BY mes, UPPER(TRIM(pn.marca))
+         ORDER BY mes, UPPER(TRIM(pn.marca))`,
+        [inicio, fim]
       );
-      res.json(rows);
+
+      res.json({
+        inicio,
+        fim,
+        marcasDisponiveis: marcasRows.map(r => r.marca),
+        dados: rows
+      });
     } catch (err) {
       res.status(500).json({ erro: err.message });
     }
