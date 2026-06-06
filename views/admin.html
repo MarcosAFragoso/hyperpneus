@@ -884,6 +884,9 @@
           `;
         });
 
+        const mesesPtBr = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+        const formatarMes = m => { const [a,mm] = m.split('-'); return `${mesesPtBr[parseInt(mm)-1]}/${a.slice(2)}`; };
+
         const listaMeses = Array.from(mesesSet).sort();
         const listaCategorias = Array.from(categoriesSet);
         const cores = ['#e8b84b', '#151827', '#3b82f6', '#10b981', '#f43f5e', '#8b5cf6', '#06b6d4', '#f97316'];
@@ -905,7 +908,7 @@
         const ctx = document.getElementById('graficoVendasCategorias').getContext('2d');
         graficoVendasInstancia = new Chart(ctx, {
           type: 'line',
-          data: { labels: listaMeses, datasets },
+          data: { labels: listaMeses.map(formatarMes), datasets },
           options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -1435,7 +1438,9 @@
           mapa[marca][mes] = quantidade;
         });
 
-        // Se não há nenhum dado mas há marcas, gera pelo menos o mês atual para a legenda aparecer
+        const mesesPtBrT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+        const formatarMesT = m => { const [a,mm] = m.split('-'); return `${mesesPtBrT[parseInt(mm)-1]}/${a.slice(2)}`; };
+
         const listaMeses = Array.from(mesesSet).sort();
         const listaMarcas = todasMarcas;
         const cores = ['#e8b84b', '#151827', '#3b82f6', '#10b981', '#f43f5e', '#8b5cf6', '#06b6d4', '#f97316'];
@@ -1455,7 +1460,7 @@
         const ctx = document.getElementById('graficoTrocasMarca').getContext('2d');
         graficoTrocasInstancia = new Chart(ctx, {
           type: 'line',
-          data: { labels: listaMeses, datasets },
+          data: { labels: listaMeses.map(formatarMesT), datasets },
           options: {
             responsive: true,
             maintainAspectRatio: false,
