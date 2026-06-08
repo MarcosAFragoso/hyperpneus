@@ -34,6 +34,12 @@ module.exports = {
 
   async buscar(req, res) {
     try {
+      // Clientes só podem ver o próprio perfil; admin pode ver qualquer um
+      const isAdmin = !!req.session.admin;
+      const isSelf  = String(req.session.cliente?.id) === String(req.params.id);
+      if (!isAdmin && !isSelf)
+        return res.status(403).json({ erro: 'Acesso negado.' });
+
       const cliente = await Cliente.buscarPorId(req.params.id);
       if (!cliente) return res.status(404).json({ erro: 'Cliente não encontrado' });
       res.json(cliente);
@@ -76,6 +82,10 @@ module.exports = {
 
   async atualizar(req, res) {
     try {
+      // Apenas o próprio cliente pode atualizar seus dados
+      if (String(req.session.cliente?.id) !== String(req.params.id))
+        return res.status(403).json({ erro: 'Acesso negado.' });
+
       const cliente = await Cliente.atualizar(req.params.id, req.body);
       res.json(cliente);
     } catch (err) {

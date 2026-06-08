@@ -20,7 +20,6 @@
   },
   "homepage": "https://github.com/MarcosAFragoso/hyperpneus#readme",
   "dependencies": {
-    "@google/genai": "^2.6.0",
     "bcryptjs": "^3.0.3",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.6",
@@ -28,7 +27,9 @@
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "groq-sdk": "^1.2.1",
-    "pg": "^8.20.0"
+    "pg": "^8.20.0",
+    "helmet": "^8.0.0",
+    "express-rate-limit": "^7.5.0"
   },
   "devDependencies": {
     "cypress": "^15.13.1",

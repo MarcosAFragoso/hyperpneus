@@ -144,14 +144,36 @@ module.exports = {
       if (pedido.status !== 'ENTREGUE')
         throw new Error('Só é possível solicitar troca de pedidos com status ENTREGUE.');
 
-      // Verifica se algum item já foi trocado
+      // Valida quantidades disponíveis para troca por item
+      // Trocas NEGADAS são desconsideradas — o cliente pode tentar novamente
       for (const item of itensParaTroca) {
-        const { rows } = await client.query(
-          'SELECT id FROM trocas WHERE pedido_id = $1 AND pneu_id = $2',
+        // Quantidade comprada no pedido
+        const { rows: [itemPedido] } = await client.query(
+          `SELECT quantidade FROM itens_pedido
+           WHERE pedido_id = $1 AND pneu_id = $2`,
           [pedidoId, item.pneu_id]
         );
-        if (rows.length > 0)
-          throw new Error(`Este item já possui uma solicitação de troca ativa neste pedido.`);
+        if (!itemPedido)
+          throw new Error(`Item não encontrado neste pedido.`);
+
+        // Quantidade já em trocas ativas (exclui NEGADO — pode tentar de novo)
+        const { rows: [somaTrocas] } = await client.query(
+          `SELECT COALESCE(SUM(quantidade_trocada), 0)::int AS total
+           FROM trocas
+           WHERE pedido_id = $1 AND pneu_id = $2
+             AND status NOT IN ('NEGADO')`,
+          [pedidoId, item.pneu_id]
+        );
+
+        const disponivelParaTroca = itemPedido.quantidade - somaTrocas.total;
+
+        if (disponivelParaTroca <= 0)
+          throw new Error(`Todas as unidades deste item já possuem solicitação de troca ativa.`);
+
+        if (item.qtd > disponivelParaTroca)
+          throw new Error(
+            `Você solicitou ${item.qtd} unidade(s) para troca, mas só ${disponivelParaTroca} estão disponíveis.`
+          );
       }
 
       // Insere trocas como PENDENTE — SEM cupom por enquanto

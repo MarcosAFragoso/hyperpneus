@@ -70,26 +70,57 @@
 
             const trocas = dados.trocasFeitas || [];
 
-            document.getElementById('containerItens').innerHTML = dados.itens.map((item, index) => {
-                const trocaInfo = trocas.find(t => t.pneu_id === item.pneu_id);
+            document.getElementById('containerItens').innerHTML = dados.itens.map(item => {
+                // Soma das quantidades já em trocas ativas para este pneu (exceto NEGADO)
+                const qtdEmTroca = trocas
+                    .filter(t => t.pneu_id === item.pneu_id && t.status !== 'NEGADO')
+                    .reduce((acc, t) => acc + (t.quantidade_trocada || 1), 0);
 
-                return `
+                const qtdDisponivel = item.quantidade - qtdEmTroca;
+                const todosEmTroca  = qtdDisponivel <= 0;
+
+                // Cupom do registro mais recente (se houver)
+                const trocaComCupom = trocas.find(t => t.pneu_id === item.pneu_id && t.codigo);
+                const trocaPendente = trocas.find(t => t.pneu_id === item.pneu_id && !t.codigo && t.status !== 'NEGADO');
+
+                let statusHtml = '';
+                if (trocaComCupom) {
+                    statusHtml = `<br><small class="text-primary fw-bold"><i class="fas fa-tag me-1"></i>Cupom: ${trocaComCupom.codigo}</small>`;
+                } else if (trocaPendente) {
+                    statusHtml = `<br><small class="text-warning"><i class="fas fa-clock me-1"></i>Aguardando aprovação (${qtdEmTroca} und)</small>`;
+                }
+
+                if (todosEmTroca) {
+                    return `
         <div class="d-flex align-items-center mb-3 border-bottom pb-3 item-troca" data-preco="${item.preco_unitario}">
-            ${trocaInfo ?
-                        `<div class="text-success me-3"><i class="fas fa-check-circle"></i> Trocado</div>` :
-                        `<input class="form-check-input check-item me-3" type="checkbox" value="${item.pneu_id}">`
-                    }
+            <div class="text-success me-3"><i class="fas fa-check-circle"></i> Trocado</div>
             <img src="${item.imagem_url || ''}" class="product-img me-3">
             <div class="flex-grow-1">
                 <label class="fw-bold">${item.marca} ${item.modelo}</label><br>
-                <small>R$ ${item.preco_unitario}</small>
-                ${trocaInfo?.codigo ? `<br><small class="text-primary fw-bold"><i class="fas fa-tag me-1"></i>Cupom: ${trocaInfo.codigo}</small>` : trocaInfo ? '<br><small class="text-warning">Aguardando aprovação do administrador</small>' : ''}
+                <small>R$ ${parseFloat(item.preco_unitario).toFixed(2)}</small>
+                ${statusHtml}
             </div>
-            ${!trocaInfo ? `
-                <select class="form-select w-auto qtd-devolver">
-                    ${Array.from({ length: item.quantidade }, (_, i) => `<option value="${i + 1}">${i + 1} und</option>`).join('')}
-                </select>` : ''
-                    }
+        </div>`;
+                }
+
+                return `
+        <div class="d-flex align-items-center mb-3 border-bottom pb-3 item-troca" data-preco="${item.preco_unitario}">
+            <input class="form-check-input check-item me-3" type="checkbox" value="${item.pneu_id}">
+            <img src="${item.imagem_url || ''}" class="product-img me-3">
+            <div class="flex-grow-1">
+                <label class="fw-bold">${item.marca} ${item.modelo}</label><br>
+                <small>R$ ${parseFloat(item.preco_unitario).toFixed(2)}</small>
+                ${statusHtml}
+                ${qtdEmTroca > 0
+                    ? `<br><small class="text-muted"><i class="fas fa-info-circle me-1"></i>${qtdEmTroca} und já em troca · ${qtdDisponivel} disponíve${qtdDisponivel === 1 ? 'l' : 'is'}</small>`
+                    : ''
+                }
+            </div>
+            <select class="form-select w-auto qtd-devolver">
+                ${Array.from({ length: qtdDisponivel }, (_, i) =>
+                    `<option value="${i + 1}">${i + 1} und</option>`
+                ).join('')}
+            </select>
         </div>`;
             }).join('');
         }

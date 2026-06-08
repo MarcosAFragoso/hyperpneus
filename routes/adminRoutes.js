@@ -28,29 +28,31 @@ router.patch('/trocas/:id/recebimento', exigirAdmin, trocaCtrl.confirmarRecebime
 // Nova rota isolada para o gráfico de trocas (sem mexer nas anteriores)
 router.get('/trocas/volume-por-marca', exigirAdmin, trocaCtrl.volumePorMarca);
 
-// ── Utilitários de teste ───────────────────────────────────
-router.post('/cupons/teste', exigirAdmin, async (req, res) => {
-  try {
-    const valor = parseFloat(req.body.valor) || 10.00;
-    const codigo = 'PROMO-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-    const { rows: [cupom] } = await pool.query(
-      `INSERT INTO cupons (codigo, cliente_id, valor, tipo, usado, validade)
-       VALUES ($1, NULL, $2, 'promocional', FALSE, NULL) RETURNING *`,
-      [codigo, valor]
-    );
-    res.status(201).json(cupom);
-  } catch (err) {
-    res.status(500).json({ erro: err.message });
-  }
-});
+// ── Utilitários de teste (apenas em desenvolvimento) ──────────
+if (process.env.NODE_ENV !== 'production') {
+  router.post('/cupons/teste', exigirAdmin, async (req, res) => {
+    try {
+      const valor = parseFloat(req.body.valor) || 10.00;
+      const codigo = 'PROMO-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+      const { rows: [cupom] } = await pool.query(
+        `INSERT INTO cupons (codigo, cliente_id, valor, tipo, usado, validade)
+         VALUES ($1, NULL, $2, 'promocional', FALSE, NULL) RETURNING *`,
+        [codigo, valor]
+      );
+      res.status(201).json(cupom);
+    } catch (err) {
+      res.status(500).json({ erro: err.message });
+    }
+  });
 
-router.post('/estoque/reset', exigirAdmin, async (req, res) => {
-  try {
-    await pool.query('UPDATE pneus SET estoque = 50 WHERE ativo = TRUE');
-    res.json({ mensagem: 'Estoque resetado com sucesso para 50 unidades.' });
-  } catch (err) {
-    res.status(500).json({ erro: err.message });
-  }
-});
+  router.post('/estoque/reset', exigirAdmin, async (req, res) => {
+    try {
+      await pool.query('UPDATE pneus SET estoque = 50 WHERE ativo = TRUE');
+      res.json({ mensagem: 'Estoque resetado com sucesso para 50 unidades.' });
+    } catch (err) {
+      res.status(500).json({ erro: err.message });
+    }
+  });
+}
 
 module.exports = router;

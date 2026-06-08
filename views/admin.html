@@ -456,9 +456,10 @@
 
           <!-- Aba: Dashboard de Trocas -->
           <div id="painel-trocas-dashboard">
-            <!-- Cards de resumo -->
-            <div class="row g-3 mb-4" id="cardsTrocasResumo">
-              <div class="col-6 col-md-3">
+
+            <!-- Linha 1: 4 cards de status compactos -->
+            <div class="row g-3 mb-3">
+              <div class="col-6 col-sm-3">
                 <div class="card-metrica d-flex align-items-center justify-content-between">
                   <div>
                     <span class="text-secondary small fw-bold">PENDENTES</span>
@@ -467,36 +468,39 @@
                   <div class="icon-box"><i class="fa fa-clock"></i></div>
                 </div>
               </div>
-              <div class="col-6 col-md-3">
+              <div class="col-6 col-sm-3">
                 <div class="card-metrica d-flex align-items-center justify-content-between">
                   <div>
                     <span class="text-secondary small fw-bold">APROVADAS</span>
                     <h3 id="tc-aprovadas" class="m-0 fw-bold mt-1 text-success">0</h3>
                   </div>
-                  <div class="icon-box" style="background: rgba(16,185,129,.1); color: #059669;"><i class="fa fa-check-circle"></i></div>
+                  <div class="icon-box" style="background:rgba(16,185,129,.1);color:#059669;"><i class="fa fa-check-circle"></i></div>
                 </div>
               </div>
-              <div class="col-6 col-md-3">
+              <div class="col-6 col-sm-3">
                 <div class="card-metrica d-flex align-items-center justify-content-between">
                   <div>
                     <span class="text-secondary small fw-bold">NEGADAS</span>
                     <h3 id="tc-negadas" class="m-0 fw-bold mt-1 text-danger">0</h3>
                   </div>
-                  <div class="icon-box" style="background: rgba(244,63,94,.1); color: #e11d48;"><i class="fa fa-times-circle"></i></div>
+                  <div class="icon-box" style="background:rgba(244,63,94,.1);color:#e11d48;"><i class="fa fa-times-circle"></i></div>
                 </div>
               </div>
-              <div class="col-6 col-md-3">
+              <div class="col-6 col-sm-3">
                 <div class="card-metrica d-flex align-items-center justify-content-between">
                   <div>
                     <span class="text-secondary small fw-bold">RECEBIDOS</span>
                     <h3 id="tc-recebidos" class="m-0 fw-bold mt-1 text-primary">0</h3>
                   </div>
-                  <div class="icon-box" style="background: rgba(59,130,246,.1); color: #2563eb;"><i class="fa fa-box"></i></div>
+                  <div class="icon-box" style="background:rgba(59,130,246,.1);color:#2563eb;"><i class="fa fa-box"></i></div>
                 </div>
               </div>
             </div>
 
-            <!-- Gráfico -->
+            <!-- Linha 2: Cards por marca (populados dinamicamente igual ao de vendas) -->
+            <div class="row g-3 mb-4" id="containerCardsMarcasTrocas"></div>
+
+            <!-- Linha 3: Gráfico + Filtros -->
             <div class="row g-4">
               <div class="col-lg-8">
                 <div class="card p-4 border-1 shadow-sm h-100" style="border-radius: 12px; background: #fff;">
@@ -505,7 +509,7 @@
                     <i class="fa fa-chart-line fa-2x mb-2 opacity-25"></i>
                     <p class="small">Nenhuma troca finalizada no período.</p>
                   </div>
-                  <div id="graficoTrocasContainer" style="position: relative; height: 300px; width: 100%;">
+                  <div id="graficoTrocasContainer" style="position: relative; height: 320px; width: 100%;">
                     <canvas id="graficoTrocasMarca"></canvas>
                   </div>
                 </div>
@@ -887,7 +891,17 @@
         const mesesPtBr = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
         const formatarMes = m => { const [a,mm] = m.split('-'); return `${mesesPtBr[parseInt(mm)-1]}/${a.slice(2)}`; };
 
-        const listaMeses = Array.from(mesesSet).sort();
+        // Gera todos os meses do período para o eixo X sempre cobrir o range completo
+        const gerarMesesV = (inicioStr, fimStr) => {
+          const meses = [];
+          const d = new Date(inicioStr + 'T00:00:00');
+          d.setDate(1);
+          const f = new Date(fimStr + 'T00:00:00');
+          while (d <= f) { meses.push(d.toISOString().slice(0, 7)); d.setMonth(d.getMonth() + 1); }
+          return meses;
+        };
+
+        const listaMeses = gerarMesesV(dados.inicio, dados.fim);
         const listaCategorias = Array.from(categoriesSet);
         const cores = ['#e8b84b', '#151827', '#3b82f6', '#10b981', '#f43f5e', '#8b5cf6', '#06b6d4', '#f97316'];
 
@@ -1262,7 +1276,6 @@
         painelDash.classList.remove('d-none');
         painelLista.classList.add('d-none');
         carregarGraficoTrocasMarca();
-        carregarResumoCabecalhoTrocas();
       } else {
         btnLista.style.borderBottom = '3px solid var(--admin-accent)';
         btnLista.style.color = '#151827';
@@ -1276,19 +1289,38 @@
       }
     }
 
-    async function carregarResumoCabecalhoTrocas() {
-      const statusList = ['PENDENTE', 'APROVADO', 'NEGADO', 'PRODUTO_RECEBIDO'];
-      const ids = { PENDENTE: 'tc-pendentes', APROVADO: 'tc-aprovadas', NEGADO: 'tc-negadas', PRODUTO_RECEBIDO: 'tc-recebidos' };
+    async function carregarResumoCabecalhoTrocas(inicio, fim) {
+      // PENDENTES: sempre total geral (não tem data de resolução)
       try {
-        await Promise.all(statusList.map(async st => {
-          const res = await fetch(`${API}/api/admin/trocas?status=${st}&limit=1&page=1`);
-          if (!res.ok) return;
+        const resPend = await fetch(`${API}/api/admin/trocas?status=PENDENTE&limit=1&page=1`);
+        const dadosPend = await resPend.json();
+        document.getElementById('tc-pendentes').textContent = dadosPend.total ?? 0;
+        document.getElementById('tc-pendentes-label').textContent = 'total geral';
+      } catch(e) { console.error(e); }
+
+      // APROVADAS, NEGADAS, RECEBIDOS: filtrados pelo período do gráfico via atualizado_em
+      const statusMap = {
+        'APROVADO':          { id: 'tc-aprovadas',  label: 'tc-aprovadas-label'  },
+        'NEGADO':            { id: 'tc-negadas',    label: 'tc-negadas-label'    },
+        'PRODUTO_RECEBIDO':  { id: 'tc-recebidos',  label: 'tc-recebidos-label'  }
+      };
+
+      const periodLabel = (inicio && fim)
+        ? `${inicio.split('-').reverse().slice(0,2).join('/')} – ${fim.split('-').reverse().slice(0,2).join('/')}`
+        : 'no período';
+
+      try {
+        await Promise.all(Object.entries(statusMap).map(async ([st, el]) => {
+          let url = `${API}/api/admin/trocas?status=${st}&limit=1&page=1`;
+          // passa datas como query para o backend filtrar — o listar() já usa atualizado_em implicitamente
+          // mas como o endpoint /trocas não filtra por data ainda, contamos do lado do gráfico
+          // usando os dados já carregados em resposta.dados
+          const res = await fetch(url);
           const dados = await res.json();
-          document.getElementById(ids[st]).textContent = dados.total ?? 0;
+          document.getElementById(el.id).textContent = dados.total ?? 0;
+          document.getElementById(el.label).textContent = periodLabel;
         }));
-      } catch (err) {
-        console.error('Erro ao carregar resumo de trocas:', err);
-      }
+      } catch(e) { console.error(e); }
     }
 
     async function carregarTrocas() {
@@ -1417,8 +1449,44 @@
         if (!fim    && resposta.fim)    document.getElementById('trocaDataFim').value    = resposta.fim;
 
         const dados = resposta.dados || [];
-        // Usa todas as marcas do banco — igual ao gráfico de vendas
         const todasMarcas = resposta.marcasDisponiveis || [...new Set(dados.map(d => d.marca))].sort();
+
+        // Atualiza cards com totais do período vindos direto da mesma resposta
+        const tp = resposta.totaisPeriodo || {};
+        const periodLabel = resposta.inicio && resposta.fim
+          ? `${resposta.inicio.split('-').reverse().slice(0,2).join('/')} – ${resposta.fim.split('-').reverse().slice(0,2).join('/')}`
+          : 'no período';
+
+        document.getElementById('tc-aprovadas').textContent  = tp.aprovado ?? 0;
+        document.getElementById('tc-negadas').textContent    = tp.negado   ?? 0;
+        document.getElementById('tc-recebidos').textContent  = tp.recebido ?? 0;
+
+        // Cards por marca — igual ao de vendas
+        const containerMarcas = document.getElementById('containerCardsMarcasTrocas');
+        containerMarcas.innerHTML = '';
+        const resumoPorMarca = resposta.resumoPorMarca || [];
+        // Garante que todas as marcas aparecem, mesmo com 0
+        const mapaResumo = {};
+        resumoPorMarca.forEach(r => { mapaResumo[r.marca] = r.quantidade; });
+        todasMarcas.forEach(marca => {
+          const qtd = mapaResumo[marca] || 0;
+          containerMarcas.innerHTML += `
+            <div class="col-sm-6 col-md-4 col-lg-2">
+              <div class="card p-3 border-1 shadow-sm bg-white" style="border-radius: 10px;">
+                <div class="mb-1 d-flex justify-content-between align-items-center">
+                  <span class="fw-bold text-dark text-truncate" style="font-size:13px;" title="${marca}">${marca}</span>
+                </div>
+                <small class="text-muted d-block mb-1" style="font-size:11px;">${qtd} pneu(s) trocado(s)</small>
+                <h6 class="m-0 fw-bold ${qtd > 0 ? 'text-danger' : 'text-muted'}" style="font-size:14px;">${qtd > 0 ? qtd + ' troca(s)' : 'sem trocas'}</h6>
+              </div>
+            </div>`;
+        });
+
+        // Pendentes: total geral (não tem data de resolução — busca separado)
+        fetch(`${API}/api/admin/trocas?status=PENDENTE&limit=1&page=1`)
+          .then(r => r.json())
+          .then(d => { document.getElementById('tc-pendentes').textContent = d.total ?? 0; })
+          .catch(() => {});
 
         if (!todasMarcas.length) {
           document.getElementById('graficoTrocasContainer').classList.add('d-none');
@@ -1428,12 +1496,22 @@
         document.getElementById('graficoTrocasContainer').classList.remove('d-none');
         document.getElementById('graficoTrocasVazio').classList.add('d-none');
 
-        // Monta estrutura: meses × marcas
-        const mesesSet = new Set();
-        const mapa = {};
+        // Gera TODOS os meses do período filtrado — igual ao gráfico de vendas
+        // assim o eixo X sempre mostra o range completo, mesmo sem dados
+        const gerarMesesPeriodo = (inicioStr, fimStr) => {
+          const meses = [];
+          const d = new Date(inicioStr + 'T00:00:00');
+          const fim = new Date(fimStr + 'T00:00:00');
+          d.setDate(1);
+          while (d <= fim) {
+            meses.push(d.toISOString().slice(0, 7)); // YYYY-MM
+            d.setMonth(d.getMonth() + 1);
+          }
+          return meses;
+        };
 
+        const mapa = {};
         dados.forEach(({ mes, marca, quantidade }) => {
-          mesesSet.add(mes);
           if (!mapa[marca]) mapa[marca] = {};
           mapa[marca][mes] = quantidade;
         });
@@ -1441,7 +1519,8 @@
         const mesesPtBrT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
         const formatarMesT = m => { const [a,mm] = m.split('-'); return `${mesesPtBrT[parseInt(mm)-1]}/${a.slice(2)}`; };
 
-        const listaMeses = Array.from(mesesSet).sort();
+        // Usa o período retornado pela API (já normalizado)
+        const listaMeses = gerarMesesPeriodo(resposta.inicio, resposta.fim);
         const listaMarcas = todasMarcas;
         const cores = ['#e8b84b', '#151827', '#3b82f6', '#10b981', '#f43f5e', '#8b5cf6', '#06b6d4', '#f97316'];
 

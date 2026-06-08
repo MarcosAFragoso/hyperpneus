@@ -52,7 +52,6 @@ module.exports = {
     }
   },
 
-  // Retorna volume de trocas por marca agrupado por mês — suporta ?inicio=YYYY-MM-DD&fim=YYYY-MM-DD
   async volumePorMarca(req, res) {
     try {
       const fimPadrao    = new Date();
@@ -60,14 +59,14 @@ module.exports = {
       const inicio = req.query.inicio || inicioPadrao.toISOString().slice(0, 10);
       const fim    = req.query.fim    || fimPadrao.toISOString().slice(0, 10);
 
-      // Busca todas as marcas cadastradas (igual ao vendasPorCategoria)
+      // Todas as marcas cadastradas
       const { rows: marcasRows } = await pool.query(
         `SELECT DISTINCT UPPER(TRIM(marca)) AS marca
-         FROM pneus
-         WHERE marca IS NOT NULL AND marca <> ''
+         FROM pneus WHERE marca IS NOT NULL AND marca <> ''
          ORDER BY marca`
       );
 
+      // Dados do gráfico agrupados por mês+marca
       const { rows } = await pool.query(
         `SELECT
            to_char(date_trunc('month', t.atualizado_em), 'YYYY-MM') AS mes,
@@ -82,10 +81,42 @@ module.exports = {
         [inicio, fim]
       );
 
+      // Totais por status no período para os cards
+      const { rows: totais } = await pool.query(
+        `SELECT status, COUNT(*)::int AS total
+         FROM trocas
+         WHERE status IN ('APROVADO', 'NEGADO', 'PRODUTO_RECEBIDO')
+           AND atualizado_em::date BETWEEN $1::date AND $2::date
+         GROUP BY status`,
+        [inicio, fim]
+      );
+
+      const totaisPeriodo = { aprovado: 0, negado: 0, recebido: 0 };
+      totais.forEach(r => {
+        if (r.status === 'APROVADO')          totaisPeriodo.aprovado = r.total;
+        if (r.status === 'NEGADO')            totaisPeriodo.negado   = r.total;
+        if (r.status === 'PRODUTO_RECEBIDO')  totaisPeriodo.recebido = r.total;
+      });
+
+      // Resumo por marca no período (para os cards)
+      const { rows: resumo } = await pool.query(
+        `SELECT UPPER(TRIM(pn.marca)) AS marca,
+                SUM(t.quantidade_trocada)::int AS quantidade
+         FROM trocas t
+         JOIN pneus pn ON pn.id = t.pneu_id
+         WHERE (t.status = 'PRODUTO_RECEBIDO' OR t.status = 'APROVADO')
+           AND t.atualizado_em::date BETWEEN $1::date AND $2::date
+         GROUP BY UPPER(TRIM(pn.marca))
+         ORDER BY quantidade DESC`,
+        [inicio, fim]
+      );
+
       res.json({
         inicio,
         fim,
         marcasDisponiveis: marcasRows.map(r => r.marca),
+        totaisPeriodo,
+        resumoPorMarca: resumo,
         dados: rows
       });
     } catch (err) {

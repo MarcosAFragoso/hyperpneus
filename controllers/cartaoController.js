@@ -1,8 +1,18 @@
 const Cartao = require('../models/cartaoModel');
 
+// Guard reutilizável: garante que clienteId da URL pertence à sessão ativa
+function verificarProprietario(req, res) {
+  if (String(req.session.cliente?.id) !== String(req.params.clienteId)) {
+    res.status(403).json({ erro: 'Acesso negado.' });
+    return false;
+  }
+  return true;
+}
+
 module.exports = {
   async listar(req, res) {
     try {
+      if (!verificarProprietario(req, res)) return;
       const cartoes = await Cartao.listarPorCliente(req.params.clienteId);
       res.json(cartoes);
     } catch (err) {
@@ -12,6 +22,7 @@ module.exports = {
 
   async criar(req, res) {
     try {
+      if (!verificarProprietario(req, res)) return;
       const cartao = await Cartao.criar(req.params.clienteId, req.body);
       res.status(201).json(cartao);
     } catch (err) {
@@ -21,16 +32,13 @@ module.exports = {
 
   async atualizar(req, res) {
     try {
+      if (!verificarProprietario(req, res)) return;
       const cartao = await Cartao.atualizar(
         req.params.id,
         req.params.clienteId,
         req.body
       );
-
-      if (!cartao) {
-        return res.status(404).json({ erro: 'Cartão não encontrado' });
-      }
-
+      if (!cartao) return res.status(404).json({ erro: 'Cartão não encontrado' });
       res.json(cartao);
     } catch (err) {
       res.status(500).json({ erro: err.message });
@@ -39,15 +47,12 @@ module.exports = {
 
   async definirPrincipal(req, res) {
     try {
+      if (!verificarProprietario(req, res)) return;
       const cartao = await Cartao.definirPrincipal(
         req.params.id,
         req.params.clienteId
       );
-
-      if (!cartao) {
-        return res.status(404).json({ erro: 'Cartão não encontrado' });
-      }
-
+      if (!cartao) return res.status(404).json({ erro: 'Cartão não encontrado' });
       res.json(cartao);
     } catch (err) {
       res.status(500).json({ erro: err.message });
@@ -56,6 +61,7 @@ module.exports = {
 
   async remover(req, res) {
     try {
+      if (!verificarProprietario(req, res)) return;
       await Cartao.remover(req.params.id, req.params.clienteId);
       res.json({ mensagem: 'Cartão removido' });
     } catch (err) {
