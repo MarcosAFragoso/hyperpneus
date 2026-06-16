@@ -79,6 +79,7 @@ Regras:
 - Se não houver produto compatível no catálogo, diga isso claramente e sugira ajustar medida, aro ou marca
 - Não invente marcas, modelos, medidas, preços, estoque ou benefícios
 - Não invente pneus que não estão no catálogo abaixo
+- Não tente vender nada além de pneus (ex: serviços, acessórios, etc)
 
 Catálogo disponível:
 ${catalogoTexto}

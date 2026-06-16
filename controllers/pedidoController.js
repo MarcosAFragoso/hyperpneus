@@ -2,9 +2,9 @@ const Pedido = require('../models/pedidoModel');
 const pool = require('../config/database');
 
 const TABELA_FRETE = {
-  PAC:      { percentual: 0.07, minimo: 15.00 },
-  SEDEX:    { percentual: 0.10, minimo: 35.00 },
-  RETIRADA: { percentual: 0,    minimo: 0     }
+  PAC: { percentual: 0.07, minimo: 15.00 },
+  SEDEX: { percentual: 0.10, minimo: 35.00 },
+  RETIRADA: { percentual: 0, minimo: 0 }
 };
 
 function calcularFrete(tipoFrete, subtotal) {
@@ -21,11 +21,11 @@ module.exports = {
       const { endereco_id, cartoes, cupom_codigo, cupom_troca_codigo, tipo_frete } = req.body;
       if (!endereco_id) return res.status(400).json({ erro: 'Selecione um endereço de entrega.' });
       const resultado = await Pedido.finalizar(clienteId, {
-        enderecoId:       endereco_id,
-        cartoes:          cartoes || [],
-        cupomCodigo:      cupom_codigo       || null,
+        enderecoId: endereco_id,
+        cartoes: cartoes || [],
+        cupomCodigo: cupom_codigo || null,
         cupomTrocaCodigo: cupom_troca_codigo || null,
-        tipoFrete:        tipo_frete         || 'PAC'
+        tipoFrete: tipo_frete || 'PAC'
       });
       res.status(201).json(resultado);
     } catch (err) {
@@ -122,7 +122,7 @@ module.exports = {
     });
   },
 
-  // ── NOVA LÓGICA: cliente solicita troca SEM gerar cupom ──────
+
   // Cupom só é gerado quando o admin aceitar (adminTrocaController.aceitar)
   async gerarCupomTroca(req, res) {
     const client = await pool.connect();
@@ -176,7 +176,7 @@ module.exports = {
           );
       }
 
-      // Insere trocas como PENDENTE — SEM cupom por enquanto
+      // Insere trocas como PENDENTE 
       // O admin gera o cupom ao aceitar (adminTrocaController.aceitar)
       for (const item of itensParaTroca) {
         await client.query(
@@ -196,7 +196,7 @@ module.exports = {
 
       await client.query('COMMIT');
 
-      // Mensagem diferente por ação — sem revelar cupom ainda
+      // Mensagem diferente por ação 
       const mensagem = acao === 'Estorno'
         ? 'Solicitação de estorno enviada! Aguarde a análise do administrador.'
         : 'Solicitação de troca enviada! O cupom será gerado após aprovação do administrador.';

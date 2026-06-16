@@ -4,6 +4,7 @@ const { exigirAdmin } = require('../middlewares/auth');
 const authCtrl = require('../controllers/adminAuthController');
 const pedidoCtrl = require('../controllers/adminPedidoController');
 const trocaCtrl = require('../controllers/adminTrocaController');
+const dashCtrl = require('../controllers/adminDashboardController');  // NOVO
 const pool = require('../config/database');
 
 // ── Autenticação Admin ─────────────────────────────────────
@@ -11,10 +12,12 @@ router.post('/login', authCtrl.login);
 router.post('/logout', authCtrl.logout);
 router.get('/perfil', authCtrl.perfil);
 
-// ── Pedidos (MANTIDO EXATAMENTE COMO ERA ORIGINALMENTE) ────
-router.get('/dashboard/resumo', exigirAdmin, pedidoCtrl.resumoDashboard);
+// ── Dashboard ──────────────────────────────────────────────
+router.get('/dashboard/resumo', exigirAdmin, dashCtrl.resumoDashboard);
+router.get('/analise/vendas-categorias', exigirAdmin, dashCtrl.vendasPorCategoria);
+
+// ── Pedidos ────────────────────────────────────────────────
 router.get('/pedidos', exigirAdmin, pedidoCtrl.listar);
-router.get('/analise/vendas-categorias', exigirAdmin, pedidoCtrl.vendasPorCategoria);
 router.get('/pedidos/:id', exigirAdmin, pedidoCtrl.buscar);
 router.patch('/pedidos/:id/status', exigirAdmin, pedidoCtrl.atualizarStatus);
 router.patch('/pedidos/:id/confirmar-pagamento', exigirAdmin, pedidoCtrl.confirmarPagamento);
@@ -25,10 +28,11 @@ router.patch('/trocas/:id/aceitar', exigirAdmin, trocaCtrl.aceitar);
 router.patch('/trocas/:id/negar', exigirAdmin, trocaCtrl.negar);
 router.patch('/trocas/:id/recebimento', exigirAdmin, trocaCtrl.confirmarRecebimento);
 
-// Nova rota isolada para o gráfico de trocas (sem mexer nas anteriores)
+// ATENÇÃO: esta rota usa o segmento literal "volume-por-marca", então precisa
+// vir ANTES de qualquer rota com parâmetro /:id para não ser capturada por ela.
 router.get('/trocas/volume-por-marca', exigirAdmin, trocaCtrl.volumePorMarca);
 
-// ── Utilitários de teste (apenas em desenvolvimento) ──────────
+// ── Utilitários de teste ──────
 if (process.env.NODE_ENV !== 'production') {
   router.post('/cupons/teste', exigirAdmin, async (req, res) => {
     try {

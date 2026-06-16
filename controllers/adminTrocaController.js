@@ -54,10 +54,10 @@ module.exports = {
 
   async volumePorMarca(req, res) {
     try {
-      const fimPadrao    = new Date();
+      const fimPadrao = new Date();
       const inicioPadrao = new Date(fimPadrao.getFullYear(), fimPadrao.getMonth() - 12, 1);
       const inicio = req.query.inicio || inicioPadrao.toISOString().slice(0, 10);
-      const fim    = req.query.fim    || fimPadrao.toISOString().slice(0, 10);
+      const fim = req.query.fim || fimPadrao.toISOString().slice(0, 10);
 
       // Todas as marcas cadastradas
       const { rows: marcasRows } = await pool.query(
@@ -93,9 +93,9 @@ module.exports = {
 
       const totaisPeriodo = { aprovado: 0, negado: 0, recebido: 0 };
       totais.forEach(r => {
-        if (r.status === 'APROVADO')          totaisPeriodo.aprovado = r.total;
-        if (r.status === 'NEGADO')            totaisPeriodo.negado   = r.total;
-        if (r.status === 'PRODUTO_RECEBIDO')  totaisPeriodo.recebido = r.total;
+        if (r.status === 'APROVADO') totaisPeriodo.aprovado = r.total;
+        if (r.status === 'NEGADO') totaisPeriodo.negado = r.total;
+        if (r.status === 'PRODUTO_RECEBIDO') totaisPeriodo.recebido = r.total;
       });
 
       // Resumo por marca no período (para os cards)
@@ -124,7 +124,7 @@ module.exports = {
     }
   },
 
-  // ── ACEITAR: Mantido perfeitamente intacto para o Cypress ──────────────
+
   async aceitar(req, res) {
     const client = await pool.connect();
     try {

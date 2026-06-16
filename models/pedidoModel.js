@@ -1,10 +1,10 @@
 const pool = require('../config/database');
 
-// ── Tabela de frete (espelhada do controller — fonte da verdade) ──
+// ── Tabela de frete (espelhada do controller) ──
 const TABELA_FRETE = {
-  PAC:      { percentual: 0.07, minimo: 15.00 },
-  SEDEX:    { percentual: 0.10, minimo: 35.00 },
-  RETIRADA: { percentual: 0,    minimo: 0     }
+  PAC: { percentual: 0.07, minimo: 15.00 },
+  SEDEX: { percentual: 0.10, minimo: 35.00 },
+  RETIRADA: { percentual: 0, minimo: 0 }
 };
 
 function calcularFrete(tipoFrete, subtotal) {
@@ -136,12 +136,12 @@ module.exports = {
 
       return {
         pedido_id: pedido.id,
-        status:    'EM_PROCESSAMENTO',
-        subtotal:  parseFloat(subtotal.toFixed(2)),
-        frete:     valorFrete,
-        desconto:  parseFloat(desconto.toFixed(2)),
+        status: 'EM_PROCESSAMENTO',
+        subtotal: parseFloat(subtotal.toFixed(2)),
+        frete: valorFrete,
+        desconto: parseFloat(desconto.toFixed(2)),
         total,
-        itens:     itens.length
+        itens: itens.length
       };
 
     } catch (err) {

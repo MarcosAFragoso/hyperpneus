@@ -37,28 +37,31 @@ app.use(cors({
 }));
 
 // ── Rate limiting ──────────────────────────────────────────────
-// Auth: 20 req / 15 min (brute-force de login)
+// Rate limiting — desabilitado em desenvolvimento para permitir testes Cypress
+const isDev = process.env.NODE_ENV !== 'production';
+
+// Auth: 20 req / 15 min em produção, 500 em dev
 app.use('/api/auth', rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: isDev ? 500 : 20,
   standardHeaders: true,
   legacyHeaders: false,
   message: { erro: 'Muitas tentativas. Aguarde 15 minutos.' }
 }));
 
-// Admin login: 10 req / 15 min
+// Admin login: 10 req / 15 min em produção, 500 em dev
 app.use('/api/admin/login', rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: isDev ? 500 : 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: { erro: 'Muitas tentativas de login admin. Aguarde 15 minutos.' }
 }));
 
-// API geral: 120 req / min
+// API geral: 120 req / min em produção, 1000 em dev
 app.use('/api', rateLimit({
   windowMs: 60 * 1000,
-  max: 120,
+  max: isDev ? 1000 : 120,
   standardHeaders: true,
   legacyHeaders: false,
   message: { erro: 'Limite de requisições atingido. Tente novamente em instantes.' }
